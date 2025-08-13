@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}搜索 - TechBlog{% endblock %}
+{% block content %}
+<form method="get" action="/search/" class="mb-4 flex gap-2">
+	<input type="text" name="q" value="{{ query }}" placeholder="全文搜索..." class="flex-1 border rounded px-3 py-2" />
+	<button class="px-3 py-2 bg-blue-600 text-white rounded">搜索</button>
+</form>
+<ul class="divide-y bg-white rounded border">
+	{% for post in posts %}
+	<li class="p-4">
+		<a class="text-lg font-semibold hover:underline" href="/{{ post.slug }}/">{{ post.title }}</a>
+		<div class="text-sm text-gray-500">{{ post.date|date:"Y-m-d" }} · {{ post.category|title }}</div>
+		<p class="mt-1 text-gray-700">{{ post.description }}</p>
+	</li>
+	{% empty %}
+	<li class="p-4">未找到结果</li>
+	{% endfor %}
+</ul>
+{% endblock %}

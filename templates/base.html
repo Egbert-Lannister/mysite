@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>{% block title %}TechBlog{% endblock %}</title>
+	<meta name="description" content="{% block meta_description %}{% endblock %}">
+	<link rel="alternate" type="application/rss+xml" title="RSS" href="/rss.xml" />
+	<link href="https://unpkg.com/prismjs@1.29.0/themes/prism.min.css" rel="stylesheet" />
+	<link href="https://unpkg.com/prismjs@1.29.0/plugins/toolbar/prism-toolbar.css" rel="stylesheet" />
+	<script defer src="https://unpkg.com/prismjs@1.29.0/components/prism-core.min.js"></script>
+	<script defer src="https://unpkg.com/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+	<script defer src="https://unpkg.com/prismjs@1.29.0/plugins/toolbar/prism-toolbar.min.js"></script>
+	<link rel="stylesheet" href="/static/css/site.css" />
+</head>
+<body class="min-h-screen bg-gray-50 text-gray-900">
+	<header class="border-b bg-white">
+		<div class="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+			<a href="/" class="text-xl font-bold">TechBlog</a>
+			<nav class="space-x-4 text-sm">
+				<a href="/tech/" class="hover:underline">Tech</a>
+				<a href="/paper/" class="hover:underline">Paper</a>
+				<a href="/rss.xml" class="hover:underline">RSS</a>
+			</nav>
+		</div>
+	</header>
+	<main class="max-w-5xl mx-auto px-4 py-6">
+		{% block content %}{% endblock %}
+	</main>
+	<footer class="py-6 text-center text-sm text-gray-500">© {{ now|date:"Y" }} TechBlog</footer>
+</body>
+</html>

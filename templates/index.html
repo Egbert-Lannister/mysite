@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}最新文章 - TechBlog{% endblock %}
+{% block content %}
+<div class="prose max-w-none">
+	<h1>最新文章</h1>
+</div>
+<ul class="divide-y bg-white rounded border">
+	{% for post in posts %}
+	<li class="p-4">
+		<a class="text-lg font-semibold hover:underline" href="/{{ post.slug }}/">{{ post.title }}</a>
+		<div class="text-sm text-gray-500">{{ post.date|date:"Y-m-d" }} · {{ post.category|title }}</div>
+		<p class="mt-1 text-gray-700">{{ post.description }}</p>
+		<div class="mt-2 text-xs text-blue-600">
+			{% for tag in post.tags.all %}
+				<a class="mr-2 hover:underline" href="/tags/{{ tag.slug }}/">#{{ tag.name }}</a>
+			{% endfor %}
+		</div>
+	</li>
+	{% empty %}
+	<li class="p-4">暂无文章</li>
+	{% endfor %}
+</ul>
+<div class="mt-4 flex items-center justify-between">
+	{% if posts.has_previous %}
+		<a class="px-3 py-1 border rounded" href="?page={{ posts.previous_page_number }}">上一页</a>
+	{% else %}
+		<span></span>
+	{% endif %}
+	<span class="text-sm">第 {{ posts.number }} / {{ posts.paginator.num_pages }} 页</span>
+	{% if posts.has_next %}
+		<a class="px-3 py-1 border rounded" href="?page={{ posts.next_page_number }}">下一页</a>
+	{% else %}
+		<span></span>
+	{% endif %}
+</div>
+{% endblock %}
