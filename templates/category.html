@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}{{ category|title }} - TechBlog{% endblock %}
+{% block content %}
+<div class="prose max-w-none">
+	<h1>{{ category|title }}</h1>
+</div>
+<ul class="divide-y bg-white rounded border">
+	{% for post in posts %}
+	<li class="p-4">
+		<a class="text-lg font-semibold hover:underline" href="/{{ post.slug }}/">{{ post.title }}</a>
+		<div class="text-sm text-gray-500">{{ post.date|date:"Y-m-d" }}</div>
+		<p class="mt-1 text-gray-700">{{ post.description }}</p>
+	</li>
+	{% empty %}
+	<li class="p-4">暂无文章</li>
+	{% endfor %}
+</ul>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}{{ post.title }} - TechBlog{% endblock %}
+{% block meta_description %}{{ post.description }}{% endblock %}
+{% block content %}
+<article class="grid md:grid-cols-3 gap-6">
+	<aside class="hidden md:block">
+		<div class="sticky top-6 text-sm text-gray-600">{{ post.date|date:"Y-m-d" }} · {{ post.category|title }}</div>
+	</aside>
+	<section class="md:col-span-2">
+		<h1 class="text-3xl font-bold mb-2">{{ post.title }}</h1>
+		<div class="text-sm text-gray-500 mb-4">
+			{% for tag in post.tags.all %}
+				<a class="mr-2 hover:underline" href="/tags/{{ tag.slug }}/">#{{ tag.name }}</a>
+			{% endfor %}
+		</div>
+		<div class="prose max-w-none">{{ html|safe }}</div>
+	</section>
+</article>
+<script>
+	document.addEventListener('DOMContentLoaded', () => {
+		for (const pre of document.querySelectorAll('pre')) {
+			const btn = document.createElement('button');
+			btn.textContent = '复制';
+			btn.className = 'absolute right-2 top-2 text-xs bg-gray-800 text-white px-2 py-1 rounded';
+			btn.addEventListener('click', () => {
+				navigator.clipboard.writeText(pre.innerText);
+				btn.textContent = '已复制';
+				setTimeout(() => (btn.textContent = '复制'), 1200);
+			});
+			pre.classList.add('relative');
+			pre.appendChild(btn);
+		}
+	});
+</script>
+{% endblock %}

@@ -1,0 +1,4 @@
+/* Tailwind placeholder: replace with Tailwind build output. */
+.prose { line-height: 1.8; }
+pre { background: #0f172a; color: #e5e7eb; padding: 1rem; border-radius: 0.5rem; overflow: auto; }
+code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }

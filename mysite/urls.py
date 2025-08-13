@@ -16,8 +16,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from posts.feeds import LatestPostsFeed
 
 urlpatterns = [
-    path('', include('main.urls')), 
+    path('__reload__/', include('django_browser_reload.urls')),
     path('admin/', admin.site.urls),
+    path('rss.xml', LatestPostsFeed(), name='rss'),
+    path('', include('posts.urls')),
 ]
