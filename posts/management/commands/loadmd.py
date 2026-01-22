@@ -5,9 +5,11 @@ from pathlib import Path
 import yaml
 from django.core.management.base import BaseCommand
 from django.utils.text import slugify
+from django.utils import timezone
 from taggit.utils import parse_tags
 
 from posts.models import Post
+from posts.utils import generate_unique_slug
 
 FRONT_MATTER_RE = re.compile(r"^---\n(.*?)\n---\n(.*)$", re.DOTALL)
 
@@ -38,11 +40,27 @@ class Command(BaseCommand):
 
             title = meta.get("title") or file_path.stem
             date_str = meta.get("date")
-            date = datetime.fromisoformat(str(date_str)) if date_str else datetime.now()
+            if date_str:
+                date = datetime.fromisoformat(str(date_str))
+                if timezone.is_naive(date):
+                    date = timezone.make_aware(date)
+            else:
+                date = timezone.now()
             tags = meta.get("tags", [])
+            # Handle tags: if it's a list, join it; if it's a string, use it directly
+            if isinstance(tags, list):
+                tags_str = ", ".join(str(t) for t in tags)
+            else:
+                tags_str = str(tags) if tags else ""
             category = meta.get("category") or ("tech" if "tech" in str(file_path) else "paper")
             description = meta.get("description", "")
-            slug = meta.get("slug") or slugify(title)
+            raw_slug = str(meta.get("slug") or "").strip()
+            if raw_slug:
+                slug = slugify(raw_slug)
+                if not slug:
+                    slug = generate_unique_slug(title)
+            else:
+                slug = generate_unique_slug(title)
 
             post, is_created = Post.objects.update_or_create(
                 slug=slug,
@@ -56,7 +74,8 @@ class Command(BaseCommand):
                 },
             )
 
-            post.tags.set(parse_tags(tags))
+            if tags_str:
+                post.tags.set(parse_tags(tags_str))
 
             if is_created:
                 created += 1

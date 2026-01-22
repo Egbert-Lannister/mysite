@@ -189,7 +189,7 @@ class PostAdmin(ModelAdmin):
         }),
     )
     
-    @display(description="标题", header=True)
+    @display(description="标题")
     def display_title(self, obj):
         return obj.title
     

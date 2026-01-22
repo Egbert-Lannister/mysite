@@ -8,19 +8,33 @@ __pycache__/
 .eggs/
 dist/
 build/
+*.egg
+pip-log.txt
+pip-delete-this-directory.txt
 
 # Virtual environments
 venv/
 .venv/
 env/
+ENV/
+
+# Environment variables
 .env
+.env.*
+!.env.example
 
 # Django
 *.log
 local_settings.py
-db.sqlite3
+*.sqlite3
 staticfiles/
 media/
+*.pot
+*.mo
+
+# Django migrations (uncomment if you want to ignore)
+# */migrations/*.py
+# !*/migrations/__init__.py
 
 # IDE
 .idea/
@@ -28,16 +42,64 @@ media/
 *.swp
 *.swo
 *~
+.project
+.pydevproject
+.settings/
 
 # OS
 .DS_Store
+.DS_Store?
+._*
 Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Testing
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+.pytest_cache/
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# Type checking
+.mypy_cache/
+.dmypy.json
+dmypy.json
 
 # Poetry
 # Keep poetry.lock for reproducible builds
 
-# Test files (optional - remove if you want to track these)
-# test_*.py
+# Jupyter Notebook
+.ipynb_checkpoints/
 
-# Tailwind (generated files)
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# Gunicorn
+gunicorn.log
+gunicorn-error.log
+access.log
+
+# Tailwind
 theme/static_src/node_modules/
+theme/static/css/dist/
+
+# Secrets (NEVER commit these)
+*.pem
+*.key
+credentials.json
+secrets.json
+
+# Backup files
+*.bak
+*.backup
+
+# Temporary files
+*.tmp
+*.temp

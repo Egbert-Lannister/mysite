@@ -1,35 +1,304 @@
 {% extends "base.html" %}
 {% block title %}{{ post.title }} - TechBlog{% endblock %}
 {% block meta_description %}{{ post.description }}{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<style>
+	/* 文章内容样式 */
+	.article-content {
+		color: #e5e7eb;
+		line-height: 1.8;
+	}
+	
+	.article-content h1 {
+		font-size: 2rem;
+		font-weight: 700;
+		margin-top: 2.5rem;
+		margin-bottom: 1rem;
+		color: #ffffff;
+		padding-bottom: 0.5rem;
+		border-bottom: 1px solid rgba(139, 92, 246, 0.3);
+	}
+	
+	.article-content h2 {
+		font-size: 1.5rem;
+		font-weight: 600;
+		margin-top: 2rem;
+		margin-bottom: 0.75rem;
+		color: #f3f4f6;
+	}
+	
+	.article-content h3 {
+		font-size: 1.25rem;
+		font-weight: 600;
+		margin-top: 1.5rem;
+		margin-bottom: 0.5rem;
+		color: #e5e7eb;
+	}
+	
+	.article-content p {
+		margin-bottom: 1.25rem;
+	}
+	
+	.article-content ul, .article-content ol {
+		margin-bottom: 1.25rem;
+		padding-left: 1.5rem;
+	}
+	
+	.article-content li {
+		margin-bottom: 0.5rem;
+	}
+	
+	.article-content ul li {
+		list-style-type: disc;
+	}
+	
+	.article-content ol li {
+		list-style-type: decimal;
+	}
+	
+	.article-content a {
+		color: #c084fc;
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+	
+	.article-content a:hover {
+		color: #a855f7;
+	}
+	
+	.article-content code {
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 0.875rem;
+		background: rgba(139, 92, 246, 0.2);
+		padding: 0.125rem 0.375rem;
+		border-radius: 0.25rem;
+		color: #c084fc;
+	}
+	
+	.article-content pre {
+		background: #0f172a !important;
+		border: 1px solid rgba(139, 92, 246, 0.3);
+		border-radius: 0.75rem;
+		padding: 1rem;
+		margin-bottom: 1.5rem;
+		overflow-x: auto;
+		position: relative;
+	}
+	
+	.article-content pre code {
+		background: transparent;
+		padding: 0;
+		color: #e5e7eb;
+		font-size: 0.875rem;
+	}
+	
+	.article-content blockquote {
+		border-left: 4px solid #8b5cf6;
+		padding: 1rem 1.5rem;
+		margin: 1.5rem 0;
+		background: rgba(139, 92, 246, 0.1);
+		border-radius: 0 0.5rem 0.5rem 0;
+		color: #d1d5db;
+		font-style: italic;
+	}
+	
+	.article-content table {
+		width: 100%;
+		border-collapse: collapse;
+		margin-bottom: 1.5rem;
+		border-radius: 0.5rem;
+		overflow: hidden;
+	}
+	
+	.article-content th, .article-content td {
+		border: 1px solid rgba(139, 92, 246, 0.3);
+		padding: 0.75rem 1rem;
+		text-align: left;
+	}
+	
+	.article-content th {
+		background: rgba(139, 92, 246, 0.2);
+		font-weight: 600;
+		color: #f3f4f6;
+	}
+	
+	.article-content tr:hover {
+		background: rgba(139, 92, 246, 0.1);
+	}
+	
+	.article-content img {
+		max-width: 100%;
+		height: auto;
+		border-radius: 0.5rem;
+		margin: 1.5rem 0;
+	}
+	
+	.article-content hr {
+		border: none;
+		height: 1px;
+		background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.5), transparent);
+		margin: 2rem 0;
+	}
+	
+	/* 复制按钮 */
+	.copy-btn {
+		position: absolute;
+		right: 0.75rem;
+		top: 0.75rem;
+		padding: 0.375rem 0.75rem;
+		font-size: 0.75rem;
+		background: rgba(139, 92, 246, 0.3);
+		color: #c084fc;
+		border: 1px solid rgba(139, 92, 246, 0.5);
+		border-radius: 0.375rem;
+		cursor: pointer;
+		opacity: 0;
+		transition: opacity 0.2s, background 0.2s;
+	}
+	
+	.article-content pre:hover .copy-btn {
+		opacity: 1;
+	}
+	
+	.copy-btn:hover {
+		background: rgba(139, 92, 246, 0.5);
+	}
+	
+	.copy-btn.copied {
+		background: rgba(34, 197, 94, 0.3);
+		color: #4ade80;
+		border-color: rgba(34, 197, 94, 0.5);
+	}
+</style>
+{% endblock %}
+
 {% block content %}
-<article class="grid md:grid-cols-3 gap-6">
-	<aside class="hidden md:block">
-		<div class="sticky top-6 text-sm text-gray-600">{{ post.date|date:"Y-m-d" }} · {{ post.category|title }}</div>
-	</aside>
-	<section class="md:col-span-2">
-		<h1 class="text-3xl font-bold mb-2">{{ post.title }}</h1>
-		<div class="text-sm text-gray-500 mb-4">
+<article class="max-w-4xl mx-auto">
+	<!-- 文章头部 -->
+	<header class="mb-8">
+		<!-- 返回按钮 -->
+		<a href="{% url 'posts:index' %}" class="inline-flex items-center text-gray-400 hover:text-purple-400 transition-colors mb-6 group">
+			<svg class="w-4 h-4 mr-2 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+			</svg>
+			返回文章列表
+		</a>
+		
+		<!-- 分类和日期 -->
+		<div class="flex items-center gap-4 mb-4 flex-wrap">
+			<span class="px-3 py-1 text-sm font-semibold rounded-full {% if post.category == 'tech' %}bg-blue-500/20 text-blue-300 border border-blue-500/30{% else %}bg-pink-500/20 text-pink-300 border border-pink-500/30{% endif %}">
+				{{ post.category|title }}
+			</span>
+			<time class="text-gray-400 text-sm flex items-center gap-1.5">
+				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+				</svg>
+				{{ post.date|date:"Y年m月d日" }}
+			</time>
+		</div>
+		
+		<!-- 标题 -->
+		<h1 class="text-3xl md:text-4xl font-bold text-white mb-4 leading-tight">{{ post.title }}</h1>
+		
+		<!-- 描述 -->
+		{% if post.description %}
+		<p class="text-lg text-gray-400 mb-6">{{ post.description }}</p>
+		{% endif %}
+		
+		<!-- 标签 -->
+		{% if post.tags.all %}
+		<div class="flex flex-wrap gap-2">
 			{% for tag in post.tags.all %}
-				<a class="mr-2 hover:underline" href="/tags/{{ tag.slug }}/">#{{ tag.name }}</a>
+			<a href="{% url 'posts:tag_list' tag.name %}" class="px-3 py-1.5 text-sm bg-purple-500/20 text-purple-300 rounded-full hover:bg-purple-500/30 transition-colors border border-purple-500/20">
+				#{{ tag.name }}
+			</a>
 			{% endfor %}
 		</div>
-		<div class="prose max-w-none">{{ html|safe }}</div>
-	</section>
+		{% endif %}
+	</header>
+	
+	<!-- 分隔线 -->
+	<div class="h-px bg-gradient-to-r from-transparent via-purple-500/50 to-transparent mb-8"></div>
+	
+	<!-- 文章内容 -->
+	<div class="bg-indigo-950/50 backdrop-blur border border-purple-500/20 rounded-2xl p-6 md:p-10 mb-8">
+		<div class="article-content">
+			{{ html|safe }}
+		</div>
+	</div>
+	
+	<!-- 底部操作区 -->
+	<div class="bg-indigo-950/50 backdrop-blur border border-purple-500/20 rounded-2xl p-6">
+		<div class="flex flex-col sm:flex-row items-center justify-between gap-6">
+			<!-- 分享按钮 -->
+			<div>
+				<p class="text-sm text-gray-400 mb-3 font-medium">分享这篇文章</p>
+				<div class="flex gap-3">
+					<a href="https://twitter.com/intent/tweet?text={{ post.title|urlencode }}&url={{ request.build_absolute_uri|urlencode }}" 
+					   target="_blank" 
+					   rel="noopener noreferrer"
+					   class="px-4 py-2 bg-sky-500/20 text-sky-300 rounded-full hover:bg-sky-500/30 transition-all border border-sky-500/30 text-sm font-medium flex items-center gap-2">
+						<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+							<path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+						</svg>
+						分享
+					</a>
+				</div>
+			</div>
+			
+			<!-- 返回首页 -->
+			<a href="{% url 'posts:index' %}" class="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white rounded-full shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all font-medium flex items-center gap-2">
+				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+				</svg>
+				返回首页
+			</a>
+		</div>
+	</div>
 </article>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script>
-	document.addEventListener('DOMContentLoaded', () => {
-		for (const pre of document.querySelectorAll('pre')) {
-			const btn = document.createElement('button');
-			btn.textContent = '复制';
-			btn.className = 'absolute right-2 top-2 text-xs bg-gray-800 text-white px-2 py-1 rounded';
-			btn.addEventListener('click', () => {
-				navigator.clipboard.writeText(pre.innerText);
+document.addEventListener('DOMContentLoaded', () => {
+	// 代码高亮
+	hljs.highlightAll();
+	
+	// 为代码块添加复制按钮
+	document.querySelectorAll('.article-content pre').forEach(pre => {
+		const code = pre.querySelector('code');
+		if (!code) return;
+		
+		const btn = document.createElement('button');
+		btn.className = 'copy-btn';
+		btn.textContent = '复制';
+		btn.addEventListener('click', async () => {
+			try {
+				await navigator.clipboard.writeText(code.innerText);
 				btn.textContent = '已复制';
-				setTimeout(() => (btn.textContent = '复制'), 1200);
-			});
-			pre.classList.add('relative');
-			pre.appendChild(btn);
-		}
+				btn.classList.add('copied');
+				setTimeout(() => {
+					btn.textContent = '复制';
+					btn.classList.remove('copied');
+				}, 2000);
+			} catch (err) {
+				btn.textContent = '失败';
+				setTimeout(() => btn.textContent = '复制', 2000);
+			}
+		});
+		pre.style.position = 'relative';
+		pre.appendChild(btn);
 	});
+	
+	// 表格响应式包装
+	document.querySelectorAll('.article-content table').forEach(table => {
+		const wrapper = document.createElement('div');
+		wrapper.className = 'overflow-x-auto';
+		table.parentNode.insertBefore(wrapper, table);
+		wrapper.appendChild(table);
+	});
+});
 </script>
 {% endblock %}
