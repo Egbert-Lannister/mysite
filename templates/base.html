@@ -6,27 +6,202 @@
 	<title>{% block title %}TechBlog{% endblock %}</title>
 	<meta name="description" content="{% block meta_description %}{% endblock %}">
 	<link rel="alternate" type="application/rss+xml" title="RSS" href="/rss.xml" />
-	<link href="https://unpkg.com/prismjs@1.29.0/themes/prism.min.css" rel="stylesheet" />
-	<link href="https://unpkg.com/prismjs@1.29.0/plugins/toolbar/prism-toolbar.css" rel="stylesheet" />
-	<script defer src="https://unpkg.com/prismjs@1.29.0/components/prism-core.min.js"></script>
-	<script defer src="https://unpkg.com/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
-	<script defer src="https://unpkg.com/prismjs@1.29.0/plugins/toolbar/prism-toolbar.min.js"></script>
-	<link rel="stylesheet" href="/static/css/site.css" />
+	<script src="https://cdn.tailwindcss.com"></script>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+	{% block extra_head %}{% endblock %}
+	<script>
+		tailwind.config = {
+			theme: {
+				extend: {
+					fontFamily: {
+						sans: ['Noto Sans SC', 'system-ui', 'sans-serif'],
+						mono: ['JetBrains Mono', 'monospace'],
+					},
+					colors: {
+						primary: {
+							50: '#faf5ff',
+							100: '#f3e8ff',
+							200: '#e9d5ff',
+							300: '#d8b4fe',
+							400: '#c084fc',
+							500: '#a855f7',
+							600: '#9333ea',
+							700: '#7c3aed',
+							800: '#6b21a8',
+							900: '#581c87',
+						}
+					}
+				}
+			}
+		}
+	</script>
+	<style>
+		body {
+			font-family: 'Noto Sans SC', system-ui, sans-serif;
+		}
+		
+		.gradient-bg {
+			background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%);
+		}
+		
+		.card-shine {
+			position: relative;
+			overflow: hidden;
+		}
+		
+		.card-shine::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: -100%;
+			width: 100%;
+			height: 100%;
+			background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+			transition: left 0.5s;
+		}
+		
+		.card-shine:hover::before {
+			left: 100%;
+		}
+		
+		.text-gradient {
+			background: linear-gradient(135deg, #c084fc 0%, #818cf8 50%, #60a5fa 100%);
+			-webkit-background-clip: text;
+			-webkit-text-fill-color: transparent;
+			background-clip: text;
+		}
+		
+		.nav-link {
+			position: relative;
+		}
+		
+		.nav-link::after {
+			content: '';
+			position: absolute;
+			bottom: -4px;
+			left: 0;
+			width: 0;
+			height: 2px;
+			background: linear-gradient(90deg, #c084fc, #60a5fa);
+			transition: width 0.3s ease;
+		}
+		
+		.nav-link:hover::after {
+			width: 100%;
+		}
+		
+		/* 滚动条样式 */
+		::-webkit-scrollbar {
+			width: 8px;
+			height: 8px;
+		}
+		
+		::-webkit-scrollbar-track {
+			background: #1e1b4b;
+		}
+		
+		::-webkit-scrollbar-thumb {
+			background: #6b21a8;
+			border-radius: 4px;
+		}
+		
+		::-webkit-scrollbar-thumb:hover {
+			background: #7c3aed;
+		}
+	</style>
 </head>
-<body class="min-h-screen bg-gray-50 text-gray-900">
-	<header class="border-b bg-white">
-		<div class="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
-			<a href="/" class="text-xl font-bold">TechBlog</a>
-			<nav class="space-x-4 text-sm">
-				<a href="/tech/" class="hover:underline">Tech</a>
-				<a href="/paper/" class="hover:underline">Paper</a>
-				<a href="/rss.xml" class="hover:underline">RSS</a>
-			</nav>
+<body class="gradient-bg min-h-screen text-gray-100">
+	<!-- 导航栏 -->
+	<header class="sticky top-0 z-50 backdrop-blur-xl bg-indigo-950/80 border-b border-purple-500/20">
+		<div class="max-w-6xl mx-auto px-4 sm:px-6">
+			<div class="flex items-center justify-between h-16">
+				<!-- Logo -->
+				<a href="{% url 'posts:index' %}" class="flex items-center gap-2 group">
+					<div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center shadow-lg shadow-purple-500/25 group-hover:shadow-purple-500/50 transition-shadow">
+						<span class="text-white font-bold text-lg">T</span>
+					</div>
+					<span class="text-xl font-bold text-gradient">TechBlog</span>
+				</a>
+				
+				<!-- 导航链接 -->
+				<nav class="hidden md:flex items-center gap-8">
+					<a href="{% url 'posts:tech_list' %}" class="nav-link text-gray-300 hover:text-white font-medium transition-colors">
+						技术
+					</a>
+					<a href="{% url 'posts:paper_list' %}" class="nav-link text-gray-300 hover:text-white font-medium transition-colors">
+						论文
+					</a>
+					<a href="/rss.xml" class="nav-link text-gray-300 hover:text-white font-medium transition-colors flex items-center gap-1">
+						<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19 7.38 20 6.18 20C5 20 4 19 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1Z"/></svg>
+						RSS
+					</a>
+				</nav>
+				
+				<!-- 搜索框 -->
+				<form action="{% url 'posts:search' %}" method="get" class="flex items-center gap-2">
+					<div class="relative">
+						<input 
+							type="search" 
+							name="q" 
+							placeholder="搜索文章..." 
+							value="{{ request.GET.q }}"
+							class="w-48 lg:w-64 px-4 py-2 pl-10 bg-indigo-900/50 border border-purple-500/30 rounded-full text-sm text-white placeholder-gray-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 transition-all"
+						>
+						<svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+						</svg>
+					</div>
+					<button type="submit" class="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white text-sm font-medium rounded-full shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all">
+						搜索
+					</button>
+				</form>
+				
+				<!-- 移动端菜单按钮 -->
+				<button class="md:hidden p-2 text-gray-300 hover:text-white" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
+					<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+					</svg>
+				</button>
+			</div>
+			
+			<!-- 移动端菜单 -->
+			<div id="mobile-menu" class="hidden md:hidden pb-4">
+				<nav class="flex flex-col gap-2">
+					<a href="{% url 'posts:tech_list' %}" class="px-4 py-2 text-gray-300 hover:text-white hover:bg-purple-500/20 rounded-lg transition-colors">技术</a>
+					<a href="{% url 'posts:paper_list' %}" class="px-4 py-2 text-gray-300 hover:text-white hover:bg-purple-500/20 rounded-lg transition-colors">论文</a>
+					<a href="/rss.xml" class="px-4 py-2 text-gray-300 hover:text-white hover:bg-purple-500/20 rounded-lg transition-colors">RSS</a>
+				</nav>
+			</div>
 		</div>
 	</header>
-	<main class="max-w-5xl mx-auto px-4 py-6">
+	
+	<!-- 主内容 -->
+	<main class="max-w-6xl mx-auto px-4 sm:px-6 py-8">
 		{% block content %}{% endblock %}
 	</main>
-	<footer class="py-6 text-center text-sm text-gray-500">© {{ now|date:"Y" }} TechBlog</footer>
+	
+	<!-- 页脚 -->
+	<footer class="border-t border-purple-500/20 mt-auto">
+		<div class="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+			<div class="flex flex-col md:flex-row items-center justify-between gap-4">
+				<div class="flex items-center gap-2">
+					<div class="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
+						<span class="text-white font-bold text-sm">T</span>
+					</div>
+					<span class="text-gray-400 text-sm">© 2024 TechBlog</span>
+				</div>
+				<p class="text-gray-500 text-sm">分享技术见解，记录学习历程</p>
+				<div class="flex items-center gap-4">
+					<a href="/rss.xml" class="text-gray-400 hover:text-purple-400 transition-colors">
+						<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19 7.38 20 6.18 20C5 20 4 19 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1Z"/></svg>
+					</a>
+				</div>
+			</div>
+		</div>
+	</footer>
+	
+	{% block extra_js %}{% endblock %}
 </body>
 </html>
