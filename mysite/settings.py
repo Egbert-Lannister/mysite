@@ -22,17 +22,35 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-aoep*#($phdkef+f(o7w0g+c-ds$ff!1b0dh@4kis$)^$d4-ff'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-aoep*#($phdkef+f(o7w0g+c-ds$ff!1b0dh@4kis$)^$d4-ff')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [
+    'egbertlannister.com',
+    'www.egbertlannister.com',
+    'egbert-lannister.com',
+    'www.egbert-lannister.com',
+    'localhost',
+    '127.0.0.1',
+]
+
+# CSRF trusted origins (required for Django 4.0+)
+CSRF_TRUSTED_ORIGINS = [
+    'https://egbertlannister.com',
+    'https://www.egbertlannister.com',
+    'https://egbert-lannister.com',
+    'https://www.egbert-lannister.com',
+]
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    'unfold',  # Must be before django.contrib.admin
+    'unfold.contrib.filters',  # Optional, for custom filters
+    'unfold.contrib.forms',  # Optional, for custom form fields
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -147,3 +165,90 @@ INTERNAL_IPS = ['127.0.0.1', 'localhost']
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Django Unfold Admin Configuration
+UNFOLD = {
+    "SITE_TITLE": "Egbert's Blog 管理后台",
+    "SITE_HEADER": "Egbert's Blog",
+    "SITE_SUBHEADER": "内容管理系统",
+    "SITE_DROPDOWN": [
+        {
+            "icon": "public",
+            "title": "访问网站",
+            "link": "/techblog/",
+        },
+    ],
+    "SITE_LOGO": None,
+    "SITE_SYMBOL": "article",  # Material icon name
+    "SHOW_HISTORY": True,
+    "SHOW_VIEW_ON_SITE": True,
+    "ENVIRONMENT": "mysite.admin_config.environment_callback",
+    "COLORS": {
+        "primary": {
+            "50": "250 245 255",
+            "100": "243 232 255",
+            "200": "233 213 255",
+            "300": "216 180 254",
+            "400": "192 132 252",
+            "500": "168 85 247",
+            "600": "147 51 234",
+            "700": "126 34 206",
+            "800": "107 33 168",
+            "900": "88 28 135",
+            "950": "59 7 100",
+        },
+    },
+    "SIDEBAR": {
+        "show_search": True,
+        "show_all_applications": False,
+        "navigation": [
+            {
+                "title": "内容管理",
+                "separator": True,
+                "collapsible": False,
+                "items": [
+                    {
+                        "title": "文章管理",
+                        "icon": "article",
+                        "link": "/admin/posts/post/",
+                        "badge": "mysite.admin_config.post_count_callback",
+                    },
+                    {
+                        "title": "标签管理",
+                        "icon": "label",
+                        "link": "/admin/taggit/tag/",
+                    },
+                ],
+            },
+            {
+                "title": "快捷操作",
+                "separator": True,
+                "collapsible": False,
+                "items": [
+                    {
+                        "title": "上传 Markdown 文章",
+                        "icon": "upload_file",
+                        "link": "/techblog/admin/upload/",
+                    },
+                    {
+                        "title": "文章列表 (前台)",
+                        "icon": "preview",
+                        "link": "/techblog/admin/posts/",
+                    },
+                ],
+            },
+            {
+                "title": "系统设置",
+                "separator": True,
+                "collapsible": True,
+                "items": [
+                    {
+                        "title": "用户管理",
+                        "icon": "person",
+                        "link": "/admin/auth/user/",
+                    },
+                ],
+            },
+        ],
+    },
+}

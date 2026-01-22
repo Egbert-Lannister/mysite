@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}上传文章 - 管理后台{% endblock %}
+{% block content %}
+<div class="max-w-2xl mx-auto">
+	<!-- 页面标题 -->
+	<div class="text-center mb-8">
+		<div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-purple-500/20 border border-purple-500/30 mb-4">
+			<svg class="w-8 h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+			</svg>
+		</div>
+		<h1 class="text-3xl font-bold text-white mb-2">上传文章</h1>
+		<p class="text-gray-400">上传 Markdown 文件创建新文章</p>
+	</div>
+	
+	<!-- 消息提示 -->
+	{% if messages %}
+	<div class="mb-6">
+		{% for message in messages %}
+		<div class="p-4 mb-4 rounded-xl {% if message.tags == 'error' %}bg-red-500/20 text-red-300 border border-red-500/30{% else %}bg-green-500/20 text-green-300 border border-green-500/30{% endif %}">
+			{{ message }}
+		</div>
+		{% endfor %}
+	</div>
+	{% endif %}
+	
+	<!-- 上传表单 -->
+	<div class="bg-indigo-950/50 backdrop-blur border border-purple-500/20 rounded-2xl p-8">
+		<form method="post" enctype="multipart/form-data" class="space-y-6">
+			{% csrf_token %}
+			
+			<div>
+				<label for="markdown_file" class="block text-sm font-medium text-gray-300 mb-3">
+					选择 Markdown 文件
+				</label>
+				<div class="relative">
+					<input 
+						type="file" 
+						name="markdown_file" 
+						id="markdown_file" 
+						accept=".md"
+						required
+						class="block w-full text-sm text-gray-400 file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-purple-500/20 file:text-purple-300 hover:file:bg-purple-500/30 file:cursor-pointer file:transition-colors cursor-pointer"
+					>
+				</div>
+			</div>
+			
+			<div class="bg-indigo-900/50 border border-purple-500/20 rounded-xl p-4">
+				<p class="text-sm text-gray-400 mb-3">
+					文件应包含 YAML front matter，格式如下：
+				</p>
+				<pre class="bg-slate-900 rounded-lg p-4 text-xs overflow-x-auto"><code class="text-gray-300">---
+title: "文章标题"
+date: 2024-01-01
+tags: ["标签1", "标签2"]
+category: tech
+description: "文章描述"
+---
+
+正文内容...</code></pre>
+			</div>
+			
+			<div class="flex flex-wrap gap-4">
+				<button 
+					type="submit" 
+					class="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-semibold rounded-xl shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all"
+				>
+					上传并创建文章
+				</button>
+				<a 
+					href="{% url 'posts:admin_posts' %}" 
+					class="px-6 py-3 bg-indigo-900/50 border border-purple-500/30 text-gray-300 font-semibold rounded-xl hover:bg-indigo-800/50 transition-colors text-center"
+				>
+					文章列表
+				</a>
+				<a 
+					href="/admin/" 
+					class="px-6 py-3 bg-indigo-900/50 border border-purple-500/30 text-gray-300 font-semibold rounded-xl hover:bg-indigo-800/50 transition-colors text-center"
+				>
+					Django Admin
+				</a>
+			</div>
+		</form>
+	</div>
+</div>
+{% endblock %}

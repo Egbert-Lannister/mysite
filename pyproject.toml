@@ -17,6 +17,8 @@ whitenoise = "^6.7.0"
 markdown = "^3.6"
 PyYAML = "^6.0.2"
 django-browser-reload = "^1.12.1"
+django-unfold = "^0.76.0"
+gunicorn = "^23.0.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.8.0"
