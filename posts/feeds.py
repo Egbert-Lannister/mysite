@@ -4,9 +4,9 @@ from .models import Post
 
 
 class LatestPostsFeed(Feed):
-    title = "TechBlog RSS"
-    link = "/rss.xml"
-    description = "Latest posts"
+    title = "Egbert's TechBlog"
+    link = "/techblog/"
+    description = "分享技术见解与学习心得"
 
     def items(self):
         return Post.objects.filter(published=True).order_by("-date")[:30]
@@ -15,7 +15,7 @@ class LatestPostsFeed(Feed):
         return item.title
 
     def item_description(self, item: Post):
-        return item.description
+        return item.description or item.title
 
     def item_link(self, item: Post):
-        return reverse("post_detail", args=[item.slug])
+        return reverse("posts:post_detail", args=[item.slug])
