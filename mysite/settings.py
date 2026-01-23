@@ -62,10 +62,13 @@ INSTALLED_APPS = [
     'django.contrib.postgres',
     'taggit',
     'tailwind',
-    'django_browser_reload',
     'posts',
     'theme',
 ]
+
+# Only add browser reload in development
+if DEBUG:
+    INSTALLED_APPS.append('django_browser_reload')
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -76,8 +79,11 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django_browser_reload.middleware.BrowserReloadMiddleware',
 ]
+
+# Only add browser reload middleware in development
+if DEBUG:
+    MIDDLEWARE.append('django_browser_reload.middleware.BrowserReloadMiddleware')
 
 ROOT_URLCONF = 'mysite.urls'
 
