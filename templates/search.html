@@ -3,8 +3,8 @@
 {% block content %}
 <!-- 页面标题 -->
 <div class="text-center mb-12">
-	<div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-purple-500/20 border border-purple-500/30 mb-4">
-		<svg class="w-8 h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+	<div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-purple-100 dark:bg-purple-500/20 border border-purple-200 dark:border-purple-500/30 mb-4">
+		<svg class="w-8 h-8 text-purple-500 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
 		</svg>
 	</div>
@@ -12,43 +12,41 @@
 		<span class="text-gradient">搜索结果</span>
 	</h1>
 	{% if query %}
-	<p class="text-gray-400 text-lg">关键词：<span class="text-purple-400 font-semibold">"{{ query }}"</span></p>
+	<p class="text-gray-500 dark:text-gray-400 text-lg">关键词：<span class="text-purple-600 dark:text-purple-400 font-semibold">"{{ query }}"</span></p>
 	{% else %}
-	<p class="text-gray-400 text-lg">请输入搜索关键词</p>
+	<p class="text-gray-500 dark:text-gray-400 text-lg">请输入搜索关键词</p>
 	{% endif %}
 </div>
 
 {% if query and posts %}
-<!-- 结果数量 -->
 <div class="mb-6">
-	<p class="text-gray-400 text-sm">找到 <span class="text-purple-400 font-semibold">{{ posts|length }}</span> 篇相关文章</p>
+	<p class="text-gray-500 dark:text-gray-400 text-sm">找到 <span class="text-purple-600 dark:text-purple-400 font-semibold">{{ posts|length }}</span> 篇相关文章</p>
 </div>
 
-<!-- 文章网格 -->
 <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
 	{% for post in posts %}
-	<article class="group bg-indigo-950/50 backdrop-blur border border-purple-500/20 rounded-2xl overflow-hidden hover:border-purple-500/40 hover:bg-indigo-900/50 transition-all duration-300 card-shine">
+	<article class="group bg-white dark:bg-indigo-950/50 backdrop-blur border border-gray-200 dark:border-purple-500/20 rounded-2xl overflow-hidden hover:border-purple-300 dark:hover:border-purple-500/40 hover:bg-gray-50 dark:hover:bg-indigo-900/50 transition-all duration-300 card-shine shadow-sm">
 		<div class="h-1.5 bg-gradient-to-r {% if post.category == 'tech' %}from-blue-500 via-purple-500 to-pink-500{% else %}from-pink-500 via-purple-500 to-blue-500{% endif %}"></div>
 		
 		<div class="p-6">
 			<div class="flex items-center justify-between mb-4">
-				<span class="px-3 py-1 text-xs font-semibold rounded-full {% if post.category == 'tech' %}bg-blue-500/20 text-blue-300 border border-blue-500/30{% else %}bg-pink-500/20 text-pink-300 border border-pink-500/30{% endif %}">
+				<span class="px-3 py-1 text-xs font-semibold rounded-full {% if post.category == 'tech' %}bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-300 border border-blue-200 dark:border-blue-500/30{% else %}bg-pink-100 dark:bg-pink-500/20 text-pink-600 dark:text-pink-300 border border-pink-200 dark:border-pink-500/30{% endif %}">
 					{{ post.category|title }}
 				</span>
-				<time class="text-sm text-gray-500">{{ post.date|date:"Y-m-d" }}</time>
+				<time class="text-sm text-gray-400 dark:text-gray-500">{{ post.date|date:"Y-m-d" }}</time>
 			</div>
 			
-			<h2 class="text-xl font-semibold text-white mb-3 group-hover:text-purple-300 transition-colors line-clamp-2">
+			<h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-3 group-hover:text-purple-600 dark:group-hover:text-purple-300 transition-colors line-clamp-2">
 				<a href="{% url 'posts:post_detail' post.slug %}" class="hover:underline decoration-purple-500/50 underline-offset-4">
 					{{ post.title }}
 				</a>
 			</h2>
 			
 			{% if post.description %}
-			<p class="text-gray-400 text-sm mb-4 line-clamp-2 leading-relaxed">{{ post.description }}</p>
+			<p class="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2 leading-relaxed">{{ post.description }}</p>
 			{% endif %}
 			
-			<a href="{% url 'posts:post_detail' post.slug %}" class="inline-flex items-center text-sm font-medium text-purple-400 hover:text-purple-300 transition-colors group/link">
+			<a href="{% url 'posts:post_detail' post.slug %}" class="inline-flex items-center text-sm font-medium text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors group/link">
 				阅读全文
 				<svg class="ml-1.5 w-4 h-4 transform group-hover/link:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
@@ -60,15 +58,14 @@
 </div>
 
 {% elif query %}
-<!-- 无结果 -->
 <div class="max-w-md mx-auto text-center py-16">
-	<div class="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 border border-purple-500/30 flex items-center justify-center">
-		<svg class="w-10 h-10 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+	<div class="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-purple-100 dark:from-purple-500/20 to-blue-100 dark:to-blue-500/20 border border-purple-200 dark:border-purple-500/30 flex items-center justify-center">
+		<svg class="w-10 h-10 text-purple-500 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
 		</svg>
 	</div>
-	<h3 class="text-xl font-semibold text-white mb-2">未找到相关文章</h3>
-	<p class="text-gray-400 mb-6">试试其他关键词吧</p>
+	<h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">未找到相关文章</h3>
+	<p class="text-gray-500 dark:text-gray-400 mb-6">试试其他关键词吧</p>
 	<a href="{% url 'posts:index' %}" class="inline-flex items-center px-6 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white rounded-full shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all font-medium">
 		<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
@@ -78,15 +75,14 @@
 </div>
 
 {% else %}
-<!-- 提示输入 -->
 <div class="max-w-md mx-auto text-center py-16">
-	<div class="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 border border-purple-500/30 flex items-center justify-center">
-		<svg class="w-10 h-10 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+	<div class="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-purple-100 dark:from-purple-500/20 to-blue-100 dark:to-blue-500/20 border border-purple-200 dark:border-purple-500/30 flex items-center justify-center">
+		<svg class="w-10 h-10 text-purple-500 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
 		</svg>
 	</div>
-	<h3 class="text-xl font-semibold text-white mb-2">开始搜索</h3>
-	<p class="text-gray-400">在上方搜索框输入关键词</p>
+	<h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">开始搜索</h3>
+	<p class="text-gray-500 dark:text-gray-400">在上方搜索框输入关键词</p>
 </div>
 {% endif %}
 {% endblock %}
