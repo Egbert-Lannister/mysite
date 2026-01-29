@@ -1,37 +1,51 @@
-# Egbert's Blog
+# Egbert 技术博客
 
-一个基于 Django 构建的现代技术博客，支持 Markdown 写作、标签管理、全文搜索和 RSS 订阅。
+一个现代化的 Django 技术博客，支持 Markdown 写作、暗黑模式和精美 UI。
 
 ## 功能特性
 
-- **Markdown 支持** - 使用带 YAML front matter 的 Markdown 写作
-- **标签系统** - 使用 django-taggit 管理文章标签
-- **全文搜索** - PostgreSQL 全文搜索（支持 SQLite 回退）
-- **RSS 订阅** - 自动生成 RSS 源，访问 `/rss.xml`
-- **现代化后台** - 基于 django-unfold 的美观管理界面
-- **响应式设计** - 基于 Tailwind CSS 的移动端适配
+- **Markdown + YAML 元数据**：使用 Markdown 编写文章，支持 YAML front matter
+- **ZIP 包上传**：支持上传包含图片的 ZIP 压缩包
+- **内容去重**：通过 SHA256 哈希自动检测重复内容
+- **暗黑/亮色模式**：跟随系统偏好，支持手动切换
+- **Giscus 评论**：基于 GitHub Discussions 的评论系统
+- **代码高亮**：语法高亮 + 一键复制代码
+- **自动目录**：长文章自动生成目录导航
+- **社交分享**：复制链接、微信二维码、Twitter/X 分享
+- **RSS 订阅**：完整的 RSS 支持
+- **全文搜索**：PostgreSQL 全文搜索（支持 SQLite 降级）
+- **现代后台**：Django Unfold 管理界面
 
 ## 技术栈
 
-- **后端**: Django 5.2, Gunicorn
-- **数据库**: PostgreSQL（生产）/ SQLite（开发）
-- **后台**: django-unfold
-- **样式**: Tailwind CSS
-- **静态文件**: WhiteNoise
+| 组件 | 技术 |
+|------|------|
+| 后端 | Django 5.2 |
+| 前端 | Tailwind CSS (CDN) |
+| 数据库 | PostgreSQL / SQLite |
+| 后台 UI | django-unfold |
+| 标签 | django-taggit |
+| 静态文件 | WhiteNoise |
+| 服务器 | Gunicorn + Nginx |
+| SSL | Let's Encrypt |
 
 ## 快速开始
 
 ### 环境要求
 
 - Python 3.11+
-- PostgreSQL（可选，用于生产环境）
+- PostgreSQL（可选，开发环境可用 SQLite）
 
 ### 安装步骤
 
 ```bash
 # 克隆仓库
-git clone https://github.com/your-username/mysite.git
+git clone https://github.com/Egbert-Lannister/mysite.git
 cd mysite
+
+# 创建虚拟环境
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
 
 # 安装依赖
 pip install -r requirements.txt
@@ -39,141 +53,95 @@ pip install -r requirements.txt
 # 运行数据库迁移
 python manage.py migrate
 
-# 创建超级用户
+# 创建管理员账号
 python manage.py createsuperuser
 
 # 启动开发服务器
 python manage.py runserver
 ```
 
-### 环境变量配置
+### 生产部署
 
 ```bash
-SECRET_KEY=your-secret-key
-DEBUG=True
-DATABASE_URL=postgres://user:pass@localhost:5432/dbname
+# 收集静态文件
+python manage.py collectstatic --noinput
+
+# 使用 Gunicorn 启动
+gunicorn mysite.wsgi --bind 127.0.0.1:8000 --workers 3 --timeout 60
 ```
 
 ## 项目结构
 
 ```
 mysite/
-├── content/              # Markdown 源文件
-│   ├── tech/            # 技术文章
-│   └── paper/           # 论文笔记
 ├── mysite/              # Django 项目配置
-├── posts/               # 博客文章应用
-│   ├── admin.py         # 后台管理配置
-│   ├── models.py        # 文章模型
-│   ├── views.py         # 视图函数
-│   └── feeds.py         # RSS 订阅
-├── static/              # 静态文件
+│   ├── settings.py      # 主配置文件
+│   ├── urls.py          # URL 路由
+│   └── admin_config.py  # Unfold 后台回调
+├── posts/               # 博客应用
+│   ├── models.py        # Post 模型（含 content_hash）
+│   ├── views.py         # 视图（含上传逻辑）
+│   ├── admin.py         # 后台（支持 ZIP 上传）
+│   ├── feeds.py         # RSS 订阅
+│   └── utils.py         # Markdown 渲染、TOC 生成
 ├── templates/           # HTML 模板
-├── theme/               # Tailwind 主题应用
-├── manage.py
-├── requirements.txt
-└── Procfile             # 部署配置
+│   ├── base.html        # 基础布局（暗黑模式）
+│   ├── detail.html      # 文章页（TOC、Giscus）
+│   └── admin/           # 自定义后台模板
+├── content/             # 示例 Markdown 文章
+├── media/               # 上传的图片
+└── staticfiles/         # 收集的静态文件
 ```
 
-## 后台管理功能
-
-访问 `/admin/` 进入管理后台：
-
-- **内容管理**
-  - 创建、编辑、删除文章
-  - 直接上传 Markdown 文件
-  - 批量发布/取消发布
-  
-- **快捷操作**
-  - 上传 Markdown 文章
-  - 预览文章列表
-
-- **标签管理**
-  - 创建和管理标签
-  - 查看每个标签的文章数量
-
 ## Markdown 格式
-
-文章支持 YAML front matter：
 
 ```markdown
 ---
 title: "文章标题"
 date: 2024-01-15
-tags: ["python", "django"]
+tags: ["python", "django", "教程"]
 category: tech
 description: "文章简介"
 slug: custom-url-slug
 ---
 
-这里是 Markdown 正文内容...
+这里是正文内容...
+
+## 二级标题
+
+### 三级标题
+
+![图片说明](./assets/image.png)
 ```
 
-### 导入 Markdown 文件
+## 环境变量
 
-```bash
-# 从 content/ 文件夹导入所有 Markdown 文件
-python manage.py loadmd
-```
+| 变量名 | 说明 | 默认值 |
+|--------|------|--------|
+| `SECRET_KEY` | Django 密钥 | (开发密钥) |
+| `DEBUG` | 调试模式 | `False` |
+| `DATABASE_URL` | 数据库连接 URL | SQLite |
+| `GISCUS_REPO` | GitHub 仓库（评论用） | - |
+| `GISCUS_REPO_ID` | Giscus 仓库 ID | - |
+| `GISCUS_CATEGORY_ID` | Giscus 分类 ID | - |
 
-## 部署指南
+## API 端点
 
-### 使用 Gunicorn（生产环境）
-
-```bash
-# 安装 gunicorn
-pip install gunicorn
-
-# 启动服务
-gunicorn mysite.wsgi:application --bind 0.0.0.0:8000
-```
-
-### Nginx 配置示例
-
-```nginx
-server {
-    listen 80;
-    server_name your-domain.com;
-
-    location /static/ {
-        alias /path/to/mysite/staticfiles/;
-    }
-
-    location / {
-        proxy_pass http://127.0.0.1:8000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
-}
-```
-
-### 收集静态文件
-
-```bash
-python manage.py collectstatic --noinput
-```
-
-## API 接口
-
-| 路径 | 说明 |
+| 端点 | 说明 |
 |------|------|
 | `/techblog/` | 首页文章列表 |
-| `/techblog/tech/` | 技术文章 |
-| `/techblog/paper/` | 论文笔记 |
-| `/techblog/<slug>/` | 文章详情 |
+| `/techblog/<slug>/` | 文章详情页 |
+| `/techblog/tech/` | 技术文章分类 |
+| `/techblog/paper/` | 论文笔记分类 |
 | `/techblog/tags/<tag>/` | 按标签筛选 |
-| `/techblog/search/?q=` | 搜索文章 |
+| `/techblog/search/?q=` | 搜索结果 |
 | `/rss.xml` | RSS 订阅 |
 | `/admin/` | 管理后台 |
 
-## 开源协议
+## 许可证
 
 MIT License
 
-## 参与贡献
+## 作者
 
-1. Fork 本仓库
-2. 创建特性分支 (`git checkout -b feature/amazing`)
-3. 提交更改 (`git commit -m '添加新功能'`)
-4. 推送分支 (`git push origin feature/amazing`)
-5. 发起 Pull Request
+Egbert Lannister

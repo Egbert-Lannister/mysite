@@ -1,44 +1,48 @@
+# ===========================================
+# Egbert's Blog - Git Ignore
+# ===========================================
+
 # Python
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
+*.egg
 *.egg-info/
-.eggs/
 dist/
 build/
-*.egg
-pip-log.txt
-pip-delete-this-directory.txt
+eggs/
+develop-eggs/
+.eggs/
 
 # Virtual environments
 venv/
 .venv/
 env/
+.env/
 ENV/
 
-# Environment variables
+# Environment files (contains secrets)
 .env
-.env.*
-!.env.example
+.env.local
+.env.*.local
+*.env
 
-# Django
-*.log
-local_settings.py
+# Database
 *.sqlite3
-staticfiles/
-media/
-*.pot
-*.mo
+db.sqlite3
 
-# Django migrations (uncomment if you want to ignore)
-# */migrations/*.py
-# !*/migrations/__init__.py
+# Static files (generated)
+staticfiles/
+static/css/tailwind-output.css
+
+# Media files (user uploads)
+media/
 
 # IDE
-.idea/
 .vscode/
+.idea/
 *.swp
 *.swo
 *~
@@ -46,60 +50,43 @@ media/
 .pydevproject
 .settings/
 
-# OS
+# macOS
 .DS_Store
-.DS_Store?
+.AppleDouble
+.LSOverride
 ._*
+.Spotlight-V100
+.Trashes
+
+# Windows
 Thumbs.db
 ehthumbs.db
 Desktop.ini
 
 # Testing
 .coverage
-.coverage.*
+.pytest_cache/
 htmlcov/
 .tox/
 .nox/
-.pytest_cache/
-nosetests.xml
 coverage.xml
 *.cover
-.hypothesis/
 
 # Type checking
 .mypy_cache/
 .dmypy.json
-dmypy.json
 
-# Poetry
-# Keep poetry.lock for reproducible builds
-
-# Jupyter Notebook
-.ipynb_checkpoints/
+# Logs
+*.log
+gunicorn.log
+logs/
 
 # Celery
 celerybeat-schedule
 celerybeat.pid
 
-# Gunicorn
-gunicorn.log
-gunicorn-error.log
-access.log
-
-# Tailwind
-theme/static_src/node_modules/
-theme/static/css/dist/
-
-# Secrets (NEVER commit these)
-*.pem
-*.key
-credentials.json
-secrets.json
-
-# Backup files
-*.bak
-*.backup
-
 # Temporary files
 *.tmp
 *.temp
+tmp/
+temp/

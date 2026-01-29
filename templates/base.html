@@ -1,18 +1,63 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" class="scroll-smooth">
 <head>
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title>{% block title %}TechBlog{% endblock %}</title>
 	<meta name="description" content="{% block meta_description %}{% endblock %}">
 	<link rel="alternate" type="application/rss+xml" title="RSS" href="/rss.xml" />
-	<script src="https://cdn.tailwindcss.com"></script>
+	<!-- 关键 CSS：内联最小样式，防止 FOUC (Flash of Unstyled Content) -->
+	<style>
+		/* 关键渲染路径 CSS - 立即应用 */
+		html { scroll-behavior: smooth; }
+		body { 
+			font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+			margin: 0; 
+			min-height: 100vh;
+			background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f1f5f9 100%);
+			color: #1f2937;
+		}
+		.dark body {
+			background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%);
+			color: #f3f4f6;
+		}
+		/* 页面加载指示器 */
+		.page-loading { 
+			position: fixed; top: 0; left: 0; right: 0; height: 3px; 
+			background: linear-gradient(90deg, #a855f7, #3b82f6);
+			animation: loading 1s ease-in-out infinite;
+			z-index: 9999;
+		}
+		@keyframes loading {
+			0% { transform: translateX(-100%); }
+			100% { transform: translateX(100%); }
+		}
+		.page-loaded .page-loading { display: none; }
+	</style>
+	<!-- 预连接到 CDN 域名，加速资源加载 -->
+	<link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin>
+	<link rel="dns-prefetch" href="https://cdn.tailwindcss.com">
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link rel="preconnect" href="https://cdn.bootcdn.net" crossorigin>
+	<!-- Tailwind CSS -->
+	<script src="https://cdn.tailwindcss.com"></script>
+	<!-- Google Fonts with display=swap for faster text rendering -->
 	<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 	{% block extra_head %}{% endblock %}
 	<script>
+		// Theme initialization - run before page renders to prevent flash
+		(function() {
+			const stored = localStorage.getItem('theme');
+			const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+			const isDark = stored === 'dark' || (!stored && prefersDark);
+			if (isDark) {
+				document.documentElement.classList.add('dark');
+			}
+		})();
+		
 		tailwind.config = {
+			darkMode: 'class',
 			theme: {
 				extend: {
 					fontFamily: {
@@ -21,16 +66,9 @@
 					},
 					colors: {
 						primary: {
-							50: '#faf5ff',
-							100: '#f3e8ff',
-							200: '#e9d5ff',
-							300: '#d8b4fe',
-							400: '#c084fc',
-							500: '#a855f7',
-							600: '#9333ea',
-							700: '#7c3aed',
-							800: '#6b21a8',
-							900: '#581c87',
+							50: '#faf5ff', 100: '#f3e8ff', 200: '#e9d5ff',
+							300: '#d8b4fe', 400: '#c084fc', 500: '#a855f7',
+							600: '#9333ea', 700: '#7c3aed', 800: '#6b21a8', 900: '#581c87',
 						}
 					}
 				}
@@ -38,83 +76,63 @@
 		}
 	</script>
 	<style>
-		body {
-			font-family: 'Noto Sans SC', system-ui, sans-serif;
-		}
+		body { font-family: 'Noto Sans SC', system-ui, sans-serif; }
 		
+		/* Light mode gradient */
 		.gradient-bg {
+			background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f1f5f9 100%);
+		}
+		.dark .gradient-bg {
 			background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%);
 		}
 		
-		.card-shine {
-			position: relative;
-			overflow: hidden;
-		}
-		
+		.card-shine { position: relative; overflow: hidden; }
 		.card-shine::before {
-			content: '';
-			position: absolute;
-			top: 0;
-			left: -100%;
-			width: 100%;
-			height: 100%;
+			content: ''; position: absolute; top: 0; left: -100%;
+			width: 100%; height: 100%;
 			background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
 			transition: left 0.5s;
 		}
-		
-		.card-shine:hover::before {
-			left: 100%;
-		}
+		.card-shine:hover::before { left: 100%; }
 		
 		.text-gradient {
 			background: linear-gradient(135deg, #c084fc 0%, #818cf8 50%, #60a5fa 100%);
-			-webkit-background-clip: text;
-			-webkit-text-fill-color: transparent;
-			background-clip: text;
+			-webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 		}
 		
-		.nav-link {
-			position: relative;
-		}
-		
+		.nav-link { position: relative; }
 		.nav-link::after {
-			content: '';
-			position: absolute;
-			bottom: -4px;
-			left: 0;
-			width: 0;
-			height: 2px;
+			content: ''; position: absolute; bottom: -4px; left: 0;
+			width: 0; height: 2px;
 			background: linear-gradient(90deg, #c084fc, #60a5fa);
 			transition: width 0.3s ease;
 		}
+		.nav-link:hover::after { width: 100%; }
 		
-		.nav-link:hover::after {
-			width: 100%;
-		}
+		/* Scrollbar */
+		::-webkit-scrollbar { width: 8px; height: 8px; }
+		::-webkit-scrollbar-track { background: #f1f5f9; }
+		.dark ::-webkit-scrollbar-track { background: #1e1b4b; }
+		::-webkit-scrollbar-thumb { background: #a855f7; border-radius: 4px; }
+		::-webkit-scrollbar-thumb:hover { background: #9333ea; }
 		
-		/* 滚动条样式 */
-		::-webkit-scrollbar {
-			width: 8px;
-			height: 8px;
+		/* Toast notification */
+		.toast {
+			position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+			padding: 12px 24px; border-radius: 8px; z-index: 9999;
+			background: #10b981; color: white; font-weight: 500;
+			box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+			animation: toast-in 0.3s ease, toast-out 0.3s ease 2.5s forwards;
 		}
-		
-		::-webkit-scrollbar-track {
-			background: #1e1b4b;
-		}
-		
-		::-webkit-scrollbar-thumb {
-			background: #6b21a8;
-			border-radius: 4px;
-		}
-		
-		::-webkit-scrollbar-thumb:hover {
-			background: #7c3aed;
-		}
+		@keyframes toast-in { from { opacity: 0; transform: translateX(-50%) translateY(20px); } }
+		@keyframes toast-out { to { opacity: 0; transform: translateX(-50%) translateY(20px); } }
 	</style>
 </head>
-<body class="gradient-bg min-h-screen text-gray-100">
+<body class="gradient-bg min-h-screen text-gray-800 dark:text-gray-100 transition-colors duration-300">
+	<!-- 页面加载指示器 -->
+	<div class="page-loading" id="page-loading"></div>
 	<!-- 导航栏 -->
-	<header class="sticky top-0 z-50 backdrop-blur-xl bg-indigo-950/80 border-b border-purple-500/20">
+	<header class="sticky top-0 z-50 backdrop-blur-xl bg-white/80 dark:bg-indigo-950/80 border-b border-gray-200 dark:border-purple-500/20 transition-colors">
 		<div class="max-w-6xl mx-auto px-4 sm:px-6">
 			<div class="flex items-center justify-between h-16">
 				<!-- Logo -->
@@ -127,52 +145,60 @@
 				
 				<!-- 导航链接 -->
 				<nav class="hidden md:flex items-center gap-8">
-					<a href="{% url 'posts:tech_list' %}" class="nav-link text-gray-300 hover:text-white font-medium transition-colors">
-						技术
-					</a>
-					<a href="{% url 'posts:paper_list' %}" class="nav-link text-gray-300 hover:text-white font-medium transition-colors">
-						论文
-					</a>
-					<a href="/rss.xml" class="nav-link text-gray-300 hover:text-white font-medium transition-colors flex items-center gap-1">
+					<a href="{% url 'posts:tech_list' %}" class="nav-link text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white font-medium transition-colors">技术</a>
+					<a href="{% url 'posts:paper_list' %}" class="nav-link text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white font-medium transition-colors">论文</a>
+					<a href="/rss.xml" class="nav-link text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white font-medium transition-colors flex items-center gap-1">
 						<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19 7.38 20 6.18 20C5 20 4 19 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1Z"/></svg>
 						RSS
 					</a>
 				</nav>
 				
-				<!-- 搜索框 -->
-				<form action="{% url 'posts:search' %}" method="get" class="flex items-center gap-2">
-					<div class="relative">
-						<input 
-							type="search" 
-							name="q" 
-							placeholder="搜索文章..." 
-							value="{{ request.GET.q }}"
-							class="w-48 lg:w-64 px-4 py-2 pl-10 bg-indigo-900/50 border border-purple-500/30 rounded-full text-sm text-white placeholder-gray-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 transition-all"
-						>
-						<svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+				<div class="flex items-center gap-4">
+					<!-- 主题切换按钮 -->
+					<button id="theme-toggle" class="p-2 rounded-full bg-gray-100 dark:bg-indigo-900/50 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-indigo-800 transition-colors" aria-label="切换主题">
+						<!-- 太阳图标 (暗色模式显示) -->
+						<svg class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
 						</svg>
-					</div>
-					<button type="submit" class="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white text-sm font-medium rounded-full shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all">
-						搜索
+						<!-- 月亮图标 (亮色模式显示) -->
+						<svg class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+						</svg>
 					</button>
-				</form>
-				
-				<!-- 移动端菜单按钮 -->
-				<button class="md:hidden p-2 text-gray-300 hover:text-white" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
-					<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-					</svg>
-				</button>
+					
+					<!-- 搜索框 -->
+					<form action="{% url 'posts:search' %}" method="get" class="hidden sm:flex items-center gap-2">
+						<div class="relative">
+							<input type="search" name="q" placeholder="搜索文章..." value="{{ request.GET.q }}"
+								class="w-48 lg:w-64 px-4 py-2 pl-10 bg-gray-100 dark:bg-indigo-900/50 border border-gray-200 dark:border-purple-500/30 rounded-full text-sm text-gray-800 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 transition-all">
+							<svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+							</svg>
+						</div>
+						<button type="submit" class="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white text-sm font-medium rounded-full shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all">搜索</button>
+					</form>
+					
+					<!-- 移动端菜单按钮 -->
+					<button class="md:hidden p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
+						<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+						</svg>
+					</button>
+				</div>
 			</div>
 			
 			<!-- 移动端菜单 -->
 			<div id="mobile-menu" class="hidden md:hidden pb-4">
 				<nav class="flex flex-col gap-2">
-					<a href="{% url 'posts:tech_list' %}" class="px-4 py-2 text-gray-300 hover:text-white hover:bg-purple-500/20 rounded-lg transition-colors">技术</a>
-					<a href="{% url 'posts:paper_list' %}" class="px-4 py-2 text-gray-300 hover:text-white hover:bg-purple-500/20 rounded-lg transition-colors">论文</a>
-					<a href="/rss.xml" class="px-4 py-2 text-gray-300 hover:text-white hover:bg-purple-500/20 rounded-lg transition-colors">RSS</a>
+					<a href="{% url 'posts:tech_list' %}" class="px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-purple-500/20 rounded-lg transition-colors">技术</a>
+					<a href="{% url 'posts:paper_list' %}" class="px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-purple-500/20 rounded-lg transition-colors">论文</a>
+					<a href="/rss.xml" class="px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-purple-500/20 rounded-lg transition-colors">RSS</a>
 				</nav>
+				<!-- 移动端搜索 -->
+				<form action="{% url 'posts:search' %}" method="get" class="mt-4 flex gap-2 px-2">
+					<input type="search" name="q" placeholder="搜索..." class="flex-1 px-4 py-2 bg-gray-100 dark:bg-indigo-900/50 border border-gray-200 dark:border-purple-500/30 rounded-full text-sm">
+					<button type="submit" class="px-4 py-2 bg-purple-600 text-white text-sm rounded-full">搜索</button>
+				</form>
 			</div>
 		</div>
 	</header>
@@ -183,18 +209,18 @@
 	</main>
 	
 	<!-- 页脚 -->
-	<footer class="border-t border-purple-500/20 mt-auto">
+	<footer class="border-t border-gray-200 dark:border-purple-500/20 mt-auto transition-colors">
 		<div class="max-w-6xl mx-auto px-4 sm:px-6 py-8">
 			<div class="flex flex-col md:flex-row items-center justify-between gap-4">
 				<div class="flex items-center gap-2">
 					<div class="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
 						<span class="text-white font-bold text-sm">T</span>
 					</div>
-					<span class="text-gray-400 text-sm">© 2024 TechBlog</span>
+					<span class="text-gray-500 dark:text-gray-400 text-sm">© 2024 TechBlog</span>
 				</div>
-				<p class="text-gray-500 text-sm">分享技术见解，记录学习历程</p>
+				<p class="text-gray-400 dark:text-gray-500 text-sm">分享技术见解，记录学习历程</p>
 				<div class="flex items-center gap-4">
-					<a href="/rss.xml" class="text-gray-400 hover:text-purple-400 transition-colors">
+					<a href="/rss.xml" class="text-gray-400 hover:text-purple-500 dark:hover:text-purple-400 transition-colors">
 						<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19 7.38 20 6.18 20C5 20 4 19 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1Z"/></svg>
 					</a>
 				</div>
@@ -202,6 +228,56 @@
 		</div>
 	</footer>
 	
+	<!-- Toast container -->
+	<div id="toast-container"></div>
+	
+	<!-- Theme Toggle Script -->
+	<script>
+		const themeToggle = document.getElementById('theme-toggle');
+		
+		function setTheme(isDark) {
+			if (isDark) {
+				document.documentElement.classList.add('dark');
+				localStorage.setItem('theme', 'dark');
+			} else {
+				document.documentElement.classList.remove('dark');
+				localStorage.setItem('theme', 'light');
+			}
+			// Dispatch custom event for Giscus and other components
+			window.dispatchEvent(new CustomEvent('themechange', { detail: { isDark } }));
+		}
+		
+		themeToggle.addEventListener('click', () => {
+			const isDark = !document.documentElement.classList.contains('dark');
+			setTheme(isDark);
+		});
+		
+		// Listen for system theme changes
+		window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+			if (!localStorage.getItem('theme')) {
+				setTheme(e.matches);
+			}
+		});
+		
+		// Toast utility
+		window.showToast = function(message, type = 'success') {
+			const toast = document.createElement('div');
+			toast.className = 'toast';
+			toast.textContent = message;
+			if (type === 'error') toast.style.background = '#ef4444';
+			document.getElementById('toast-container').appendChild(toast);
+			setTimeout(() => toast.remove(), 3000);
+		};
+	</script>
+	
 	{% block extra_js %}{% endblock %}
+	
+	<!-- 页面加载完成后隐藏加载指示器 -->
+	<script>
+		window.addEventListener('load', function() {
+			document.body.classList.add('page-loaded');
+			document.getElementById('page-loading')?.remove();
+		});
+	</script>
 </body>
 </html>

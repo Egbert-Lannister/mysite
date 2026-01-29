@@ -1,37 +1,53 @@
-# Egbert's Blog
+# Egbert's TechBlog
 
-A modern tech blog built with Django, featuring Markdown support, tag management, full-text search, and RSS feed.
+[中文阅读](./README_zh.md)
+
+A modern Django-powered technical blog with Markdown support, dark mode, and a beautiful UI.
 
 ## Features
 
-- **Markdown Support** - Write posts in Markdown with YAML front matter
-- **Tag System** - Organize posts with tags using django-taggit
-- **Full-Text Search** - PostgreSQL full-text search (with SQLite fallback)
-- **RSS Feed** - Auto-generated RSS feed at `/rss.xml`
-- **Modern Admin UI** - Beautiful admin interface powered by django-unfold
-- **Responsive Design** - Mobile-friendly frontend with Tailwind CSS
+- **Markdown + YAML Front Matter**: Write posts in Markdown with metadata support
+- **ZIP Upload**: Upload articles with images as a ZIP package
+- **Content Deduplication**: Automatic detection of duplicate content via SHA256 hash
+- **Dark/Light Mode**: System-aware theme with manual toggle
+- **Giscus Comments**: GitHub Discussions-based commenting system
+- **Code Highlighting**: Syntax highlighting with one-click copy
+- **Auto TOC**: Automatic table of contents for long articles
+- **Social Sharing**: Copy link, WeChat QR code, Twitter/X sharing
+- **RSS Feed**: Full RSS support for feed readers
+- **Full-text Search**: PostgreSQL-powered search (with SQLite fallback)
+- **Modern Admin**: Django Unfold admin interface
 
 ## Tech Stack
 
-- **Backend**: Django 5.2, Gunicorn
-- **Database**: PostgreSQL (production) / SQLite (development)
-- **Admin**: django-unfold
-- **Styling**: Tailwind CSS
-- **Static Files**: WhiteNoise
+| Component | Technology |
+|-----------|------------|
+| Backend | Django 5.2 |
+| Frontend | Tailwind CSS (CDN) |
+| Database | PostgreSQL / SQLite |
+| Admin UI | django-unfold |
+| Tags | django-taggit |
+| Static Files | WhiteNoise |
+| Server | Gunicorn + Nginx |
+| SSL | Let's Encrypt |
 
 ## Quick Start
 
 ### Prerequisites
 
 - Python 3.11+
-- PostgreSQL (optional, for production)
+- PostgreSQL (optional, SQLite works for development)
 
 ### Installation
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/mysite.git
+git clone https://github.com/Egbert-Lannister/mysite.git
 cd mysite
+
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 # Install dependencies
 pip install -r requirements.txt
@@ -46,134 +62,88 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
-### Environment Variables
+### Production Deployment
 
 ```bash
-SECRET_KEY=your-secret-key
-DEBUG=True
-DATABASE_URL=postgres://user:pass@localhost:5432/dbname
+# Collect static files
+python manage.py collectstatic --noinput
+
+# Start with Gunicorn
+gunicorn mysite.wsgi --bind 127.0.0.1:8000 --workers 3 --timeout 60
 ```
 
 ## Project Structure
 
 ```
 mysite/
-├── content/              # Markdown source files
-│   ├── tech/            # Tech articles
-│   └── paper/           # Paper notes
 ├── mysite/              # Django project settings
-├── posts/               # Blog posts app
-│   ├── admin.py         # Admin configuration
-│   ├── models.py        # Post model
-│   ├── views.py         # View functions
-│   └── feeds.py         # RSS feed
-├── static/              # Static files
+│   ├── settings.py      # Main configuration
+│   ├── urls.py          # URL routing
+│   └── admin_config.py  # Unfold admin callbacks
+├── posts/               # Blog app
+│   ├── models.py        # Post model with content_hash
+│   ├── views.py         # Views including upload logic
+│   ├── admin.py         # Admin with ZIP upload support
+│   ├── feeds.py         # RSS feed
+│   └── utils.py         # Markdown rendering, TOC generation
 ├── templates/           # HTML templates
-├── theme/               # Tailwind theme app
-├── manage.py
-├── requirements.txt
-└── Procfile             # Deployment config
+│   ├── base.html        # Base layout with dark mode
+│   ├── detail.html      # Article page with TOC, Giscus
+│   └── admin/           # Custom admin templates
+├── content/             # Sample markdown posts
+├── media/               # Uploaded images
+└── staticfiles/         # Collected static files
 ```
-
-## Admin Features
-
-Access the admin panel at `/admin/` with these features:
-
-- **Content Management**
-  - Create, edit, delete posts
-  - Upload Markdown files directly
-  - Bulk publish/unpublish actions
-  
-- **Quick Actions**
-  - Upload Markdown articles
-  - Preview post list
-
-- **Tag Management**
-  - Create and manage tags
-  - View post counts per tag
 
 ## Markdown Format
 
-Posts support YAML front matter:
-
 ```markdown
 ---
-title: "Your Post Title"
+title: "Article Title"
 date: 2024-01-15
-tags: ["python", "django"]
+tags: ["python", "django", "tutorial"]
 category: tech
-description: "A brief description"
+description: "A brief description of the article"
 slug: custom-url-slug
 ---
 
 Your markdown content here...
+
+## Heading 2
+
+### Heading 3
+
+![Image](./assets/image.png)
 ```
 
-### Import Markdown Files
+## Environment Variables
 
-```bash
-# Import all markdown files from content/ folder
-python manage.py loadmd
-```
-
-## Deployment
-
-### Using Gunicorn (Production)
-
-```bash
-# Install gunicorn
-pip install gunicorn
-
-# Run with gunicorn
-gunicorn mysite.wsgi:application --bind 0.0.0.0:8000
-```
-
-### Nginx Configuration
-
-```nginx
-server {
-    listen 80;
-    server_name your-domain.com;
-
-    location /static/ {
-        alias /path/to/mysite/staticfiles/;
-    }
-
-    location / {
-        proxy_pass http://127.0.0.1:8000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
-}
-```
-
-### Collect Static Files
-
-```bash
-python manage.py collectstatic --noinput
-```
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `SECRET_KEY` | Django secret key | (dev key) |
+| `DEBUG` | Debug mode | `False` |
+| `DATABASE_URL` | Database connection URL | SQLite |
+| `GISCUS_REPO` | GitHub repo for comments | - |
+| `GISCUS_REPO_ID` | Giscus repo ID | - |
+| `GISCUS_CATEGORY_ID` | Giscus category ID | - |
 
 ## API Endpoints
 
 | Endpoint | Description |
 |----------|-------------|
-| `/techblog/` | Homepage with post list |
-| `/techblog/tech/` | Tech articles |
-| `/techblog/paper/` | Paper notes |
-| `/techblog/<slug>/` | Post detail |
-| `/techblog/tags/<tag>/` | Posts by tag |
-| `/techblog/search/?q=` | Search posts |
+| `/techblog/` | Homepage with article list |
+| `/techblog/<slug>/` | Article detail page |
+| `/techblog/tech/` | Tech category articles |
+| `/techblog/paper/` | Paper category articles |
+| `/techblog/tags/<tag>/` | Articles by tag |
+| `/techblog/search/?q=` | Search results |
 | `/rss.xml` | RSS feed |
-| `/admin/` | Admin panel |
+| `/admin/` | Django admin |
 
 ## License
 
 MIT License
 
-## Contributing
+## Author
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing`)
-5. Open a Pull Request
+Egbert Lannister
