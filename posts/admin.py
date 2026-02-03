@@ -23,7 +23,7 @@ from taggit.admin import TagAdmin as BaseTagAdmin
 from taggit.models import Tag
 from taggit.utils import parse_tags
 import yaml
-from .models import Post, generate_unique_slug, compute_content_hash
+from .models import Post, Series, generate_unique_slug, generate_series_slug, compute_content_hash
 
 
 # =============================================================================
@@ -81,6 +81,54 @@ def make_published(modeladmin, request, queryset):
 def make_unpublished(modeladmin, request, queryset):
     count = queryset.update(published=False)
     modeladmin.message_user(request, f"已将 {count} 篇文章设为草稿")
+
+
+# =============================================================================
+# Series Admin
+# =============================================================================
+@admin.register(Series)
+class SeriesAdmin(ModelAdmin):
+    list_display = ("display_title", "display_post_count", "display_order", "display_featured", "display_updated")
+    list_filter = ("is_featured",)
+    search_fields = ("title", "slug", "description")  # 支持 autocomplete
+    prepopulated_fields = {"slug": ("title",)}
+    list_editable = ("order", "is_featured") if False else ()  # 通过 display 方法处理
+    ordering = ["order", "-created_at"]
+    
+    fieldsets = (
+        ('📚 基本信息', {
+            'fields': ('title', 'slug', 'description'),
+            'description': '设置系列的标题、链接别名和简介'
+        }),
+        ('🖼️ 展示设置', {
+            'fields': ('cover_image', 'order', 'is_featured'),
+            'description': '封面图片和排序设置'
+        }),
+    )
+    
+    @display(description="系列标题")
+    def display_title(self, obj):
+        return obj.title
+    
+    @display(description="文章数量")
+    def display_post_count(self, obj):
+        count = obj.post_count
+        return format_html('<span class="text-primary-600 font-semibold">{}</span> 篇', count)
+    
+    @display(description="排序")
+    def display_order(self, obj):
+        return obj.order
+    
+    @display(description="首页推荐", label={"是": "success", "否": "warning"})
+    def display_featured(self, obj):
+        return "是" if obj.is_featured else "否"
+    
+    @display(description="最近更新")
+    def display_updated(self, obj):
+        latest = obj.latest_post_date
+        if latest:
+            return latest.strftime("%Y-%m-%d")
+        return "-"
 
 
 # =============================================================================

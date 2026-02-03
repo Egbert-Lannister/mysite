@@ -15,7 +15,7 @@ from django.utils.text import slugify
 from taggit.utils import parse_tags
 import yaml
 
-from .models import Post, generate_unique_slug, compute_content_hash
+from .models import Post, Series, generate_unique_slug, generate_series_slug, compute_content_hash
 from .utils import render_markdown_with_toc
 
 
@@ -24,7 +24,14 @@ def index(request):
     paginator = Paginator(qs, 10)
     page = request.GET.get("page")
     posts = paginator.get_page(page)
-    return render(request, "index.html", {"posts": posts})
+    
+    # 获取首页推荐的系列（最多3个）
+    featured_series = Series.objects.filter(is_featured=True).order_by("order")[:3]
+    
+    return render(request, "index.html", {
+        "posts": posts,
+        "featured_series": featured_series,
+    })
 
 
 def category_list(request, category: str):
@@ -65,6 +72,26 @@ def search(request):
     return render(request, "search.html", {"posts": posts, "query": query})
 
 
+def series_list(request):
+    """系列列表页"""
+    series = Series.objects.all().order_by("order", "-created_at")
+    return render(request, "series_list.html", {"series_list": series})
+
+
+def series_detail(request, slug: str):
+    """系列详情页"""
+    series = get_object_or_404(Series, slug=slug)
+    posts = Post.objects.filter(
+        series=series,
+        published=True
+    ).order_by('series_order')
+    
+    return render(request, "series_detail.html", {
+        "series": series,
+        "posts": posts,
+    })
+
+
 def post_detail(request, slug: str):
     post = get_object_or_404(Post, slug=slug, published=True)
     
@@ -87,12 +114,39 @@ def post_detail(request, slug: str):
     # Check if Giscus is configured
     giscus_enabled = bool(giscus_config['repo'] and giscus_config['repo_id'])
     
+    # Series navigation
+    series_context = None
+    if post.series:
+        series_posts = Post.objects.filter(
+            series=post.series,
+            published=True
+        ).order_by('series_order')
+        
+        total_posts = series_posts.count()
+        current_index = None
+        
+        # 找到当前文章在系列中的位置
+        for idx, p in enumerate(series_posts, 1):
+            if p.pk == post.pk:
+                current_index = idx
+                break
+        
+        series_context = {
+            'series': post.series,
+            'posts': series_posts,
+            'total': total_posts,
+            'current_index': current_index,
+            'prev_post': post.get_series_prev(),
+            'next_post': post.get_series_next(),
+        }
+    
     return render(request, "detail.html", {
         "post": post,
         "html": html,
         "toc_items": toc_items,
         "giscus": giscus_config,
         "giscus_enabled": giscus_enabled,
+        "series_context": series_context,
     })
 
 
@@ -306,6 +360,35 @@ def process_markdown_content(text: str, images: list, temp_dir) -> tuple:
     if existing_by_hash:
         warnings.append(f"警告: 发现内容相同的文章「{existing_by_hash.title}」")
     
+    # Handle series from front matter
+    series_instance = None
+    series_order = None
+    series_name = meta.get("series")
+    if series_name:
+        series_name = str(series_name).strip()
+        series_slug = slugify(series_name)
+        if not series_slug:
+            series_slug = generate_series_slug(series_name)
+        
+        # 获取或创建系列
+        series_instance, series_created = Series.objects.get_or_create(
+            slug=series_slug,
+            defaults={
+                "title": series_name,
+                "description": f"自动创建的系列：{series_name}",
+            }
+        )
+        if series_created:
+            warnings.append(f"已自动创建系列「{series_name}」")
+        
+        # 处理 series_order
+        series_order_raw = meta.get("series_order")
+        if series_order_raw is not None:
+            try:
+                series_order = int(series_order_raw)
+            except (ValueError, TypeError):
+                warnings.append(f"series_order 值无效，已忽略: {series_order_raw}")
+    
     # Create or update post
     post, created = Post.objects.update_or_create(
         slug=slug,
@@ -316,6 +399,8 @@ def process_markdown_content(text: str, images: list, temp_dir) -> tuple:
             "date": date,
             "category": category,
             "published": True,
+            "series": series_instance,
+            "series_order": series_order,
         },
     )
     

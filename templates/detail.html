@@ -178,12 +178,105 @@
 		
 		<div class="h-px bg-gradient-to-r from-transparent via-purple-500/50 to-transparent mb-8"></div>
 		
+		{% if series_context %}
+		<!-- Series Info Banner -->
+		<div class="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border border-purple-200 dark:border-purple-500/30 rounded-2xl p-5 mb-8">
+			<div class="flex items-center justify-between flex-wrap gap-4">
+				<div class="flex items-center gap-3">
+					<div class="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white shadow-lg shadow-purple-500/25">
+						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+						</svg>
+					</div>
+					<div>
+						<p class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">本文属于系列</p>
+						<a href="{% url 'posts:series_detail' series_context.series.slug %}" class="font-semibold text-purple-700 dark:text-purple-300 hover:text-purple-600 dark:hover:text-purple-200 transition-colors">
+							{{ series_context.series.title }}
+						</a>
+					</div>
+				</div>
+				<div class="flex items-center gap-2">
+					<span class="px-3 py-1.5 bg-white dark:bg-indigo-950/50 rounded-full text-sm font-medium text-purple-600 dark:text-purple-300 border border-purple-200 dark:border-purple-500/30">
+						{{ series_context.current_index }} / {{ series_context.total }}
+					</span>
+					<button id="toggle-series-toc" class="px-3 py-1.5 bg-purple-100 dark:bg-purple-500/20 rounded-full text-sm font-medium text-purple-600 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-500/30 transition-colors flex items-center gap-1">
+						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+						</svg>
+						目录
+					</button>
+				</div>
+			</div>
+			
+			<!-- Series TOC (Collapsible) -->
+			<div id="series-toc" class="hidden mt-4 pt-4 border-t border-purple-200 dark:border-purple-500/30">
+				<div class="max-h-64 overflow-y-auto space-y-1">
+					{% for p in series_context.posts %}
+					<a href="{% url 'posts:post_detail' p.slug %}" 
+					   class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors {% if p.pk == post.pk %}bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-200{% else %}hover:bg-white/50 dark:hover:bg-indigo-950/30 text-gray-600 dark:text-gray-400{% endif %}">
+						<span class="flex-shrink-0 w-6 h-6 rounded text-xs font-semibold flex items-center justify-center {% if p.pk == post.pk %}bg-purple-500 text-white{% else %}bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300{% endif %}">
+							{% if p.series_order %}{{ p.series_order }}{% else %}{{ forloop.counter }}{% endif %}
+						</span>
+						<span class="truncate text-sm {% if p.pk == post.pk %}font-semibold{% endif %}">{{ p.title }}</span>
+						{% if p.pk == post.pk %}
+						<span class="flex-shrink-0 text-xs text-purple-500 dark:text-purple-400">(当前)</span>
+						{% endif %}
+					</a>
+					{% endfor %}
+				</div>
+			</div>
+		</div>
+		{% endif %}
+		
 		<!-- Article Content -->
 		<div class="bg-white dark:bg-indigo-950/50 backdrop-blur border border-gray-200 dark:border-purple-500/20 rounded-2xl p-6 md:p-10 mb-8 shadow-sm">
 			<div class="article-content text-gray-700 dark:text-gray-200">
 				{{ html|safe }}
 			</div>
 		</div>
+		
+		{% if series_context %}
+		<!-- Series Navigation (Prev/Next) -->
+		<div class="bg-white dark:bg-indigo-950/50 backdrop-blur border border-gray-200 dark:border-purple-500/20 rounded-2xl p-6 mb-8 shadow-sm">
+			<div class="flex flex-col sm:flex-row gap-4">
+				{% if series_context.prev_post %}
+				<a href="{% url 'posts:post_detail' series_context.prev_post.slug %}" class="flex-1 group">
+					<div class="p-4 rounded-xl border border-gray-100 dark:border-purple-500/10 hover:border-purple-300 dark:hover:border-purple-500/30 hover:bg-purple-50/50 dark:hover:bg-purple-500/10 transition-all">
+						<p class="text-xs text-gray-500 dark:text-gray-400 mb-1 flex items-center gap-1">
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+							</svg>
+							上一篇
+						</p>
+						<p class="font-medium text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-300 transition-colors truncate">
+							{{ series_context.prev_post.title }}
+						</p>
+					</div>
+				</a>
+				{% else %}
+				<div class="flex-1"></div>
+				{% endif %}
+				
+				{% if series_context.next_post %}
+				<a href="{% url 'posts:post_detail' series_context.next_post.slug %}" class="flex-1 group">
+					<div class="p-4 rounded-xl border border-gray-100 dark:border-purple-500/10 hover:border-purple-300 dark:hover:border-purple-500/30 hover:bg-purple-50/50 dark:hover:bg-purple-500/10 transition-all text-right">
+						<p class="text-xs text-gray-500 dark:text-gray-400 mb-1 flex items-center justify-end gap-1">
+							下一篇
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+							</svg>
+						</p>
+						<p class="font-medium text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-300 transition-colors truncate">
+							{{ series_context.next_post.title }}
+						</p>
+					</div>
+				</a>
+				{% else %}
+				<div class="flex-1"></div>
+				{% endif %}
+			</div>
+		</div>
+		{% endif %}
 		
 		<!-- Share & Actions -->
 		<div class="bg-white dark:bg-indigo-950/50 backdrop-blur border border-gray-200 dark:border-purple-500/20 rounded-2xl p-6 mb-8 shadow-sm">
@@ -429,6 +522,12 @@ document.addEventListener('DOMContentLoaded', () => {
 	// Mobile TOC toggle
 	document.getElementById('mobile-toc-toggle')?.addEventListener('click', () => {
 		document.getElementById('mobile-toc').classList.toggle('hidden');
+	});
+	
+	// Series TOC toggle
+	document.getElementById('toggle-series-toc')?.addEventListener('click', () => {
+		const toc = document.getElementById('series-toc');
+		if (toc) toc.classList.toggle('hidden');
 	});
 	
 	// Update Giscus theme on dark mode change

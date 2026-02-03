@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}{{ series.title }} - TechBlog{% endblock %}
+{% block meta_description %}{{ series.description }}{% endblock %}
+{% block content %}
+<div class="max-w-4xl mx-auto">
+	<!-- 返回链接 -->
+	<a href="{% url 'posts:series_list' %}" class="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors mb-6 group">
+		<svg class="w-4 h-4 mr-2 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+		</svg>
+		返回系列列表
+	</a>
+	
+	<!-- 系列头部 -->
+	<header class="bg-white dark:bg-indigo-950/50 backdrop-blur border border-gray-200 dark:border-purple-500/20 rounded-2xl p-6 md:p-8 mb-8 shadow-sm">
+		<div class="flex flex-col md:flex-row gap-6">
+			{% if series.cover_image %}
+			<div class="md:w-48 flex-shrink-0">
+				<img src="{{ series.cover_image }}" alt="{{ series.title }}" class="w-full aspect-video md:aspect-square object-cover rounded-xl">
+			</div>
+			{% endif %}
+			<div class="flex-1">
+				<div class="flex items-center gap-3 mb-3">
+					<span class="px-3 py-1 text-xs font-semibold rounded-full bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-300 border border-purple-200 dark:border-purple-500/30">
+						学习路径
+					</span>
+					<span class="text-sm text-gray-500 dark:text-gray-400">{{ posts.count }} 篇文章</span>
+				</div>
+				<h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">{{ series.title }}</h1>
+				{% if series.description %}
+				<p class="text-gray-600 dark:text-gray-400 leading-relaxed">{{ series.description }}</p>
+				{% endif %}
+			</div>
+		</div>
+	</header>
+	
+	<!-- 目录 -->
+	<div class="bg-white dark:bg-indigo-950/50 backdrop-blur border border-gray-200 dark:border-purple-500/20 rounded-2xl p-6 md:p-8 shadow-sm">
+		<h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+			<svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+			</svg>
+			目录
+		</h2>
+		
+		{% if posts %}
+		<div class="space-y-3">
+			{% for post in posts %}
+			<a href="{% url 'posts:post_detail' post.slug %}" class="block group">
+				<div class="flex items-start gap-4 p-4 rounded-xl border border-gray-100 dark:border-purple-500/10 hover:border-purple-300 dark:hover:border-purple-500/30 hover:bg-purple-50/50 dark:hover:bg-purple-500/10 transition-all">
+					<!-- 序号 -->
+					<div class="flex-shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-purple-500/25">
+						{% if post.series_order %}{{ post.series_order }}{% else %}{{ forloop.counter }}{% endif %}
+					</div>
+					
+					<div class="flex-1 min-w-0">
+						<h3 class="font-semibold text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-300 transition-colors mb-1 truncate">
+							{{ post.title }}
+						</h3>
+						<div class="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+							<span class="flex items-center gap-1">
+								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+								</svg>
+								{{ post.date|date:"Y-m-d" }}
+							</span>
+							{% if post.description %}
+							<span class="hidden sm:inline truncate max-w-xs">{{ post.description|truncatechars:50 }}</span>
+							{% endif %}
+						</div>
+					</div>
+					
+					<svg class="w-5 h-5 text-gray-400 group-hover:text-purple-500 dark:group-hover:text-purple-400 flex-shrink-0 transform group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+					</svg>
+				</div>
+			</a>
+			{% endfor %}
+		</div>
+		
+		{% if posts.count > 0 %}
+		<div class="mt-8 pt-6 border-t border-gray-200 dark:border-purple-500/20">
+			<a href="{% url 'posts:post_detail' posts.first.slug %}" class="inline-flex items-center justify-center w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white rounded-xl shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all font-medium">
+				<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+				</svg>
+				开始学习第一篇
+			</a>
+		</div>
+		{% endif %}
+		
+		{% else %}
+		<div class="text-center py-8">
+			<svg class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+			</svg>
+			<p class="text-gray-500 dark:text-gray-400">该系列暂无文章</p>
+		</div>
+		{% endif %}
+	</div>
+</div>
+{% endblock %}
