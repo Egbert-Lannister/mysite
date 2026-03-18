@@ -72,6 +72,29 @@ python manage.py collectstatic --noinput
 gunicorn mysite.wsgi --bind 127.0.0.1:8000 --workers 3 --timeout 60
 ```
 
+### Gunicorn service management (systemd)
+
+If you use the provided `gunicorn.service` file under systemd, these commands are useful:
+
+```bash
+# Check status
+sudo systemctl status gunicorn
+
+# Restart after code changes
+sudo systemctl restart gunicorn
+
+# Stop the service
+sudo systemctl stop gunicorn
+
+# Enable/disable auto start on boot
+sudo systemctl enable gunicorn
+sudo systemctl disable gunicorn
+
+# Tail logs
+sudo tail -f /var/log/gunicorn-error.log
+sudo tail -f /var/log/gunicorn-access.log
+```
+
 ## Project Structure
 
 ```
