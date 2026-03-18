@@ -57,13 +57,23 @@
 	{% for post in posts %}
 	<article class="group bg-white dark:bg-indigo-950/50 backdrop-blur border border-gray-200 dark:border-purple-500/20 rounded-2xl overflow-hidden hover:border-purple-300 dark:hover:border-purple-500/40 hover:bg-gray-50 dark:hover:bg-indigo-900/50 transition-all duration-300 card-shine shadow-sm">
 		<!-- 顶部彩色条 -->
-		<div class="h-1.5 bg-gradient-to-r {% if post.category == 'tech' %}from-blue-500 via-purple-500 to-pink-500{% else %}from-pink-500 via-purple-500 to-blue-500{% endif %}"></div>
+		<div class="h-1.5 bg-gradient-to-r
+			{% if post.category == 'engineering' %}from-blue-500 via-purple-500 to-pink-500
+			{% elif post.category == 'research' %}from-pink-500 via-purple-500 to-blue-500
+			{% elif post.category == 'notes' %}from-emerald-500 via-teal-500 to-cyan-500
+			{% elif post.category == 'projects' %}from-amber-500 via-orange-500 to-red-500
+			{% endif %}"></div>
 		
 		<div class="p-6">
 			<!-- 分类和日期 -->
 			<div class="flex items-center justify-between mb-4">
-				<span class="px-3 py-1 text-xs font-semibold rounded-full {% if post.category == 'tech' %}bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-300 border border-blue-200 dark:border-blue-500/30{% else %}bg-pink-100 dark:bg-pink-500/20 text-pink-600 dark:text-pink-300 border border-pink-200 dark:border-pink-500/30{% endif %}">
-					{{ post.category|title }}
+				<span class="px-3 py-1 text-xs font-semibold rounded-full
+					{% if post.category == 'engineering' %}bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-300 border border-blue-200 dark:border-blue-500/30
+					{% elif post.category == 'research' %}bg-pink-100 dark:bg-pink-500/20 text-pink-600 dark:text-pink-300 border border-pink-200 dark:border-pink-500/30
+					{% elif post.category == 'notes' %}bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/30
+					{% elif post.category == 'projects' %}bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-200 dark:border-amber-500/30
+					{% endif %}">
+					{{ post.get_category_display }}
 				</span>
 				<time class="text-sm text-gray-400 dark:text-gray-500">{{ post.date|date:"Y-m-d" }}</time>
 			</div>

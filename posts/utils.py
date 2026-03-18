@@ -43,9 +43,56 @@ def slugify_header(text: str, sep: str = '-') -> str:
     return text
 
 
+def _protect_math(content: str) -> tuple[str, list[tuple[str, str]]]:
+    """Replace LaTeX math blocks with placeholders before markdown processing.
+    Returns (protected_content, [(placeholder, original), ...])
+    """
+    placeholders = []
+    counter = [0]
+
+    def _make_placeholder(match):
+        original = match.group(0)
+        tag = f"MATHPLACEHOLDER{counter[0]:04d}END"
+        counter[0] += 1
+        placeholders.append((tag, original))
+        return tag
+
+    # Protect fenced code blocks first so we don't touch math inside them
+    code_blocks = []
+    def _save_code(m):
+        tag = f"CODEPLACEHOLDER{len(code_blocks):04d}END"
+        code_blocks.append((tag, m.group(0)))
+        return tag
+
+    content = re.sub(r'```[\s\S]*?```', _save_code, content)
+    content = re.sub(r'`[^`\n]+`', _save_code, content)
+
+    # $$...$$ block math (may span lines)
+    content = re.sub(r'\$\$(.+?)\$\$', _make_placeholder, content, flags=re.DOTALL)
+    # $...$ inline math (single line, non-greedy, must not start/end with space)
+    content = re.sub(r'(?<!\$)\$(?!\$)(?!\s)(.+?)(?<!\s)\$(?!\$)', _make_placeholder, content)
+
+    # Restore code blocks
+    for tag, code in code_blocks:
+        content = content.replace(tag, code)
+
+    return content, placeholders
+
+
+def _restore_math(html: str, placeholders: list[tuple[str, str]]) -> str:
+    """Restore LaTeX math from placeholders after markdown processing,
+    wrapping them in elements that KaTeX auto-render can pick up.
+    """
+    for tag, original in placeholders:
+        escaped = original.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+        html = html.replace(tag, escaped)
+    return html
+
+
 def render_markdown_with_toc(content: str) -> tuple[str, list[dict]]:
     """
-    Render markdown to HTML with syntax highlighting and TOC extraction.
+    Render markdown to HTML with syntax highlighting, TOC extraction,
+    and LaTeX math preservation (rendered client-side via KaTeX).
     Returns (html, toc_items)
     """
     import markdown
@@ -53,7 +100,9 @@ def render_markdown_with_toc(content: str) -> tuple[str, list[dict]]:
     from markdown.extensions.codehilite import CodeHiliteExtension
     from markdown.extensions.fenced_code import FencedCodeExtension
     
-    # Configure extensions
+    # Protect LaTeX math from markdown processing
+    content, math_placeholders = _protect_math(content)
+    
     extensions = [
         'tables',
         FencedCodeExtension(),
@@ -65,26 +114,27 @@ def render_markdown_with_toc(content: str) -> tuple[str, list[dict]]:
         ),
         TocExtension(
             slugify=slugify_header,
-            toc_depth='2-4',  # Support h2, h3, h4
+            toc_depth='2-4',
         ),
     ]
     
     md = markdown.Markdown(extensions=extensions)
     html = md.convert(content)
     
-    # Extract TOC with proper levels from toc_tokens
+    # Restore LaTeX math
+    html = _restore_math(html, math_placeholders)
+    
+    # Extract TOC
     toc_items = []
     toc_tokens = getattr(md, 'toc_tokens', [])
     
     def extract_toc_items(tokens, base_level=2):
-        """Recursively extract TOC items with correct levels"""
         for token in tokens:
             toc_items.append({
                 'anchor': token['id'],
                 'title': token['name'],
                 'level': token['level'],
             })
-            # Process nested children
             if token.get('children'):
                 extract_toc_items(token['children'], base_level + 1)
     

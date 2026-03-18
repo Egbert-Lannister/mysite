@@ -51,12 +51,38 @@ def compute_content_hash(content: str) -> str:
 
 class Series(models.Model):
     """
-    合集/系列模型，用于组织有序的文章集合（如课程笔记、教程系列）
+    合集/系列模型 — 通过绑定一个 taggit Tag 来自动聚合文章。
+    例如创建 Series(name="CS231n Learning Notes", tag=<Tag: cs231n>)，
+    则 series_detail 页面自动展示所有带 tag=cs231n 的文章。
     """
+    CATEGORY_FILTER_CHOICES = (
+        ("", "不限"),
+        ("engineering", "Engineering"),
+        ("research", "Research"),
+        ("notes", "Notes"),
+        ("projects", "Projects"),
+    )
+
     title = models.CharField("系列标题", max_length=255, help_text="系列的显示名称")
     slug = models.SlugField("URL 别名", unique=True, help_text="用于生成系列链接")
     description = models.TextField("系列简介", blank=True, help_text="系列的详细介绍")
     cover_image = models.URLField("封面图片", blank=True, help_text="系列封面图片 URL（可选）")
+    tag = models.ForeignKey(
+        'taggit.Tag',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="关联标签",
+        help_text="绑定一个 Tag，系列详情页将自动聚合包含该 Tag 的所有文章",
+    )
+    category_filter = models.CharField(
+        "分类过滤",
+        max_length=32,
+        blank=True,
+        default="",
+        choices=CATEGORY_FILTER_CHOICES,
+        help_text="可选：只显示该分类下的文章，留空则不限分类",
+    )
     order = models.PositiveIntegerField("排序权重", default=0, 
                                          help_text="数字越小越靠前，用于首页展示顺序")
     is_featured = models.BooleanField("首页推荐", default=False,
@@ -81,22 +107,33 @@ class Series(models.Model):
         from django.urls import reverse
         return reverse('posts:series_detail', args=[self.slug])
     
+    def get_aggregated_posts(self):
+        """根据绑定的 tag（+ 可选 category_filter）聚合已发布文章"""
+        if not self.tag:
+            return Post.objects.none()
+        qs = Post.objects.filter(published=True, tags__name__in=[self.tag.name])
+        if self.category_filter:
+            qs = qs.filter(category=self.category_filter)
+        return qs.distinct().order_by('-date')
+
     @property
     def post_count(self):
-        """返回系列中已发布的文章数量"""
-        return self.posts.filter(published=True).count()
+        """返回系列聚合的已发布文章数量（tag-based）"""
+        return self.get_aggregated_posts().count()
     
     @property
     def latest_post_date(self):
         """返回系列中最新文章的发布日期"""
-        latest = self.posts.filter(published=True).order_by('-date').first()
+        latest = self.get_aggregated_posts().first()
         return latest.date if latest else None
 
 
 class Post(models.Model):
     CATEGORY_CHOICES = (
-        ("tech", "技术文章"),
-        ("paper", "论文笔记"),
+        ("engineering", "Engineering"),
+        ("research", "Research"),
+        ("notes", "Notes"),
+        ("projects", "Projects"),
     )
 
     title = models.CharField("标题", max_length=255, help_text="文章标题")
