@@ -70,6 +70,29 @@ python manage.py collectstatic --noinput
 gunicorn mysite.wsgi --bind 127.0.0.1:8000 --workers 3 --timeout 60
 ```
 
+### Gunicorn 常用管理命令（systemd）
+
+如果使用系统服务 `gunicorn.service`，可以通过以下命令管理：
+
+```bash
+# 查看状态
+sudo systemctl status gunicorn
+
+# 代码更新后重启
+sudo systemctl restart gunicorn
+
+# 停止服务
+sudo systemctl stop gunicorn
+
+# 开启/关闭开机自启
+sudo systemctl enable gunicorn
+sudo systemctl disable gunicorn
+
+# 查看日志（错误 / 访问）
+sudo tail -f /var/log/gunicorn-error.log
+sudo tail -f /var/log/gunicorn-access.log
+```
+
 ## 项目结构
 
 ```
