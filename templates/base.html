@@ -133,63 +133,71 @@
 	<div class="page-loading" id="page-loading"></div>
 	<!-- 导航栏 -->
 	<header class="sticky top-0 z-50 backdrop-blur-xl bg-white/80 dark:bg-indigo-950/80 border-b border-gray-200 dark:border-purple-500/20 transition-colors">
-		<div class="max-w-6xl mx-auto px-4 sm:px-6">
+		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 			<div class="flex items-center justify-between h-16">
 	{% load static %}
 				<!-- Logo -->
-				<a href="{% url 'posts:index' %}" class="flex items-center gap-2 group">
-					<img src="{% static 'images/logo.jpg' %}" alt="Logo" class="w-10 h-10 rounded-xl shadow-lg shadow-purple-500/25 group-hover:shadow-purple-500/50 transition-shadow object-cover">
-					<span class="text-xl font-bold text-gradient">TechBlog</span>
+				<a href="{% url 'posts:index' %}" class="flex items-center gap-2.5 group flex-shrink-0">
+					<img src="{% static 'images/logo.jpg' %}" alt="Logo" class="w-9 h-9 rounded-xl shadow-lg shadow-purple-500/25 group-hover:shadow-purple-500/50 transition-shadow object-cover">
+					<span class="text-lg font-bold text-gradient hidden sm:inline">TechBlog</span>
 				</a>
 				
-				<!-- 导航链接 -->
-				<nav class="hidden md:flex items-center gap-8">
-					<a href="{% url 'posts:tech_list' %}" class="nav-link text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors flex items-center gap-1">
-						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
-						技术
-					</a>
-					<a href="{% url 'posts:paper_list' %}" class="nav-link text-pink-600 dark:text-pink-400 hover:text-pink-700 dark:hover:text-pink-300 font-medium transition-colors flex items-center gap-1">
-						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-						论文
-					</a>
-					<a href="{% url 'posts:series_list' %}" class="nav-link text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 font-medium transition-colors flex items-center gap-1">
-						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
-						合集
-					</a>
-					<a href="/rss.xml" class="nav-link text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 font-medium transition-colors flex items-center gap-1">
-						<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19 7.38 20 6.18 20C5 20 4 19 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1Z"/></svg>
-						RSS
-					</a>
+				<!-- 导航链接 — 分组排列 -->
+				<nav class="hidden lg:flex items-center">
+					<!-- 内容分类 -->
+					<div class="flex items-center gap-1 px-2">
+						<a href="{% url 'posts:engineering_list' %}" class="nav-link px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-all">
+							Engineering
+						</a>
+						<a href="{% url 'posts:research_list' %}" class="nav-link px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-pink-600 dark:hover:text-pink-400 hover:bg-pink-50 dark:hover:bg-pink-500/10 transition-all">
+							Research
+						</a>
+						<a href="{% url 'posts:notes_list' %}" class="nav-link px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 transition-all">
+							Notes
+						</a>
+						<a href="{% url 'posts:projects_list' %}" class="nav-link px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-500/10 transition-all">
+							Projects
+						</a>
+					</div>
+					<!-- 分隔线 -->
+					<div class="w-px h-5 bg-gray-300 dark:bg-purple-500/30 mx-1"></div>
+					<!-- 其他入口 -->
+					<div class="flex items-center gap-1 px-2">
+						<a href="{% url 'posts:series_list' %}" class="nav-link px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-500/10 transition-all">
+							Series
+						</a>
+						<a href="/rss.xml" class="p-1.5 rounded-lg text-gray-400 dark:text-gray-500 hover:text-orange-500 dark:hover:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-500/10 transition-all" title="RSS">
+							<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19 7.38 20 6.18 20C5 20 4 19 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1Z"/></svg>
+						</a>
+					</div>
 				</nav>
-				
-				<div class="flex items-center gap-4">
-					<!-- 主题切换按钮 -->
-					<button id="theme-toggle" class="p-2 rounded-full bg-gray-100 dark:bg-indigo-900/50 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-indigo-800 transition-colors" aria-label="切换主题">
-						<!-- 太阳图标 (暗色模式显示) -->
-						<svg class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
+				<!-- 右侧工具区 -->
+				<div class="flex items-center gap-2 sm:gap-3">
+					<!-- 搜索框 -->
+					<form action="{% url 'posts:search' %}" method="get" class="hidden sm:block">
+						<div class="relative">
+							<input type="search" name="q" placeholder="搜索..." value="{{ request.GET.q }}"
+								class="w-40 lg:w-52 px-3.5 py-1.5 pl-9 bg-gray-100 dark:bg-indigo-900/50 border border-gray-200 dark:border-purple-500/30 rounded-full text-sm text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 focus:w-56 lg:focus:w-64 transition-all">
+							<svg class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+							</svg>
+						</div>
+					</form>
+					
+					<!-- 主题切换 -->
+					<button id="theme-toggle" class="p-2 rounded-full bg-gray-100 dark:bg-indigo-900/50 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-indigo-800 hover:text-gray-700 dark:hover:text-gray-200 transition-colors" aria-label="切换主题">
+						<svg class="w-4 h-4 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
 						</svg>
-						<!-- 月亮图标 (亮色模式显示) -->
-						<svg class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<svg class="w-4 h-4 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
 						</svg>
 					</button>
 					
-					<!-- 搜索框 -->
-					<form action="{% url 'posts:search' %}" method="get" class="hidden sm:flex items-center gap-2">
-						<div class="relative">
-							<input type="search" name="q" placeholder="搜索文章..." value="{{ request.GET.q }}"
-								class="w-48 lg:w-64 px-4 py-2 pl-10 bg-gray-100 dark:bg-indigo-900/50 border border-gray-200 dark:border-purple-500/30 rounded-full text-sm text-gray-800 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 transition-all">
-							<svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-							</svg>
-						</div>
-						<button type="submit" class="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white text-sm font-medium rounded-full shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all">搜索</button>
-					</form>
-					
 					<!-- 移动端菜单按钮 -->
-					<button class="md:hidden p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
-						<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<button class="lg:hidden p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white rounded-lg hover:bg-gray-100 dark:hover:bg-purple-500/20 transition-colors" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
+						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
 						</svg>
 					</button>
@@ -197,16 +205,19 @@
 			</div>
 			
 			<!-- 移动端菜单 -->
-			<div id="mobile-menu" class="hidden md:hidden pb-4">
-				<nav class="flex flex-col gap-2">
-					<a href="{% url 'posts:tech_list' %}" class="px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-purple-500/20 rounded-lg transition-colors">技术</a>
-					<a href="{% url 'posts:paper_list' %}" class="px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-purple-500/20 rounded-lg transition-colors">论文</a>
-					<a href="{% url 'posts:series_list' %}" class="px-4 py-2 text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-500/20 rounded-lg transition-colors font-medium">合集</a>
-					<a href="/rss.xml" class="px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-purple-500/20 rounded-lg transition-colors">RSS</a>
+			<div id="mobile-menu" class="hidden lg:hidden pb-4 pt-2 border-t border-gray-100 dark:border-purple-500/10 mt-1">
+				<nav class="grid grid-cols-2 gap-1.5 mb-3">
+					<a href="{% url 'posts:engineering_list' %}" class="px-4 py-2.5 text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-xl transition-colors font-medium">Engineering</a>
+					<a href="{% url 'posts:research_list' %}" class="px-4 py-2.5 text-sm text-gray-600 dark:text-gray-300 hover:text-pink-600 dark:hover:text-pink-400 hover:bg-pink-50 dark:hover:bg-pink-500/10 rounded-xl transition-colors font-medium">Research</a>
+					<a href="{% url 'posts:notes_list' %}" class="px-4 py-2.5 text-sm text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 rounded-xl transition-colors font-medium">Notes</a>
+					<a href="{% url 'posts:projects_list' %}" class="px-4 py-2.5 text-sm text-gray-600 dark:text-gray-300 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-500/10 rounded-xl transition-colors font-medium">Projects</a>
 				</nav>
-				<!-- 移动端搜索 -->
-				<form action="{% url 'posts:search' %}" method="get" class="mt-4 flex gap-2 px-2">
-					<input type="search" name="q" placeholder="搜索..." class="flex-1 px-4 py-2 bg-gray-100 dark:bg-indigo-900/50 border border-gray-200 dark:border-purple-500/30 rounded-full text-sm">
+				<div class="flex gap-1.5 mb-3">
+					<a href="{% url 'posts:series_list' %}" class="flex-1 px-4 py-2.5 text-sm text-center text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-500/10 rounded-xl transition-colors font-medium">Series</a>
+					<a href="/rss.xml" class="px-4 py-2.5 text-sm text-gray-500 dark:text-gray-400 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-500/10 rounded-xl transition-colors">RSS</a>
+				</div>
+				<form action="{% url 'posts:search' %}" method="get" class="flex gap-2 sm:hidden">
+					<input type="search" name="q" placeholder="搜索文章..." class="flex-1 px-4 py-2 bg-gray-100 dark:bg-indigo-900/50 border border-gray-200 dark:border-purple-500/30 rounded-full text-sm">
 					<button type="submit" class="px-4 py-2 bg-purple-600 text-white text-sm rounded-full">搜索</button>
 				</form>
 			</div>

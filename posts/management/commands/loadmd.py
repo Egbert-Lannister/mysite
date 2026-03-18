@@ -52,7 +52,9 @@ class Command(BaseCommand):
                 tags_str = ", ".join(str(t) for t in tags)
             else:
                 tags_str = str(tags) if tags else ""
-            category = meta.get("category") or ("tech" if "tech" in str(file_path) else "paper")
+            raw_category = meta.get("category") or ("engineering" if "tech" in str(file_path) else "research")
+            category_map = {"tech": "engineering", "paper": "research"}
+            category = category_map.get(raw_category, raw_category)
             description = meta.get("description", "")
             raw_slug = str(meta.get("slug") or "").strip()
             if raw_slug:

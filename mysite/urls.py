@@ -7,18 +7,22 @@ from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import RedirectView
 from posts.feeds import LatestPostsFeed
+from posts import views as posts_views
 
 urlpatterns = [
+    # Upload routes under /admin/ (before admin.site.urls so they take priority)
+    path('admin/upload/', posts_views.admin_upload, name='admin_upload'),
+    path('admin/upload/preview/', posts_views.admin_upload_preview, name='admin_upload_preview'),
+    # Django admin
     path('admin/', admin.site.urls),
+    # Public site
     path('rss.xml', LatestPostsFeed(), name='rss'),
     path('techblog/', include('posts.urls')),
     path('', RedirectView.as_view(url='/techblog/', permanent=True)),
 ]
 
-# Serve media files in development
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    urlpatterns.insert(0, path('__reload__/', include('django_browser_reload.urls')))
+# Always serve user-uploaded media files (posts images, etc.)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-# In production, nginx should serve media files
-# But we can also serve them via whitenoise in some cases
+if settings.DEBUG:
+    urlpatterns.insert(0, path('__reload__/', include('django_browser_reload.urls')))

@@ -88,17 +88,21 @@ def make_unpublished(modeladmin, request, queryset):
 # =============================================================================
 @admin.register(Series)
 class SeriesAdmin(ModelAdmin):
-    list_display = ("display_title", "display_post_count", "display_order", "display_featured", "display_updated")
-    list_filter = ("is_featured",)
-    search_fields = ("title", "slug", "description")  # 支持 autocomplete
+    list_display = ("display_title", "display_tag", "display_post_count", "display_order", "display_featured", "display_updated")
+    list_filter = ("is_featured", "category_filter")
+    search_fields = ("title", "slug", "description")
     prepopulated_fields = {"slug": ("title",)}
-    list_editable = ("order", "is_featured") if False else ()  # 通过 display 方法处理
+    autocomplete_fields = ("tag",)
     ordering = ["order", "-created_at"]
     
     fieldsets = (
         ('📚 基本信息', {
             'fields': ('title', 'slug', 'description'),
             'description': '设置系列的标题、链接别名和简介'
+        }),
+        ('🏷️ 聚合设置', {
+            'fields': ('tag', 'category_filter'),
+            'description': '绑定一个标签后，系列详情页将自动聚合所有包含该标签的文章'
         }),
         ('🖼️ 展示设置', {
             'fields': ('cover_image', 'order', 'is_featured'),
@@ -109,6 +113,12 @@ class SeriesAdmin(ModelAdmin):
     @display(description="系列标题")
     def display_title(self, obj):
         return obj.title
+    
+    @display(description="关联标签")
+    def display_tag(self, obj):
+        if obj.tag:
+            return format_html('<span class="text-primary-600">#{}</span>', obj.tag.name)
+        return "-"
     
     @display(description="文章数量")
     def display_post_count(self, obj):
@@ -201,75 +211,81 @@ def extract_zip_safely(zip_file, extract_dir: Path) -> tuple[Path | None, list[P
 def rewrite_image_paths(content: str, slug: str, temp_dir: Path, images: list[Path]) -> tuple[str, list[str]]:
     """
     Rewrite image paths in markdown content to use media URLs.
+    Handles Notion exports where paths are URL-encoded (e.g. image%201.png -> image 1.png).
     Returns (new_content, missing_images)
     """
-    # Create target directory in media
+    from urllib.parse import quote, unquote
+
     media_dir = Path(settings.MEDIA_ROOT) / 'posts' / slug
     media_dir.mkdir(parents=True, exist_ok=True)
     
-    # Build a map of original paths to new URLs
     image_map = {}
     for img_path in images:
-        # Get relative path from temp_dir
         try:
             rel_path = img_path.relative_to(temp_dir)
         except ValueError:
             rel_path = Path(img_path.name)
         
-        # Copy to media directory
-        new_name = img_path.name
-        target_path = media_dir / new_name
+        decoded_name = unquote(img_path.name)
+        safe_name = decoded_name.replace(' ', '_')
+        base_stem = Path(safe_name).stem
+        base_suffix = Path(safe_name).suffix
+        target_path = media_dir / safe_name
         counter = 1
         while target_path.exists():
-            stem = img_path.stem
-            suffix = img_path.suffix
-            new_name = f"{stem}_{counter}{suffix}"
-            target_path = media_dir / new_name
+            safe_name = f"{base_stem}_{counter}{base_suffix}"
+            target_path = media_dir / safe_name
             counter += 1
         
         shutil.copy2(img_path, target_path)
+        media_url = f"{settings.MEDIA_URL}posts/{slug}/{safe_name}"
         
-        # Map various possible references to the new URL
-        media_url = f"{settings.MEDIA_URL}posts/{slug}/{new_name}"
-        
-        # Add all possible reference patterns
-        image_map[str(rel_path)] = media_url
-        image_map[str(rel_path).replace('\\', '/')] = media_url
-        image_map[img_path.name] = media_url
-        image_map[f"./{img_path.name}"] = media_url
-        image_map[f"assets/{img_path.name}"] = media_url
-        image_map[f"./assets/{img_path.name}"] = media_url
-        image_map[f"images/{img_path.name}"] = media_url
-        image_map[f"./images/{img_path.name}"] = media_url
+        name = img_path.name
+        name_decoded = decoded_name
+        rel_str = str(rel_path).replace('\\', '/')
+        name_encoded = quote(name)
+        decoded_encoded = quote(name_decoded)
+
+        for ref in [
+            name, name_decoded,
+            f"./{name}", f"./{name_decoded}",
+            f"assets/{name}", f"assets/{name_decoded}",
+            f"./assets/{name}", f"./assets/{name_decoded}",
+            f"images/{name}", f"./images/{name}",
+            name_encoded, decoded_encoded,
+            f"./{name_encoded}", f"./{decoded_encoded}",
+            rel_str, quote(rel_str),
+            str(rel_path), str(rel_path).replace('\\', '/'),
+        ]:
+            image_map[ref] = media_url
     
-    # Find all image references in content
-    # Patterns: ![alt](path) or ![alt](path "title")
     img_pattern = re.compile(r'!\[([^\]]*)\]\(([^)\s]+)(?:\s+"[^"]*")?\)')
-    
     missing = []
     
     def replace_image(match):
         alt = match.group(1)
         path = match.group(2)
         
-        # Try to find in our image map
         if path in image_map:
             return f'![{alt}]({image_map[path]})'
-        
-        # Try normalized path
+        decoded = unquote(path)
+        if decoded in image_map:
+            return f'![{alt}]({image_map[decoded]})'
+        double_decoded = unquote(decoded)
+        if double_decoded in image_map:
+            return f'![{alt}]({image_map[double_decoded]})'
         normalized = path.lstrip('./').replace('\\', '/')
+        decoded_norm = unquote(normalized)
         for orig, url in image_map.items():
-            if normalized == orig.lstrip('./').replace('\\', '/'):
+            orig_decoded = unquote(orig)
+            if decoded_norm == orig_decoded.lstrip('./').replace('\\', '/'):
                 return f'![{alt}]({url})'
-            if normalized.endswith(Path(orig).name):
+            if decoded_norm.endswith(Path(orig_decoded).name):
                 return f'![{alt}]({url})'
-        
-        # Image not found
         missing.append(path)
         return match.group(0)
     
-    new_content = img_pattern.sub(replace_image, content)
-    return new_content, missing
+    return img_pattern.sub(replace_image, content), missing
 
 
 # =============================================================================
@@ -294,6 +310,10 @@ class PostAdminForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['date'].initial = timezone.now()
+        # Allow these to be empty at form level — clean() will populate from uploaded file
+        for field_name in ('title', 'slug', 'content', 'date', 'category'):
+            if field_name in self.fields:
+                self.fields[field_name].required = False
         self._upload_warnings = []
         self._is_update = False
 
@@ -310,6 +330,20 @@ class PostAdminForm(forms.ModelForm):
                 self._process_md(upload_file, cleaned_data)
             else:
                 raise forms.ValidationError("不支持的文件格式，请上传 .md 或 .zip 文件")
+        
+        # Ensure required fields are present after file processing
+        for field_name in ('title', 'content', 'date', 'category'):
+            if not cleaned_data.get(field_name):
+                if field_name == 'date':
+                    cleaned_data['date'] = timezone.now()
+                elif field_name == 'category':
+                    cleaned_data['category'] = 'engineering'
+                elif upload_file:
+                    pass  # title/content populated by file processing
+                else:
+                    self.add_error(field_name, '此字段是必填项')
+        if not cleaned_data.get('slug') and cleaned_data.get('title'):
+            cleaned_data['slug'] = generate_unique_slug(cleaned_data['title'])
         
         return cleaned_data
 
@@ -361,7 +395,11 @@ class PostAdminForm(forms.ModelForm):
             raise forms.ValidationError(f"处理 ZIP 文件失败: {str(e)}")
 
     def _parse_markdown(self, text: str, cleaned_data):
-        """Parse markdown with YAML front matter"""
+        """Parse markdown with YAML front matter.
+        Also handles plain markdown without front matter (e.g. Notion exports).
+        """
+        from posts.views import _extract_title_from_markdown, _clean_notion_filename
+
         FRONT_MATTER_RE = re.compile(r"^---\n(.*?)\n---\n(.*)$", re.DOTALL)
         m = FRONT_MATTER_RE.match(text)
         
@@ -379,7 +417,9 @@ class PostAdminForm(forms.ModelForm):
                     date = timezone.make_aware(date)
                 cleaned_data['date'] = date
             if meta.get('category'):
-                cleaned_data['category'] = meta['category']
+                raw_cat = meta['category']
+                cat_map = {"tech": "engineering", "paper": "research"}
+                cleaned_data['category'] = cat_map.get(raw_cat, raw_cat)
             
             raw_slug = str(meta.get('slug') or "").strip()
             if raw_slug:
@@ -401,7 +441,18 @@ class PostAdminForm(forms.ModelForm):
             else:
                 self._tags_str = str(tags) if tags else ""
         else:
+            # No front matter — extract metadata from content
             cleaned_data['content'] = text.strip()
+            title = _extract_title_from_markdown(text)
+            if title and not cleaned_data.get('title'):
+                cleaned_data['title'] = title
+            if not cleaned_data.get('date'):
+                cleaned_data['date'] = timezone.now()
+            if not cleaned_data.get('category'):
+                cleaned_data['category'] = 'engineering'
+            if cleaned_data.get('title') and not cleaned_data.get('slug'):
+                cleaned_data['slug'] = generate_unique_slug(cleaned_data['title'])
+            self._upload_warnings.append("未检测到 YAML front matter，已从内容自动提取元数据")
         
         # Check for duplicate content
         content_hash = compute_content_hash(cleaned_data['content'])
@@ -464,7 +515,7 @@ class PostAdmin(ModelAdmin):
     def display_title(self, obj):
         return obj.title
     
-    @display(description="分类", label={"技术文章": "info", "论文笔记": "warning"})
+    @display(description="分类", label={"Engineering": "info", "Research": "warning", "Notes": "success", "Projects": "info"})
     def display_category(self, obj):
         return obj.get_category_display()
     
@@ -481,10 +532,14 @@ class PostAdmin(ModelAdmin):
         url = reverse('posts:post_detail', args=[obj.slug])
         return format_html('<a href="{}" target="_blank" style="color: #8b5cf6;">查看 →</a>', url)
     
+    def add_view(self, request, form_url='', extra_context=None):
+        """Redirect the admin '+' button to the new step-by-step upload page."""
+        from django.shortcuts import redirect
+        return redirect('admin_upload')
+
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
         
-        # Show upload warnings
         if hasattr(form, '_upload_warnings') and form._upload_warnings:
             from django.contrib import messages
             for warning in form._upload_warnings:

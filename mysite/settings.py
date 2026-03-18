@@ -177,6 +177,7 @@ UNFOLD = {
                 "items": [
                     {"title": "文章管理", "icon": "article", "link": "/admin/posts/post/",
                      "badge": "mysite.admin_config.post_count_callback"},
+                    {"title": "系列管理", "icon": "collections_bookmark", "link": "/admin/posts/series/"},
                     {"title": "标签管理", "icon": "label", "link": "/admin/taggit/tag/"},
                 ],
             },
@@ -185,8 +186,8 @@ UNFOLD = {
                 "separator": True,
                 "collapsible": False,
                 "items": [
-                    {"title": "上传文章包", "icon": "upload_file", "link": "/techblog/admin/upload/"},
-                    {"title": "文章列表", "icon": "preview", "link": "/techblog/admin/posts/"},
+                    {"title": "上传文章", "icon": "upload_file", "link": "/admin/upload/"},
+                    {"title": "访问站点", "icon": "open_in_new", "link": "/techblog/"},
                 ],
             },
             {
