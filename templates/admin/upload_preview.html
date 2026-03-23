@@ -1,215 +1,319 @@
-{% extends "base.html" %}
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
 {% block title %}预览与编辑 - 上传文章{% endblock %}
-{% block extra_head %}
+{% block content_title %}{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
 <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.9/katex.min.css">
-<script defer src="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
-<script defer src="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
 <style>
-	.preview-content { line-height: 1.8; }
-	.preview-content h1 { font-size: 1.75rem; font-weight: 700; margin-top: 1.5rem; margin-bottom: 0.5rem; }
-	.preview-content h2 { font-size: 1.375rem; font-weight: 600; margin-top: 1.25rem; margin-bottom: 0.5rem; }
-	.preview-content h3 { font-size: 1.125rem; font-weight: 600; margin-top: 1rem; margin-bottom: 0.25rem; }
-	.preview-content p { margin-bottom: 0.75rem; }
-	.preview-content ul, .preview-content ol { margin-bottom: 0.75rem; padding-left: 1.5rem; }
-	.preview-content li { margin-bottom: 0.25rem; }
+	.preview-content { line-height: 1.75; font-size: 0.875rem; }
+	.preview-content h1 { font-size: 1.5rem; font-weight: 700; margin: 1.25rem 0 0.5rem; }
+	.preview-content h2 { font-size: 1.25rem; font-weight: 600; margin: 1rem 0 0.375rem; }
+	.preview-content h3 { font-size: 1.1rem; font-weight: 600; margin: 0.75rem 0 0.25rem; }
+	.preview-content p { margin-bottom: 0.625rem; }
+	.preview-content ul, .preview-content ol { margin-bottom: 0.625rem; padding-left: 1.5rem; }
+	.preview-content li { margin-bottom: 0.2rem; }
 	.preview-content ul li { list-style-type: disc; }
 	.preview-content ol li { list-style-type: decimal; }
-	.preview-content a { color: #8b5cf6; text-decoration: underline; }
-	.preview-content code { font-size: 0.85rem; padding: 0.1rem 0.3rem; border-radius: 0.25rem; background: #f3e8ff; color: #7c3aed; }
-	.dark .preview-content code { background: rgba(139,92,246,0.2); color: #c084fc; }
-	.preview-content pre { border-radius: 0.5rem; padding: 0.75rem; margin-bottom: 1rem; overflow-x: auto; background: #f8fafc !important; border: 1px solid #e2e8f0; }
-	.dark .preview-content pre { background: #0f172a !important; border-color: rgba(139,92,246,0.3); }
+	.preview-content a { color: rgb(var(--color-primary-600)); text-decoration: underline; }
+	.preview-content code { font-size: 0.8rem; padding: 0.1rem 0.3rem; border-radius: 0.2rem; background: rgb(var(--color-primary-50)); }
+	.dark .preview-content code { background: rgba(var(--color-primary-600), 0.15); }
+	.preview-content pre { border-radius: 0.375rem; padding: 0.75rem; margin-bottom: 1rem; overflow-x: auto; border: 1px solid rgb(var(--color-base-200)); }
+	.dark .preview-content pre { border-color: rgb(var(--color-base-700)); }
 	.preview-content pre code { background: transparent; padding: 0; }
-	.preview-content blockquote { border-left: 3px solid #8b5cf6; padding: 0.5rem 1rem; margin: 1rem 0; background: #f5f3ff; font-style: italic; }
-	.dark .preview-content blockquote { background: rgba(139,92,246,0.1); }
-	.preview-content img { max-width: 100%; border-radius: 0.5rem; margin: 0.5rem 0; }
-	.preview-content table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; }
-	.preview-content th, .preview-content td { border: 1px solid #e2e8f0; padding: 0.5rem; text-align: left; }
-	.dark .preview-content th, .dark .preview-content td { border-color: rgba(139,92,246,0.3); }
+	.preview-content blockquote { border-left: 3px solid rgb(var(--color-primary-500)); padding: 0.5rem 1rem; margin: 0.75rem 0; font-style: italic; opacity: 0.85; }
+	.preview-content img { max-width: 100%; border-radius: 0.375rem; margin: 0.5rem 0; }
+	.preview-content table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; font-size: 0.8rem; }
+	.preview-content th, .preview-content td { border: 1px solid rgb(var(--color-base-200)); padding: 0.4rem 0.6rem; }
+	.dark .preview-content th, .dark .preview-content td { border-color: rgb(var(--color-base-700)); }
 	.preview-content .katex-display { overflow-x: auto; padding: 0.25rem 0; }
+	/* 与文章管理 change 页一致：左右分栏 + 固定同高 */
+	.post-md-preview-wrap {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		gap: 0.75rem;
+		align-items: stretch;
+		width: 100%;
+		min-height: min(70vh, 44rem);
+		height: min(70vh, 44rem);
+	}
+	@media (max-width: 1100px) {
+		.post-md-preview-wrap {
+			grid-template-columns: 1fr;
+			height: auto;
+			min-height: min(70vh, 44rem);
+		}
+	}
+	.post-md-editor-col {
+		display: flex;
+		flex-direction: column;
+		min-height: min(70vh, 44rem);
+	}
+	.post-md-editor-col textarea#id_content {
+		flex: 1 1 auto;
+		min-height: 0;
+		resize: none;
+		width: 100% !important;
+		box-sizing: border-box;
+	}
+	.post-md-preview-toolbar {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.5rem 1rem;
+		margin-bottom: 0.75rem;
+		font-size: 0.8125rem;
+		color: rgb(107 114 128);
+	}
+	.dark .post-md-preview-toolbar { color: rgb(156 163 175); }
+	.post-md-preview-toolbar strong { color: rgb(55 65 81); font-weight: 600; }
+	.dark .post-md-preview-toolbar strong { color: rgb(209 213 219); }
+	.post-md-preview-pane {
+		border: 1px solid rgb(229 231 235);
+		border-radius: 0.375rem;
+		padding: 0.75rem 1rem;
+		box-sizing: border-box;
+		height: 100%;
+		min-height: min(70vh, 44rem);
+		max-height: min(70vh, 44rem);
+		overflow: auto;
+		background: rgb(249 250 251);
+		font-size: 0.875rem;
+		line-height: 1.6;
+	}
+	.dark .post-md-preview-pane {
+		border-color: rgb(55 65 81);
+		background: rgb(17 24 39);
+		color: rgb(229 231 235);
+	}
+	.post-md-preview-status { font-size: 0.75rem; opacity: 0.85; }
+	.post-md-preview-pane.is-loading { opacity: 0.55; pointer-events: none; }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto">
+<div class="container mx-auto max-w-7xl px-2">
+	<!-- Header -->
 	<div class="flex items-center justify-between mb-6">
-		<h1 class="text-2xl font-bold text-gray-900 dark:text-white">预览与编辑</h1>
-		<a href="{% url 'admin_upload' %}" class="px-4 py-2 bg-gray-200 dark:bg-indigo-900/50 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-300 dark:hover:bg-indigo-800 transition-colors text-sm">
+		<div>
+			<h1 class="text-xl font-semibold text-base-900 dark:text-base-100">预览与编辑</h1>
+			<p class="text-sm text-base-500 dark:text-base-400 mt-1">确认元数据和内容后发布（正文布局与文章管理编辑页一致：左 Markdown / 右预览）</p>
+		</div>
+		<a href="{% url 'admin_upload' %}" class="text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline">
 			← 重新上传
 		</a>
 	</div>
 
-	<!-- Progress indicator -->
-	<div class="flex items-center gap-3 mb-8">
-		<div class="flex items-center gap-2">
-			<span class="w-8 h-8 rounded-full bg-green-500 text-white text-sm font-bold flex items-center justify-center">✓</span>
-			<span class="text-sm text-green-600 dark:text-green-400">上传文件</span>
-		</div>
-		<div class="flex-1 h-px bg-purple-400"></div>
-		<div class="flex items-center gap-2">
-			<span class="w-8 h-8 rounded-full bg-purple-600 text-white text-sm font-bold flex items-center justify-center">2</span>
-			<span class="text-sm font-medium text-purple-600 dark:text-purple-400">预览编辑</span>
-		</div>
-		<div class="flex-1 h-px bg-gray-300 dark:bg-gray-600"></div>
-		<div class="flex items-center gap-2">
-			<span class="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 text-sm font-bold flex items-center justify-center">3</span>
-			<span class="text-sm text-gray-400 dark:text-gray-500">发布</span>
-		</div>
-	</div>
-
 	{% if messages %}
-	<div class="mb-6 space-y-3">
+	<div class="mb-6 space-y-2">
 		{% for message in messages %}
-		<div class="p-4 rounded-xl {% if message.tags == 'error' %}bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-500/30{% elif message.tags == 'warning' %}bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-500/30{% else %}bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-500/30{% endif %}">
+		<div class="rounded-md border px-4 py-3 text-sm
+			{% if message.tags == 'error' %}border-red-300 bg-red-50 text-red-800 dark:border-red-500/30 dark:bg-red-900/20 dark:text-red-300
+			{% elif message.tags == 'warning' %}border-yellow-300 bg-yellow-50 text-yellow-800 dark:border-yellow-500/30 dark:bg-yellow-900/20 dark:text-yellow-300
+			{% else %}border-green-300 bg-green-50 text-green-800 dark:border-green-500/30 dark:bg-green-900/20 dark:text-green-300{% endif %}">
 			{{ message }}
 		</div>
 		{% endfor %}
 	</div>
 	{% endif %}
 
+	<!-- Steps -->
+	<div class="flex items-center gap-2 mb-6 text-xs font-medium">
+		<span class="flex items-center gap-1.5 text-green-600 dark:text-green-400">
+			<span class="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-xs font-bold">✓</span>
+			上传文件
+		</span>
+		<span class="flex-1 h-px bg-primary-400"></span>
+		<span class="flex items-center gap-1.5 text-primary-600 dark:text-primary-400">
+			<span class="w-6 h-6 rounded-full bg-primary-600 text-white flex items-center justify-center text-xs font-bold">2</span>
+			预览编辑
+		</span>
+		<span class="flex-1 h-px bg-base-200 dark:bg-base-700"></span>
+		<span class="flex items-center gap-1.5 text-base-400">
+			<span class="w-6 h-6 rounded-full bg-base-200 dark:bg-base-700 text-base-400 flex items-center justify-center text-xs">3</span>
+			发布
+		</span>
+	</div>
+
 	<!-- Status badges -->
 	<div class="flex flex-wrap gap-2 mb-6">
 		{% if data.has_frontmatter %}
-		<span class="px-3 py-1 text-xs font-medium rounded-full bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-500/30">✓ YAML Front Matter 已解析</span>
+		<span class="inline-flex items-center rounded-md bg-green-50 dark:bg-green-900/20 px-2.5 py-1 text-xs font-medium text-green-700 dark:text-green-300 ring-1 ring-inset ring-green-600/20 dark:ring-green-500/30">✓ YAML Front Matter</span>
 		{% else %}
-		<span class="px-3 py-1 text-xs font-medium rounded-full bg-yellow-100 dark:bg-yellow-500/20 text-yellow-700 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-500/30">⚠ 无 YAML Front Matter</span>
+		<span class="inline-flex items-center rounded-md bg-yellow-50 dark:bg-yellow-900/20 px-2.5 py-1 text-xs font-medium text-yellow-700 dark:text-yellow-300 ring-1 ring-inset ring-yellow-600/20 dark:ring-yellow-500/30">⚠ 无 Front Matter</span>
 		{% endif %}
 		{% if data.image_count > 0 %}
-		<span class="px-3 py-1 text-xs font-medium rounded-full bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-500/30">🖼 {{ data.image_count }} 张图片</span>
+		<span class="inline-flex items-center rounded-md bg-blue-50 dark:bg-blue-900/20 px-2.5 py-1 text-xs font-medium text-blue-700 dark:text-blue-300 ring-1 ring-inset ring-blue-600/20 dark:ring-blue-500/30">{{ data.image_count }} 张图片</span>
 		{% endif %}
 		{% for w in data.warnings %}
-		<span class="px-3 py-1 text-xs font-medium rounded-full bg-yellow-100 dark:bg-yellow-500/20 text-yellow-700 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-500/30">{{ w }}</span>
+		<span class="inline-flex items-center rounded-md bg-yellow-50 dark:bg-yellow-900/20 px-2.5 py-1 text-xs font-medium text-yellow-700 dark:text-yellow-300 ring-1 ring-inset ring-yellow-600/20 dark:ring-yellow-500/30">{{ w }}</span>
 		{% endfor %}
 	</div>
 
-	<form method="post" class="space-y-6">
+	<form method="post">
 		{% csrf_token %}
 
-		<!-- Metadata Section -->
-		<div class="bg-white dark:bg-indigo-950/50 backdrop-blur border border-gray-200 dark:border-purple-500/20 rounded-2xl p-6 shadow-sm space-y-5">
-			<h2 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-				<svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-				文章元数据
-			</h2>
-			
-			<!-- Title -->
-			<div>
-				<label for="id_title" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">标题 *</label>
-				<input type="text" name="title" id="id_title" value="{{ data.title }}" required
-					class="w-full px-4 py-2.5 bg-gray-50 dark:bg-indigo-900/30 border border-gray-200 dark:border-purple-500/30 rounded-xl text-gray-800 dark:text-white focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 transition-all">
+		<!-- Metadata -->
+		<div class="rounded-md border border-base-200 dark:border-base-700 bg-white dark:bg-base-900 shadow-sm mb-6">
+			<div class="border-b border-base-200 dark:border-base-700 px-4 py-3">
+				<h2 class="text-sm font-semibold text-base-900 dark:text-base-100">文章元数据</h2>
 			</div>
-
-			<!-- Slug -->
-			<div>
-				<label for="id_slug" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">URL 别名 (slug)</label>
-				<input type="text" name="slug" id="id_slug" value="{{ data.slug }}" placeholder="留空自动生成"
-					class="w-full px-4 py-2.5 bg-gray-50 dark:bg-indigo-900/30 border border-gray-200 dark:border-purple-500/30 rounded-xl text-gray-800 dark:text-white placeholder-gray-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 transition-all font-mono text-sm">
-			</div>
-
-			<!-- Category + Date -->
-			<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+			<div class="p-4 space-y-4">
 				<div>
-					<label for="id_category" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">分类 *</label>
-					<select name="category" id="id_category" required
-						class="w-full px-4 py-2.5 bg-gray-50 dark:bg-indigo-900/30 border border-gray-200 dark:border-purple-500/30 rounded-xl text-gray-800 dark:text-white focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 transition-all">
-						{% for value, label in category_choices %}
-						<option value="{{ value }}" {% if data.category == value %}selected{% endif %}>{{ label }}</option>
-						{% endfor %}
-					</select>
+					<label for="id_title" class="block text-xs font-medium text-base-700 dark:text-base-300 mb-1">标题 <span class="text-red-500">*</span></label>
+					<input type="text" name="title" id="id_title" value="{{ data.title }}" required
+						class="w-full rounded-md border border-base-300 dark:border-base-600 bg-white dark:bg-base-800 px-3 py-2 text-sm text-base-900 dark:text-base-100 placeholder-base-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition-colors">
 				</div>
 				<div>
-					<label for="id_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">发布日期</label>
-					<input type="text" name="date" id="id_date" value="{{ data.date }}" placeholder="留空使用当前时间"
-						class="w-full px-4 py-2.5 bg-gray-50 dark:bg-indigo-900/30 border border-gray-200 dark:border-purple-500/30 rounded-xl text-gray-800 dark:text-white placeholder-gray-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 transition-all text-sm">
+					<label for="id_slug" class="block text-xs font-medium text-base-700 dark:text-base-300 mb-1">URL 别名 (slug)</label>
+					<input type="text" name="slug" id="id_slug" value="{{ data.slug }}" placeholder="留空自动生成"
+						class="w-full rounded-md border border-base-300 dark:border-base-600 bg-white dark:bg-base-800 px-3 py-2 text-sm font-mono text-base-900 dark:text-base-100 placeholder-base-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition-colors">
 				</div>
-			</div>
-
-			<!-- Tags -->
-			<div>
-				<label for="id_tags" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">标签</label>
-				<input type="text" name="tags" id="id_tags" value="{{ data.tags }}" placeholder="逗号分隔，如: python, django, cs231n"
-					class="w-full px-4 py-2.5 bg-gray-50 dark:bg-indigo-900/30 border border-gray-200 dark:border-purple-500/30 rounded-xl text-gray-800 dark:text-white placeholder-gray-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 transition-all">
-			</div>
-
-			<!-- Description -->
-			<div>
-				<label for="id_description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">摘要</label>
-				<textarea name="description" id="id_description" rows="2" placeholder="文章简介，显示在列表页"
-					class="w-full px-4 py-2.5 bg-gray-50 dark:bg-indigo-900/30 border border-gray-200 dark:border-purple-500/30 rounded-xl text-gray-800 dark:text-white placeholder-gray-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 transition-all resize-none">{{ data.description }}</textarea>
+				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+					<div>
+						<label for="id_category" class="block text-xs font-medium text-base-700 dark:text-base-300 mb-1">分类 <span class="text-red-500">*</span></label>
+						<select name="category" id="id_category" required
+							class="w-full rounded-md border border-base-300 dark:border-base-600 bg-white dark:bg-base-800 px-3 py-2 text-sm text-base-900 dark:text-base-100 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition-colors">
+							{% for value, label in category_choices %}
+							<option value="{{ value }}" {% if data.category == value %}selected{% endif %}>{{ label }}</option>
+							{% endfor %}
+						</select>
+					</div>
+					<div>
+						<label for="id_date" class="block text-xs font-medium text-base-700 dark:text-base-300 mb-1">发布日期</label>
+						<input type="text" name="date" id="id_date" value="{{ data.date }}" placeholder="留空使用当前时间"
+							class="w-full rounded-md border border-base-300 dark:border-base-600 bg-white dark:bg-base-800 px-3 py-2 text-sm text-base-900 dark:text-base-100 placeholder-base-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition-colors">
+					</div>
+				</div>
+				<div>
+					<label for="id_tags" class="block text-xs font-medium text-base-700 dark:text-base-300 mb-1">标签</label>
+					<input type="text" name="tags" id="id_tags" value="{{ data.tags }}" placeholder="逗号分隔；单个标签可含空格，如: deep learning, pytorch"
+						class="w-full rounded-md border border-base-300 dark:border-base-600 bg-white dark:bg-base-800 px-3 py-2 text-sm text-base-900 dark:text-base-100 placeholder-base-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition-colors">
+				</div>
+				<div>
+					<label for="id_description" class="block text-xs font-medium text-base-700 dark:text-base-300 mb-1">摘要</label>
+					<textarea name="description" id="id_description" rows="2" placeholder="文章简介，显示在列表页"
+						class="w-full rounded-md border border-base-300 dark:border-base-600 bg-white dark:bg-base-800 px-3 py-2 text-sm text-base-900 dark:text-base-100 placeholder-base-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition-colors resize-y">{{ data.description }}</textarea>
+				</div>
 			</div>
 		</div>
 
-		<!-- Content Preview / Edit -->
-		<div class="bg-white dark:bg-indigo-950/50 backdrop-blur border border-gray-200 dark:border-purple-500/20 rounded-2xl shadow-sm overflow-hidden">
-			<div class="flex border-b border-gray-200 dark:border-purple-500/20">
-				<button type="button" id="tab-preview" onclick="switchTab('preview')"
-					class="flex-1 px-4 py-3 text-sm font-medium text-purple-600 dark:text-purple-400 border-b-2 border-purple-500 bg-purple-50/50 dark:bg-purple-500/10 transition-colors">
-					预览
-				</button>
-				<button type="button" id="tab-source" onclick="switchTab('source')"
-					class="flex-1 px-4 py-3 text-sm font-medium text-gray-500 dark:text-gray-400 border-b-2 border-transparent hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
-					Markdown 源码
-				</button>
+		<!-- Content: 左 Markdown / 右预览（与 admin post change 一致） -->
+		<div class="rounded-md border border-base-200 dark:border-base-700 bg-white dark:bg-base-900 shadow-sm mb-6">
+			<div class="border-b border-base-200 dark:border-base-700 px-4 py-3">
+				<h2 class="text-sm font-semibold text-base-900 dark:text-base-100">正文</h2>
 			</div>
-			
-			<div id="panel-preview" class="p-6 max-h-[60vh] overflow-y-auto">
-				<div class="preview-content text-gray-700 dark:text-gray-200 text-sm">
-					{{ preview_html|safe }}
+			<div class="p-4">
+				<div class="post-md-preview-toolbar">
+					<strong>正文 Markdown</strong>
+					<span>左侧编辑，右侧与站点相同渲染（LaTeX 由 KaTeX 渲染）</span>
+					<button type="button" id="upload-md-preview-refresh" class="border border-base-200 dark:border-base-600 rounded-default px-2 py-1 text-xs font-medium hover:bg-base-100 dark:hover:bg-base-800">刷新预览</button>
+					<span class="post-md-preview-status" id="upload-md-preview-status"></span>
 				</div>
-			</div>
-
-			<div id="panel-source" class="p-6 hidden">
-				<textarea name="content" id="id_content" rows="20"
-					class="w-full px-4 py-3 bg-gray-50 dark:bg-indigo-900/30 border border-gray-200 dark:border-purple-500/30 rounded-xl text-gray-800 dark:text-white font-mono text-sm focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 transition-all resize-y leading-relaxed">{{ data.content }}</textarea>
+				<div class="post-md-preview-wrap">
+					<div class="post-md-editor-col">
+						<textarea name="content" id="id_content"
+							class="rounded-md border border-base-300 dark:border-base-600 bg-white dark:bg-base-800 px-3 py-2 text-sm font-mono text-base-900 dark:text-base-100 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition-colors leading-relaxed">{{ data.content }}</textarea>
+						<p class="text-xs text-base-500 dark:text-base-400 mt-2">支持 Markdown；数学公式使用 <code class="text-xs">$...$</code> 或 <code class="text-xs">$$...$$</code></p>
+					</div>
+					<div class="post-md-preview-pane preview-content article-content" id="upload-content-md-preview">
+						{{ preview_html|safe }}
+					</div>
+				</div>
 			</div>
 		</div>
 
-		<!-- Actions -->
-		<div class="flex gap-4">
-			<a href="{% url 'admin_upload' %}" class="px-6 py-3 bg-gray-200 dark:bg-indigo-900/50 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-300 dark:hover:bg-indigo-800 transition-colors font-medium flex items-center gap-2">
+		<div class="flex items-center justify-between">
+			<a href="{% url 'admin_upload' %}" class="inline-flex items-center gap-1.5 text-sm font-medium text-base-600 dark:text-base-400 hover:text-base-900 dark:hover:text-base-200 transition-colors">
 				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
 				重新上传
 			</a>
-			<button type="submit" class="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-semibold rounded-xl shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all flex items-center justify-center gap-2">
-				<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+			<button type="submit" class="inline-flex items-center gap-2 rounded-md bg-primary-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 transition-colors">
+				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
 				确认发布
 			</button>
 		</div>
 	</form>
 </div>
 
+<script src="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
 <script>
-function switchTab(tab) {
-	const isPreview = tab === 'preview';
-	document.getElementById('panel-preview').classList.toggle('hidden', !isPreview);
-	document.getElementById('panel-source').classList.toggle('hidden', isPreview);
-	document.getElementById('tab-preview').classList.toggle('text-purple-600', isPreview);
-	document.getElementById('tab-preview').classList.toggle('dark:text-purple-400', isPreview);
-	document.getElementById('tab-preview').classList.toggle('border-purple-500', isPreview);
-	document.getElementById('tab-preview').classList.toggle('bg-purple-50/50', isPreview);
-	document.getElementById('tab-preview').classList.toggle('dark:bg-purple-500/10', isPreview);
-	document.getElementById('tab-preview').classList.toggle('text-gray-500', !isPreview);
-	document.getElementById('tab-preview').classList.toggle('border-transparent', !isPreview);
-	document.getElementById('tab-source').classList.toggle('text-purple-600', !isPreview);
-	document.getElementById('tab-source').classList.toggle('dark:text-purple-400', !isPreview);
-	document.getElementById('tab-source').classList.toggle('border-purple-500', !isPreview);
-	document.getElementById('tab-source').classList.toggle('bg-purple-50/50', !isPreview);
-	document.getElementById('tab-source').classList.toggle('dark:bg-purple-500/10', !isPreview);
-	document.getElementById('tab-source').classList.toggle('text-gray-500', isPreview);
-	document.getElementById('tab-source').classList.toggle('border-transparent', isPreview);
-}
+(function () {
+	const previewUrl = "{% url 'admin_post_preview_markdown' %}";
+	const ta = document.getElementById("id_content");
+	const previewEl = document.getElementById("upload-content-md-preview");
+	const statusEl = document.getElementById("upload-md-preview-status");
+	const csrftoken = document.querySelector("[name=csrfmiddlewaretoken]");
+	const csrf = csrftoken ? csrftoken.value : "";
 
-document.addEventListener('DOMContentLoaded', () => {
-	const el = document.querySelector('.preview-content');
-	if (el && typeof renderMathInElement === 'function') {
-		renderMathInElement(el, {
-			delimiters: [
-				{left: '$$', right: '$$', display: true},
-				{left: '$', right: '$', display: false}
-			],
-			throwOnError: false
-		});
+	function debounce(fn, ms) {
+		let t;
+		return function () {
+			clearTimeout(t);
+			const args = arguments;
+			t = setTimeout(function () { fn.apply(null, args); }, ms);
+		};
 	}
-});
+
+	function renderMath(container) {
+		if (!window.renderMathInElement) return;
+		try {
+			window.renderMathInElement(container, {
+				delimiters: [
+					{ left: "$$", right: "$$", display: true },
+					{ left: "$", right: "$", display: false },
+				],
+				throwOnError: false,
+				ignoredTags: ["script", "noscript", "style", "textarea", "pre", "code"],
+			});
+		} catch (e) { /* ignore */ }
+	}
+
+	async function updatePreview() {
+		if (!csrf || !previewEl) return;
+		previewEl.classList.add("is-loading");
+		if (statusEl) statusEl.textContent = "渲染中…";
+		const body = new URLSearchParams();
+		body.set("content", ta.value);
+		body.set("csrfmiddlewaretoken", csrf);
+		try {
+			const r = await fetch(previewUrl, {
+				method: "POST",
+				headers: { "X-Requested-With": "XMLHttpRequest" },
+				body: body,
+				credentials: "same-origin",
+			});
+			const data = await r.json();
+			if (!r.ok || !data.ok) throw new Error(data.error || ("HTTP " + r.status));
+			previewEl.innerHTML = data.html || "";
+			renderMath(previewEl);
+			if (statusEl) statusEl.textContent = "已同步";
+		} catch (e) {
+			previewEl.innerHTML = "<p class=\"text-red-500 text-sm\">预览失败：" + String(e.message || e) + "</p>";
+			if (statusEl) statusEl.textContent = "失败";
+		} finally {
+			previewEl.classList.remove("is-loading");
+		}
+	}
+
+	function kick() {
+		if (window.renderMathInElement && window.katex) {
+			renderMath(previewEl);
+			if (statusEl) statusEl.textContent = "已同步";
+		} else {
+			setTimeout(kick, 30);
+		}
+	}
+	kick();
+
+	ta.addEventListener("input", debounce(updatePreview, 450));
+	document.getElementById("upload-md-preview-refresh")?.addEventListener("click", function (e) {
+		e.preventDefault();
+		updatePreview();
+	});
+})();
 </script>
 {% endblock %}
