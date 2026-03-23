@@ -43,6 +43,35 @@ def slugify_header(text: str, sep: str = '-') -> str:
     return text
 
 
+def _unwrap_math_wrapped_in_backticks(content: str) -> str:
+    r"""Unwrap backticks that only wrap LaTeX $...$ or $$...$$ (outside fenced code blocks).
+
+    Otherwise Markdown emits <code>…</code> and KaTeX renderMathInElement skips <code>,
+    so math stays as raw literal text.
+    """
+    parts = re.split(r"(```[\s\S]*?```)", content)
+    out: list[str] = []
+    for i, part in enumerate(parts):
+        if i % 2 == 1:
+            out.append(part)
+            continue
+        p = part
+        p = re.sub(r"`(\$\$[\s\S]*?\$\$)`", r"\1", p)
+        p = re.sub(r"`(\$[^`]+?\$)`", r"\1", p)
+        out.append(p)
+    return "".join(out)
+
+
+def _unwrap_code_tags_pure_math(html: str) -> str:
+    """
+    Strip <code> wrappers that contain only LaTeX delimiters (legacy / missed unwrap).
+    Keeps real code spans intact.
+    """
+    html = re.sub(r"<code>(\$\$[\s\S]*?\$\$)</code>", r"\1", html)
+    html = re.sub(r"<code>(\$[^<]*?\$)</code>", r"\1", html)
+    return html
+
+
 def _protect_math(content: str) -> tuple[str, list[tuple[str, str]]]:
     """Replace LaTeX math blocks with placeholders before markdown processing.
     Returns (protected_content, [(placeholder, original), ...])
@@ -105,7 +134,10 @@ def render_markdown_with_toc(content: str) -> tuple[str, list[dict]]:
     from markdown.extensions.toc import TocExtension
     from markdown.extensions.codehilite import CodeHiliteExtension
     from markdown.extensions.fenced_code import FencedCodeExtension
-    
+
+    # `` `$\Sigma$` `` → $\Sigma$ so math is not turned into <code> (KaTeX ignores code)
+    content = _unwrap_math_wrapped_in_backticks(content)
+
     # Protect LaTeX math from markdown processing
     content, math_placeholders = _protect_math(content)
     
@@ -126,9 +158,12 @@ def render_markdown_with_toc(content: str) -> tuple[str, list[dict]]:
     
     md = markdown.Markdown(extensions=extensions)
     html = md.convert(content)
-    
+
     # Restore LaTeX math
     html = _restore_math(html, math_placeholders)
+
+    # <code>$...$</code> from backtick-wrapped math KaTeX would skip
+    html = _unwrap_code_tags_pure_math(html)
     
     # Extract TOC
     toc_items = []
