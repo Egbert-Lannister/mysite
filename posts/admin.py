@@ -491,6 +491,8 @@ class PostAdmin(ModelAdmin):
     list_per_page = 20
     readonly_fields = ("content_hash", "created_at", "updated_at")
     
+    change_form_template = "admin/posts/post/change_form.html"
+
     fieldsets = (
         ('📝 基本信息', {
             'fields': ('title', 'slug', 'upload_file'),
@@ -498,11 +500,12 @@ class PostAdmin(ModelAdmin):
         }),
         ('📄 文章内容', {
             'fields': ('description', 'content'),
-            'description': '摘要会显示在文章列表，正文支持 Markdown 语法'
+            'description': '摘要会显示在文章列表，正文支持 Markdown 与 LaTeX；右侧为与前台一致的实时预览。',
+            'classes': ('wide',),
         }),
         ('⚙️ 发布设置', {
             'fields': ('date', 'category', 'tags', 'published'),
-            'description': '设置发布日期、分类和标签'
+            'description': '标签：多个请用英文逗号分隔；单个标签可含空格（详见下方字段说明）。',
         }),
         ('🔧 系统信息', {
             'fields': ('content_hash', 'created_at', 'updated_at'),

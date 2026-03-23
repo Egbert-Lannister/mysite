@@ -8,6 +8,8 @@ from django.conf import settings
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, render, redirect
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
@@ -357,7 +359,6 @@ def _parse_upload_file(uploaded_file) -> dict:
     return result
 
 
-@login_required
 def admin_upload(request):
     """Step 1: Upload file → parse → redirect to preview."""
     from .models import Post
@@ -395,12 +396,16 @@ def admin_upload(request):
         }
         return redirect("admin_upload_preview")
 
-    return render(request, "admin/upload.html", {
+    from django.contrib import admin as django_admin
+    context = django_admin.site.each_context(request)
+    context.update({
         "category_choices": category_choices,
+        "title": "上传文章",
+        "content_title": "上传文章",
     })
+    return render(request, "admin/upload.html", context)
 
 
-@login_required
 def admin_upload_preview(request):
     """Step 2: Preview parsed content, let user edit, then publish."""
     from .models import Post
@@ -459,11 +464,16 @@ def admin_upload_preview(request):
     content_text = preview_data.get("content", "")
     preview_html, _ = render_markdown_with_toc(content_text[:3000])
 
-    return render(request, "admin/upload_preview.html", {
+    from django.contrib import admin as django_admin
+    context = django_admin.site.each_context(request)
+    context.update({
         "data": preview_data,
         "preview_html": preview_html,
         "category_choices": category_choices,
+        "title": "预览与编辑",
+        "content_title": "预览与编辑",
     })
+    return render(request, "admin/upload_preview.html", context)
 
 
 def _extract_title_from_markdown(text: str) -> str:
@@ -601,4 +611,20 @@ def process_markdown_content(text: str, images: list, temp_dir,
     
     return post, created, warnings
 
+
+@require_POST
+def admin_preview_markdown(request):
+    """
+    Staff-only (via admin_view): render Markdown + math placeholders the same
+    way as the public site; KaTeX runs in the admin preview pane.
+    """
+    content = request.POST.get("content", "")
+    try:
+        html, _ = render_markdown_with_toc(content)
+    except Exception as e:
+        return JsonResponse(
+            {"ok": False, "html": "", "error": str(e)},
+            status=400,
+        )
+    return JsonResponse({"ok": True, "html": html, "error": None})
 

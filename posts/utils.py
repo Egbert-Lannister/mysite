@@ -69,8 +69,14 @@ def _protect_math(content: str) -> tuple[str, list[tuple[str, str]]]:
 
     # $$...$$ block math (may span lines)
     content = re.sub(r'\$\$(.+?)\$\$', _make_placeholder, content, flags=re.DOTALL)
-    # $...$ inline math (single line, non-greedy, must not start/end with space)
-    content = re.sub(r'(?<!\$)\$(?!\$)(?!\s)(.+?)(?<!\s)\$(?!\$)', _make_placeholder, content)
+    # $...$ inline math — allow optional spaces after opening / before closing $
+    # (many authors write "$ \Sigma $" or "$\Sigma $"; old regex skipped these so
+    # markdown could corrupt \command, and KaTeX saw broken text nodes.)
+    content = re.sub(
+        r'(?<!\$)\$(?!\$)\s*(.+?)\s*\$(?!\$)',
+        _make_placeholder,
+        content,
+    )
 
     # Restore code blocks
     for tag, code in code_blocks:

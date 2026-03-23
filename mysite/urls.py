@@ -10,9 +10,14 @@ from posts.feeds import LatestPostsFeed
 from posts import views as posts_views
 
 urlpatterns = [
-    # Upload routes under /admin/ (before admin.site.urls so they take priority)
-    path('admin/upload/', posts_views.admin_upload, name='admin_upload'),
-    path('admin/upload/preview/', posts_views.admin_upload_preview, name='admin_upload_preview'),
+    # Upload routes under /admin/ — wrapped with admin_view for full Unfold context
+    path('admin/upload/', admin.site.admin_view(posts_views.admin_upload), name='admin_upload'),
+    path('admin/upload/preview/', admin.site.admin_view(posts_views.admin_upload_preview), name='admin_upload_preview'),
+    path(
+        'admin/posts/preview-markdown/',
+        admin.site.admin_view(posts_views.admin_preview_markdown),
+        name='admin_post_preview_markdown',
+    ),
     # Django admin
     path('admin/', admin.site.urls),
     # Public site

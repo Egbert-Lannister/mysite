@@ -123,6 +123,9 @@ INTERNAL_IPS = ['127.0.0.1', 'localhost']
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# django-taggit: allow spaces inside a single tag; use commas to separate tags
+TAGGIT_TAGS_FROM_STRING = 'posts.taggit_helpers.parse_tags_allow_spaces'
+
 # =============================================================================
 # Upload Settings
 # =============================================================================

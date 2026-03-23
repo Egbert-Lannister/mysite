@@ -143,7 +143,11 @@ class Post(models.Model):
     content_hash = models.CharField("内容哈希", max_length=64, blank=True, db_index=True,
                                      help_text="用于去重检测")
     date = models.DateTimeField("发布日期")
-    tags = TaggableManager("标签", blank=True)
+    tags = TaggableManager(
+        "标签",
+        blank=True,
+        help_text="多个标签请用英文逗号「,」分隔；单个标签内可以包含空格。示例：deep learning, pytorch",
+    )
     category = models.CharField("分类", max_length=32, choices=CATEGORY_CHOICES)
     published = models.BooleanField("已发布", default=True)
     
