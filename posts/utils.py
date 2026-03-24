@@ -43,6 +43,15 @@ def slugify_header(text: str, sep: str = '-') -> str:
     return text
 
 
+def _normalize_backticks_for_math(content: str) -> str:
+    r"""Common paste/Notion confusables that prevent `` `$...$` `` (LaTeX in backticks) from matching."""
+    # Fullwidth grave / spacing chars sometimes used instead of ASCII backtick
+    return (
+        content.replace("\uff40", "`")  # FULLWIDTH GRAVE ACCENT ｀
+        .replace("\u00b4", "`")  # ACUTE ACCENT ´ (wrong but seen in paste)
+    )
+
+
 def _unwrap_math_wrapped_in_backticks(content: str) -> str:
     r"""Unwrap backticks that only wrap LaTeX $...$ or $$...$$ (outside fenced code blocks).
 
@@ -62,14 +71,55 @@ def _unwrap_math_wrapped_in_backticks(content: str) -> str:
     return "".join(out)
 
 
+def _unwrap_math_wrapped_in_backticks_repeat(content: str, rounds: int = 4) -> str:
+    """Repeat unwrap (occasionally nested / duplicated patterns)."""
+    content = _normalize_backticks_for_math(content)
+    for _ in range(rounds):
+        nxt = _unwrap_math_wrapped_in_backticks(content)
+        if nxt == content:
+            break
+        content = nxt
+    return content
+
+
 def _unwrap_code_tags_pure_math(html: str) -> str:
     """
-    Strip <code> wrappers that contain only LaTeX delimiters (legacy / missed unwrap).
-    Keeps real code spans intact.
+    Remove <code>…</code> when the entire text content is only $…$ / $$…$$ fragments
+    (possibly several, separated by spaces). Markdown+CodeHilite often adds classes;
+    KaTeX skips <code>, so these must become plain text for renderMathInElement.
+
+    Avoid obvious shell vars like ``$PATH$`` (no LaTeX command with backslash).
     """
-    html = re.sub(r"<code>(\$\$[\s\S]*?\$\$)</code>", r"\1", html)
-    html = re.sub(r"<code>(\$[^<]*?\$)</code>", r"\1", html)
-    return html
+    frag = r"(?:\$\$[\s\S]*?\$\$|\$[^$]*\$)"
+    only_math_frags = re.compile(r"^\s*(?:" + frag + r"\s*)+$")
+
+    def _looks_tex(s: str) -> bool:
+        if re.search(r"\\[a-zA-Z]", s):
+            return True
+        if "^" in s or "_" in s:
+            return True
+        if "\\{" in s or "\\}" in s:
+            return True
+        return False
+
+    def repl(m: re.Match) -> str:
+        full = m.group(0)
+        # Fenced / highlighted code blocks — do not unwrap
+        if re.search(
+            r'<code[^>]*\sclass="[^"]*(?:language-|hljs|highlight)',
+            full,
+            re.IGNORECASE,
+        ):
+            return full
+        inner = m.group(1)
+        s = inner.strip()
+        if not only_math_frags.match(s):
+            return full
+        if not _looks_tex(s):
+            return full
+        return s
+
+    return re.sub(r"<code[^>]*>(.*?)</code>", repl, html, flags=re.DOTALL | re.IGNORECASE)
 
 
 def _protect_math(content: str) -> tuple[str, list[tuple[str, str]]]:
@@ -136,7 +186,7 @@ def render_markdown_with_toc(content: str) -> tuple[str, list[dict]]:
     from markdown.extensions.fenced_code import FencedCodeExtension
 
     # `` `$\Sigma$` `` → $\Sigma$ so math is not turned into <code> (KaTeX ignores code)
-    content = _unwrap_math_wrapped_in_backticks(content)
+    content = _unwrap_math_wrapped_in_backticks_repeat(content)
 
     # Protect LaTeX math from markdown processing
     content, math_placeholders = _protect_math(content)
