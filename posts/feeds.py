@@ -6,7 +6,7 @@ from .models import Post
 class LatestPostsFeed(Feed):
     title = "Egbert's TechBlog"
     link = "/techblog/"
-    description = "分享技术见解与学习心得"
+    description = "A space for ideas, words, and wonder."
 
     def items(self):
         return Post.objects.filter(published=True).order_by("-date")[:30]
