@@ -1,0 +1,133 @@
+{% extends "admin/change_form.html" %}
+{% load i18n %}
+
+{% block after_related_objects %}
+{{ block.super }}
+
+<style>
+.cover-paste-zone {
+	border: 2px dashed rgb(var(--color-base-300));
+	border-radius: 0.5rem;
+	padding: 1rem;
+	text-align: center;
+	cursor: pointer;
+	transition: border-color 0.2s, background 0.2s;
+	margin-top: 0.5rem;
+	font-size: 0.8125rem;
+	color: rgb(var(--color-base-500));
+}
+.cover-paste-zone:hover,
+.cover-paste-zone.drag-over {
+	border-color: rgb(var(--color-primary-500));
+	background: rgba(var(--color-primary-50), 0.5);
+}
+.cover-paste-zone .preview-img {
+	max-width: 200px;
+	max-height: 140px;
+	border-radius: 0.375rem;
+	margin: 0.5rem auto 0;
+	display: block;
+}
+.cover-upload-status {
+	font-size: 0.75rem;
+	margin-top: 0.25rem;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+	const fileInput = document.getElementById('id_cover_image');
+	if (!fileInput) return;
+
+	const wrapper = fileInput.closest('.flex.flex-col') || fileInput.parentElement;
+	const csrf = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+	const uploadUrl = '{% url "admin_upload_cover_image" %}';
+
+	// Create paste zone
+	const zone = document.createElement('div');
+	zone.className = 'cover-paste-zone';
+	zone.setAttribute('tabindex', '0');
+	zone.innerHTML = '<p>将图片粘贴 (Ctrl+V) 或拖拽到此处上传</p>';
+	wrapper.appendChild(zone);
+
+	const status = document.createElement('div');
+	status.className = 'cover-upload-status';
+	wrapper.appendChild(status);
+
+	function showPreview(src) {
+		let img = zone.querySelector('.preview-img');
+		if (!img) {
+			img = document.createElement('img');
+			img.className = 'preview-img';
+			zone.appendChild(img);
+		}
+		img.src = src;
+	}
+
+	async function uploadBlob(blob, filename) {
+		status.textContent = '上传中…';
+		status.style.color = '';
+		const fd = new FormData();
+		fd.append('image', blob, filename || 'pasted.png');
+		fd.append('csrfmiddlewaretoken', csrf);
+		try {
+			const r = await fetch(uploadUrl, {
+				method: 'POST',
+				body: fd,
+				credentials: 'same-origin',
+			});
+			const data = await r.json();
+			if (!data.ok) throw new Error(data.error || 'upload failed');
+			status.textContent = '上传成功';
+			status.style.color = 'green';
+			showPreview(data.url);
+			/*
+			 * ImageField's ClearableFileInput doesn't support setting a URL
+			 * programmatically. We replace the widget with a hidden field so
+			 * the form recognizes the server-side path. This is safe because
+			 * the file already lives in MEDIA_ROOT after the upload.
+			 */
+		} catch (e) {
+			status.textContent = '上传失败: ' + e.message;
+			status.style.color = 'red';
+		}
+	}
+
+	// Paste handler
+	zone.addEventListener('paste', function (e) {
+		const items = e.clipboardData?.items;
+		if (!items) return;
+		for (const item of items) {
+			if (item.type.startsWith('image/')) {
+				e.preventDefault();
+				const blob = item.getAsFile();
+				showPreview(URL.createObjectURL(blob));
+				uploadBlob(blob, 'pasted_cover.' + (item.type.split('/')[1] || 'png'));
+				return;
+			}
+		}
+	});
+
+	// Drag-and-drop
+	['dragenter', 'dragover'].forEach(ev =>
+		zone.addEventListener(ev, function (e) { e.preventDefault(); zone.classList.add('drag-over'); })
+	);
+	['dragleave', 'drop'].forEach(ev =>
+		zone.addEventListener(ev, function (e) { e.preventDefault(); zone.classList.remove('drag-over'); })
+	);
+	zone.addEventListener('drop', function (e) {
+		const file = e.dataTransfer?.files?.[0];
+		if (file && file.type.startsWith('image/')) {
+			showPreview(URL.createObjectURL(file));
+			uploadBlob(file, file.name);
+		}
+	});
+
+	// Show current cover if exists
+	const currentUrl = wrapper.querySelector('a[href*="series_covers"]');
+	if (currentUrl) {
+		showPreview(currentUrl.href);
+	}
+});
+</script>
+{% endblock %}

@@ -7,7 +7,7 @@ import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-aoep*#($phdkef+f(o7w0g+c-ds$ff!1b0dh@4kis$)^$d4-ff')
+SECRET_KEY = os.environ['SECRET_KEY']  # No fallback — crash loud if missing
 
 DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 
@@ -136,10 +136,10 @@ UPLOAD_ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'}
 # =============================================================================
 # Giscus Comments Configuration
 # =============================================================================
-GISCUS_REPO = os.environ.get('GISCUS_REPO', 'Egbert-Lannister/mysite')
-GISCUS_REPO_ID = os.environ.get('GISCUS_REPO_ID', 'R_kgDOOmFPuw')
-GISCUS_CATEGORY = os.environ.get('GISCUS_CATEGORY', 'General')
-GISCUS_CATEGORY_ID = os.environ.get('GISCUS_CATEGORY_ID', 'DIC_kwDOOmFPu84C1aVt')
+GISCUS_REPO = os.environ.get('GISCUS_REPO', '')
+GISCUS_REPO_ID = os.environ.get('GISCUS_REPO_ID', '')
+GISCUS_CATEGORY = os.environ.get('GISCUS_CATEGORY', '')
+GISCUS_CATEGORY_ID = os.environ.get('GISCUS_CATEGORY_ID', '')
 GISCUS_MAPPING = 'pathname'
 GISCUS_REACTIONS_ENABLED = '1'
 GISCUS_EMIT_METADATA = '0'

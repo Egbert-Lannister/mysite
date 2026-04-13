@@ -16,7 +16,7 @@
 		<div class="flex flex-col md:flex-row gap-6">
 			{% if series.cover_image %}
 			<div class="md:w-48 flex-shrink-0">
-				<img src="{{ series.cover_image }}" alt="{{ series.title }}" class="w-full aspect-video md:aspect-square object-cover rounded-xl">
+				<img src="{{ series.cover_image.url }}" alt="{{ series.title }}" class="w-full aspect-video md:aspect-square object-cover rounded-xl">
 			</div>
 			{% endif %}
 			<div class="flex-1">
@@ -24,11 +24,6 @@
 					<span class="px-3 py-1 text-xs font-semibold rounded-full bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-300 border border-purple-200 dark:border-purple-500/30">
 						Series
 					</span>
-					{% if series.tag %}
-					<span class="px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-300 border border-blue-200 dark:border-blue-500/30">
-						#{{ series.tag.name }}
-					</span>
-					{% endif %}
 					<span class="text-sm text-gray-500 dark:text-gray-400">{{ post_count }} 篇文章</span>
 				</div>
 				<h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">{{ series.title }}</h1>
@@ -55,7 +50,7 @@
 				<div class="flex items-start gap-4 p-4 rounded-xl border border-gray-100 dark:border-purple-500/10 hover:border-purple-300 dark:hover:border-purple-500/30 hover:bg-purple-50/50 dark:hover:bg-purple-500/10 transition-all">
 					<!-- 序号 -->
 					<div class="flex-shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-purple-500/25">
-						{{ forloop.counter }}
+						{% if post.series_order %}{{ post.series_order }}{% else %}{{ forloop.counter }}{% endif %}
 					</div>
 					
 					<div class="flex-1 min-w-0">
@@ -112,9 +107,7 @@
 				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
 			</svg>
 			<p class="text-gray-500 dark:text-gray-400">该系列暂无文章</p>
-			{% if series.tag %}
-			<p class="text-sm text-gray-400 dark:text-gray-500 mt-2">创建包含 <span class="font-mono text-purple-500">#{{ series.tag.name }}</span> 标签的文章后将自动出现在此处</p>
-			{% endif %}
+			<p class="text-sm text-gray-400 dark:text-gray-500 mt-2">在文章的「系列设置」中将文章关联到此系列即可</p>
 		</div>
 		{% endif %}
 	</div>

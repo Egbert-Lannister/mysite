@@ -1,4 +1,8 @@
+from __future__ import annotations
+
 import hashlib
+import uuid
+
 from django.db import models
 from django.utils.text import slugify
 from taggit.managers import TaggableManager
@@ -11,15 +15,12 @@ except Exception:
     HAS_PG = False
 
 
-def generate_unique_slug(title, instance_pk=None):
-    """Generate unique slug from title"""
-    from django.utils.text import slugify
-    import uuid
-    
+def generate_unique_slug(title: str, instance_pk: int | None = None) -> str:
+    """Generate unique slug from title."""
     base_slug = slugify(title)
     if not base_slug:
         base_slug = uuid.uuid4().hex[:8]
-    
+
     slug = base_slug
     counter = 1
     while Post.objects.filter(slug=slug).exclude(pk=instance_pk).exists():
@@ -28,14 +29,12 @@ def generate_unique_slug(title, instance_pk=None):
     return slug
 
 
-def generate_series_slug(title, instance_pk=None):
-    """Generate unique slug for Series from title"""
-    import uuid
-    
+def generate_series_slug(title: str, instance_pk: int | None = None) -> str:
+    """Generate unique slug for Series from title."""
     base_slug = slugify(title)
     if not base_slug:
         base_slug = uuid.uuid4().hex[:8]
-    
+
     slug = base_slug
     counter = 1
     while Series.objects.filter(slug=slug).exclude(pk=instance_pk).exists():
@@ -45,48 +44,37 @@ def generate_series_slug(title, instance_pk=None):
 
 
 def compute_content_hash(content: str) -> str:
-    """Compute SHA256 hash of content for deduplication"""
-    return hashlib.sha256(content.encode('utf-8')).hexdigest()
+    """Compute SHA256 hash of content for deduplication."""
+    return hashlib.sha256(content.encode("utf-8")).hexdigest()
+
+
+def series_cover_upload_path(instance: "Series", filename: str) -> str:
+    """Upload path: media/series_covers/<slug>/<filename>"""
+    return f"series_covers/{instance.slug or 'tmp'}/{filename}"
 
 
 class Series(models.Model):
     """
-    合集/系列模型 — 通过绑定一个 taggit Tag 来自动聚合文章。
-    例如创建 Series(name="CS231n Learning Notes", tag=<Tag: cs231n>)，
-    则 series_detail 页面自动展示所有带 tag=cs231n 的文章。
+    独立系列/合集模型 — 通过 Post.series ForeignKey 关联文章。
     """
-    CATEGORY_FILTER_CHOICES = (
-        ("", "不限"),
-        ("engineering", "Engineering"),
-        ("research", "Research"),
-        ("notes", "Notes"),
-        ("projects", "Projects"),
-    )
 
     title = models.CharField("系列标题", max_length=255, help_text="系列的显示名称")
     slug = models.SlugField("URL 别名", unique=True, help_text="用于生成系列链接")
     description = models.TextField("系列简介", blank=True, help_text="系列的详细介绍")
-    cover_image = models.URLField("封面图片", blank=True, help_text="系列封面图片 URL（可选）")
-    tag = models.ForeignKey(
-        'taggit.Tag',
-        on_delete=models.SET_NULL,
-        null=True,
+    cover_image = models.ImageField(
+        "封面图片",
+        upload_to=series_cover_upload_path,
         blank=True,
-        verbose_name="关联标签",
-        help_text="绑定一个 Tag，系列详情页将自动聚合包含该 Tag 的所有文章",
+        help_text="上传封面图片（支持文件选择或粘贴上传）",
     )
-    category_filter = models.CharField(
-        "分类过滤",
-        max_length=32,
-        blank=True,
-        default="",
-        choices=CATEGORY_FILTER_CHOICES,
-        help_text="可选：只显示该分类下的文章，留空则不限分类",
+    order = models.PositiveIntegerField(
+        "排序权重", default=0,
+        help_text="数字越小越靠前，用于首页展示顺序",
     )
-    order = models.PositiveIntegerField("排序权重", default=0, 
-                                         help_text="数字越小越靠前，用于首页展示顺序")
-    is_featured = models.BooleanField("首页推荐", default=False,
-                                       help_text="是否在首页显示")
+    is_featured = models.BooleanField(
+        "首页推荐", default=False,
+        help_text="是否在首页显示",
+    )
     created_at = models.DateTimeField("创建时间", auto_now_add=True)
     updated_at = models.DateTimeField("更新时间", auto_now=True)
 
@@ -97,34 +85,31 @@ class Series(models.Model):
 
     def __str__(self) -> str:
         return self.title
-    
+
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = generate_series_slug(self.title, instance_pk=self.pk)
         super().save(*args, **kwargs)
 
-    def get_absolute_url(self):
+    def get_absolute_url(self) -> str:
         from django.urls import reverse
-        return reverse('posts:series_detail', args=[self.slug])
-    
-    def get_aggregated_posts(self):
-        """根据绑定的 tag（+ 可选 category_filter）聚合已发布文章"""
-        if not self.tag:
-            return Post.objects.none()
-        qs = Post.objects.filter(published=True, tags__name__in=[self.tag.name])
-        if self.category_filter:
-            qs = qs.filter(category=self.category_filter)
-        return qs.distinct().order_by('-date')
+        return reverse("posts:series_detail", args=[self.slug])
+
+    def get_posts(self):
+        """Return published posts in this series, ordered by series_order then date."""
+        return (
+            self.posts
+            .filter(published=True)
+            .order_by("series_order", "-date")
+        )
 
     @property
-    def post_count(self):
-        """返回系列聚合的已发布文章数量（tag-based）"""
-        return self.get_aggregated_posts().count()
-    
+    def post_count(self) -> int:
+        return self.get_posts().count()
+
     @property
     def latest_post_date(self):
-        """返回系列中最新文章的发布日期"""
-        latest = self.get_aggregated_posts().first()
+        latest = self.posts.filter(published=True).order_by("-date").first()
         return latest.date if latest else None
 
 
@@ -140,34 +125,32 @@ class Post(models.Model):
     slug = models.SlugField("URL 别名", unique=True, help_text="用于生成文章链接")
     description = models.TextField("摘要", blank=True, help_text="文章简介")
     content = models.TextField("正文", help_text="Markdown 格式")
-    content_hash = models.CharField("内容哈希", max_length=64, blank=True, db_index=True,
-                                     help_text="用于去重检测")
+    content_hash = models.CharField(
+        "内容哈希", max_length=64, blank=True, db_index=True,
+        help_text="用于去重检测",
+    )
     date = models.DateTimeField("发布日期")
     tags = TaggableManager(
-        "标签",
-        blank=True,
+        "标签", blank=True,
         help_text="多个标签请用英文逗号「,」分隔；单个标签内可以包含空格。示例：deep learning, pytorch",
     )
     category = models.CharField("分类", max_length=32, choices=CATEGORY_CHOICES)
     published = models.BooleanField("已发布", default=True)
-    
-    # Series fields
+
     series = models.ForeignKey(
-        Series, 
-        on_delete=models.SET_NULL, 
-        null=True, 
+        Series,
+        on_delete=models.SET_NULL,
+        null=True,
         blank=True,
         related_name="posts",
         verbose_name="所属系列",
-        help_text="文章所属的系列/合集"
+        help_text="文章所属的系列/合集",
     )
     series_order = models.PositiveIntegerField(
-        "系列内排序", 
-        null=True, 
-        blank=True,
-        help_text="在系列中的顺序，数字越小越靠前"
+        "系列内排序", null=True, blank=True,
+        help_text="在系列中的顺序，数字越小越靠前",
     )
-    
+
     created_at = models.DateTimeField("创建时间", auto_now_add=True)
     updated_at = models.DateTimeField("更新时间", auto_now=True)
 
@@ -176,15 +159,15 @@ class Post(models.Model):
         verbose_name = "文章"
         verbose_name_plural = "文章管理"
         indexes = [
-            GinIndex(fields=["title", "content"], name="posts_post_title_gin") if HAS_PG 
+            GinIndex(fields=["title", "content"], name="posts_post_title_gin")
+            if HAS_PG
             else models.Index(fields=["date"], name="posts_post_date_idx")
         ]
         constraints = [
-            # 同一 series 内 series_order 唯一（允许 null）
             models.UniqueConstraint(
-                fields=['series', 'series_order'],
-                name='unique_series_order',
-                condition=models.Q(series__isnull=False, series_order__isnull=False)
+                fields=["series", "series_order"],
+                name="unique_series_order",
+                condition=models.Q(series__isnull=False, series_order__isnull=False),
             )
         ]
 
@@ -196,31 +179,36 @@ class Post(models.Model):
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = generate_unique_slug(self.title, instance_pk=self.pk)
-        # Auto compute content hash
         if self.content:
             self.content_hash = compute_content_hash(self.content)
         super().save(*args, **kwargs)
-    
-    def get_absolute_url(self):
+
+    def get_absolute_url(self) -> str:
         from django.urls import reverse
-        return reverse('posts:post_detail', args=[self.slug])
-    
-    def get_series_prev(self):
-        """获取同系列的上一篇文章（基于 series_order）"""
+        return reverse("posts:post_detail", args=[self.slug])
+
+    def get_series_prev(self) -> "Post | None":
         if not self.series or self.series_order is None:
             return None
-        return Post.objects.filter(
-            series=self.series,
-            series_order__lt=self.series_order,
-            published=True
-        ).order_by('-series_order').first()
-    
-    def get_series_next(self):
-        """获取同系列的下一篇文章（基于 series_order）"""
+        return (
+            Post.objects.filter(
+                series=self.series,
+                series_order__lt=self.series_order,
+                published=True,
+            )
+            .order_by("-series_order")
+            .first()
+        )
+
+    def get_series_next(self) -> "Post | None":
         if not self.series or self.series_order is None:
             return None
-        return Post.objects.filter(
-            series=self.series,
-            series_order__gt=self.series_order,
-            published=True
-        ).order_by('series_order').first()
+        return (
+            Post.objects.filter(
+                series=self.series,
+                series_order__gt=self.series_order,
+                published=True,
+            )
+            .order_by("series_order")
+            .first()
+        )

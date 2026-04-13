@@ -18,6 +18,11 @@ urlpatterns = [
         admin.site.admin_view(posts_views.admin_preview_markdown),
         name='admin_post_preview_markdown',
     ),
+    path(
+        'admin/upload-cover-image/',
+        admin.site.admin_view(posts_views.upload_cover_image),
+        name='admin_upload_cover_image',
+    ),
     # Django admin
     path('admin/', admin.site.urls),
     # Public site

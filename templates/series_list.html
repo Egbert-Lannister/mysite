@@ -16,7 +16,7 @@
 		
 		{% if series.cover_image %}
 		<div class="aspect-video overflow-hidden">
-			<img src="{{ series.cover_image }}" alt="{{ series.title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+			<img src="{{ series.cover_image.url }}" alt="{{ series.title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
 		</div>
 		{% endif %}
 		
