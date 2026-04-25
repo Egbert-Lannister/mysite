@@ -1,115 +1,106 @@
 {% extends "base.html" %}
 {% block title %}{{ series.title }} - TechBlog{% endblock %}
 {% block meta_description %}{{ series.description }}{% endblock %}
+
 {% block content %}
-<div class="max-w-4xl mx-auto">
-	<!-- 返回链接 -->
-	<a href="{% url 'posts:series_list' %}" class="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors mb-6 group">
-		<svg class="w-4 h-4 mr-2 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+<div class="max-w-[820px] mx-auto">
+
+	<!-- Back link -->
+	<a href="{% url 'posts:series_list' %}"
+	   class="inline-flex items-center gap-1 text-[13px] text-ink-500 dark:text-ink-500 hover:text-accent-600 dark:hover:text-accent-400 transition-colors mb-6 group">
+		<svg class="w-3.5 h-3.5 transform group-hover:-translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+			<path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
 		</svg>
-		返回 Series 列表
+		All series
 	</a>
-	
-	<!-- 系列头部 -->
-	<header class="bg-white dark:bg-indigo-950/50 backdrop-blur border border-gray-200 dark:border-purple-500/20 rounded-2xl p-6 md:p-8 mb-8 shadow-sm">
-		<div class="flex flex-col md:flex-row gap-6">
+
+	<!-- Series header -->
+	<header class="mb-10 md:mb-12 pb-8 border-b border-ink-200/70 dark:border-white/5">
+		<span class="page-eyebrow">Series</span>
+		<h1 class="page-title">{{ series.title }}</h1>
+		<p class="page-desc flex items-center gap-2">
+			<span class="font-mono text-[12px]">{{ post_count }} article{{ post_count|pluralize }}</span>
+			{% if series.latest_post_date %}
+			<span class="text-ink-300 dark:text-ink-700">·</span>
+			<span class="font-mono text-[12px]">Last updated {{ series.latest_post_date|date:"Y-m-d" }}</span>
+			{% endif %}
+		</p>
+
+		{% if series.cover_image or series.description %}
+		<div class="mt-7 flex flex-col md:flex-row gap-6">
 			{% if series.cover_image %}
-			<div class="md:w-48 flex-shrink-0">
-				<img src="{{ series.cover_image.url }}" alt="{{ series.title }}" class="w-full aspect-video md:aspect-square object-cover rounded-xl">
+			<div class="md:w-44 flex-shrink-0">
+				<img src="{{ series.cover_image.url }}" alt="{{ series.title }}"
+				     class="w-full aspect-video md:aspect-square object-cover rounded-lg border border-ink-200/80 dark:border-white/[0.07]">
 			</div>
 			{% endif %}
-			<div class="flex-1">
-				<div class="flex items-center gap-3 mb-3 flex-wrap">
-					<span class="px-3 py-1 text-xs font-semibold rounded-full bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-300 border border-purple-200 dark:border-purple-500/30">
-						Series
-					</span>
-					<span class="text-sm text-gray-500 dark:text-gray-400">{{ post_count }} 篇文章</span>
-				</div>
-				<h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">{{ series.title }}</h1>
-				{% if series.description %}
-				<p class="text-gray-600 dark:text-gray-400 leading-relaxed">{{ series.description }}</p>
-				{% endif %}
-			</div>
+			{% if series.description %}
+			<p class="flex-1 text-[15px] leading-relaxed text-ink-700 dark:text-ink-300">
+				{{ series.description }}
+			</p>
+			{% endif %}
 		</div>
+		{% endif %}
 	</header>
-	
-	<!-- 目录 -->
-	<div class="bg-white dark:bg-indigo-950/50 backdrop-blur border border-gray-200 dark:border-purple-500/20 rounded-2xl p-6 md:p-8 shadow-sm">
-		<h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
-			<svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
-			</svg>
-			目录 / Contents
-		</h2>
-		
+
+	<!-- Contents -->
+	<section>
+		<h2 class="page-eyebrow mb-5 block">Contents</h2>
+
 		{% if posts %}
-		<div class="space-y-3">
+		<ol class="space-y-2">
 			{% for post in posts %}
-			<a href="{% url 'posts:post_detail' post.slug %}" class="block group">
-				<div class="flex items-start gap-4 p-4 rounded-xl border border-gray-100 dark:border-purple-500/10 hover:border-purple-300 dark:hover:border-purple-500/30 hover:bg-purple-50/50 dark:hover:bg-purple-500/10 transition-all">
-					<!-- 序号 -->
-					<div class="flex-shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-purple-500/25">
+			<li>
+				<a href="{% url 'posts:post_detail' post.slug %}"
+				   class="post-card group flex items-start gap-4 p-4 md:p-5 bg-white dark:bg-white/[0.03] border border-ink-200/80 dark:border-white/[0.07] rounded-lg">
+					<!-- Index number -->
+					<span class="flex-shrink-0 w-8 h-8 rounded-md bg-ink-100 dark:bg-white/5 text-ink-700 dark:text-ink-300 font-mono text-[13px] font-medium flex items-center justify-center group-hover:bg-accent-50 dark:group-hover:bg-accent-500/10 group-hover:text-accent-600 dark:group-hover:text-accent-400 transition-colors">
 						{% if post.series_order %}{{ post.series_order }}{% else %}{{ forloop.counter }}{% endif %}
-					</div>
-					
+					</span>
+
 					<div class="flex-1 min-w-0">
-						<h3 class="font-semibold text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-300 transition-colors mb-1">
+						<div class="flex items-center justify-between gap-3 mb-1.5 text-[12px]">
+							<div class="flex items-center gap-2 min-w-0">
+								<span class="cat-pill
+									{% if post.category == 'engineering' %}bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-300
+									{% elif post.category == 'research' %}bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-300
+									{% elif post.category == 'notes' %}bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-300
+									{% elif post.category == 'projects' %}bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-300
+									{% else %}bg-ink-100 dark:bg-white/5 text-ink-700 dark:text-ink-300{% endif %}">
+									{{ post.get_category_display }}
+								</span>
+							</div>
+							<time class="text-ink-500 dark:text-ink-500 font-mono text-[11.5px] flex-shrink-0">
+								{{ post.date|date:"Y-m-d" }}
+							</time>
+						</div>
+
+						<h3 class="text-[15.5px] font-semibold text-ink-900 dark:text-ink-100 leading-snug group-hover:text-accent-600 dark:group-hover:text-accent-400 transition-colors line-clamp-2">
 							{{ post.title }}
 						</h3>
+
 						{% if post.description %}
-						<p class="text-sm text-gray-500 dark:text-gray-400 mb-2 line-clamp-2">{{ post.description }}</p>
+						<p class="mt-1 text-[13px] text-ink-500 dark:text-ink-500 line-clamp-1">
+							{{ post.description }}
+						</p>
 						{% endif %}
-						<div class="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 flex-wrap">
-							<span class="flex items-center gap-1">
-								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-								</svg>
-								{{ post.date|date:"Y-m-d" }}
-							</span>
-							<span class="px-2 py-0.5 text-xs rounded-full
-								{% if post.category == 'engineering' %}bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-300
-								{% elif post.category == 'research' %}bg-pink-100 dark:bg-pink-500/20 text-pink-600 dark:text-pink-300
-								{% elif post.category == 'notes' %}bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-300
-								{% elif post.category == 'projects' %}bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-300
-								{% endif %}">
-								{{ post.get_category_display }}
-							</span>
-							{% for tag in post.tags.all|slice:":3" %}
-							<span class="text-xs text-purple-500 dark:text-purple-400">#{{ tag.name }}</span>
-							{% endfor %}
-						</div>
 					</div>
-					
-					<svg class="w-5 h-5 text-gray-400 group-hover:text-purple-500 dark:group-hover:text-purple-400 flex-shrink-0 transform group-hover:translate-x-1 transition-all mt-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+
+					<svg class="w-4 h-4 text-ink-300 dark:text-ink-700 flex-shrink-0 mt-1 transform group-hover:translate-x-0.5 group-hover:text-accent-500 transition-all" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
 					</svg>
-				</div>
-			</a>
+				</a>
+			</li>
 			{% endfor %}
-		</div>
-		
-		{% if post_count > 0 %}
-		<div class="mt-8 pt-6 border-t border-gray-200 dark:border-purple-500/20">
-			<a href="{% url 'posts:post_detail' posts.first.slug %}" class="inline-flex items-center justify-center w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white rounded-xl shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all font-medium">
-				<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-				</svg>
-				开始学习第一篇
-			</a>
-		</div>
-		{% endif %}
-		
+		</ol>
+
 		{% else %}
-		<div class="text-center py-8">
-			<svg class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-			</svg>
-			<p class="text-gray-500 dark:text-gray-400">该系列暂无文章</p>
-			<p class="text-sm text-gray-400 dark:text-gray-500 mt-2">在文章的「系列设置」中将文章关联到此系列即可</p>
+		<div class="text-center py-12 border border-dashed border-ink-200 dark:border-white/10 rounded-lg">
+			<p class="text-sm text-ink-500 dark:text-ink-500">No articles in this series yet.</p>
+			<p class="mt-1 text-[12px] text-ink-500 dark:text-ink-500">Link articles to this series in the post's "Series" settings.</p>
 		</div>
 		{% endif %}
-	</div>
+	</section>
+
 </div>
 {% endblock %}

@@ -65,10 +65,12 @@ def tag_list(request, tag: str):
 
 
 def search(request):
+    from django.db import connection
+
     query = request.GET.get("q", "").strip()
     posts = Post.objects.none()
     if query:
-        try:
+        if connection.vendor == "postgresql":
             from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
             vector = SearchVector("title", weight="A") + SearchVector("content", weight="B")
             sq = SearchQuery(query)
@@ -78,7 +80,7 @@ def search(request):
                 .filter(rank__gte=0.1)
                 .order_by("-rank", "-date")
             )
-        except Exception:
+        else:
             posts = Post.objects.filter(
                 Q(title__icontains=query) | Q(description__icontains=query) | Q(content__icontains=query),
                 published=True,

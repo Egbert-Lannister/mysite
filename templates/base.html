@@ -6,26 +6,26 @@
 	<title>{% block title %}TechBlog{% endblock %}</title>
 	<meta name="description" content="{% block meta_description %}{% endblock %}">
 	<link rel="alternate" type="application/rss+xml" title="RSS" href="/rss.xml" />
-	<!-- 关键 CSS：内联最小样式，防止 FOUC (Flash of Unstyled Content) -->
 	<style>
-		/* 关键渲染路径 CSS - 立即应用 */
+		/* Critical render path — applied immediately to prevent FOUC */
 		html { scroll-behavior: smooth; }
-		body { 
+		body {
 			font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-			margin: 0; 
+			margin: 0;
 			min-height: 100vh;
-			background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f1f5f9 100%);
+			background: #fafafa;
 			color: #1f2937;
+			-webkit-font-smoothing: antialiased;
+			-moz-osx-font-smoothing: grayscale;
 		}
 		.dark body {
-			background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%);
-			color: #f3f4f6;
+			background: #0e1117;
+			color: #e5e7eb;
 		}
-		/* 页面加载指示器 */
-		.page-loading { 
-			position: fixed; top: 0; left: 0; right: 0; height: 3px; 
-			background: linear-gradient(90deg, #a855f7, #3b82f6);
-			animation: loading 1s ease-in-out infinite;
+		.page-loading {
+			position: fixed; top: 0; left: 0; right: 0; height: 2px;
+			background: linear-gradient(90deg, transparent, #6366f1, transparent);
+			animation: loading 1.2s ease-in-out infinite;
 			z-index: 9999;
 		}
 		@keyframes loading {
@@ -34,226 +34,240 @@
 		}
 		.page-loaded .page-loading { display: none; }
 	</style>
-	<!-- 预连接到 CDN 域名，加速资源加载 -->
 	<link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin>
 	<link rel="dns-prefetch" href="https://cdn.tailwindcss.com">
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link rel="preconnect" href="https://cdn.bootcdn.net" crossorigin>
-	<!-- Tailwind CSS -->
 	<script src="https://cdn.tailwindcss.com"></script>
-	<!-- Google Fonts with display=swap for faster text rendering -->
-	<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 	{% block extra_head %}{% endblock %}
 	<script>
-		// Theme initialization - run before page renders to prevent flash
 		(function() {
 			const stored = localStorage.getItem('theme');
 			const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 			const isDark = stored === 'dark' || (!stored && prefersDark);
-			if (isDark) {
-				document.documentElement.classList.add('dark');
-			}
+			if (isDark) document.documentElement.classList.add('dark');
 		})();
-		
+
 		tailwind.config = {
 			darkMode: 'class',
 			theme: {
 				extend: {
 					fontFamily: {
-						sans: ['Noto Sans SC', 'system-ui', 'sans-serif'],
+						sans: ['Inter', 'Noto Sans SC', 'system-ui', 'sans-serif'],
 						mono: ['JetBrains Mono', 'monospace'],
 					},
 					colors: {
-						primary: {
-							50: '#faf5ff', 100: '#f3e8ff', 200: '#e9d5ff',
-							300: '#d8b4fe', 400: '#c084fc', 500: '#a855f7',
-							600: '#9333ea', 700: '#7c3aed', 800: '#6b21a8', 900: '#581c87',
-						}
+						accent: {
+							50:  '#eef2ff',
+							100: '#e0e7ff',
+							200: '#c7d2fe',
+							300: '#a5b4fc',
+							400: '#818cf8',
+							500: '#6366f1',
+							600: '#4f46e5',
+							700: '#4338ca',
+						},
+						ink: {
+							50:  '#fafafa',
+							100: '#f5f5f7',
+							200: '#e5e7eb',
+							300: '#d1d5db',
+							500: '#6b7280',
+							700: '#374151',
+							900: '#111827',
+							950: '#0e1117',
+						},
 					}
 				}
 			}
 		}
 	</script>
 	<style>
-		body { font-family: 'Noto Sans SC', system-ui, sans-serif; }
-		
-		/* Light mode gradient */
-		.gradient-bg {
-			background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f1f5f9 100%);
-		}
-		.dark .gradient-bg {
-			background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%);
-		}
-		
-		.card-shine { position: relative; overflow: hidden; }
-		.card-shine::before {
-			content: ''; position: absolute; top: 0; left: -100%;
-			width: 100%; height: 100%;
-			background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-			transition: left 0.5s;
-		}
-		.card-shine:hover::before { left: 100%; }
-		
-		.text-gradient {
-			background: linear-gradient(135deg, #c084fc 0%, #818cf8 50%, #60a5fa 100%);
-			-webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-		}
-		
-		.nav-link { position: relative; }
-		.nav-link::after {
-			content: ''; position: absolute; bottom: -4px; left: 0;
-			width: 0; height: 2px;
-			background: linear-gradient(90deg, #c084fc, #60a5fa);
-			transition: width 0.3s ease;
-		}
-		.nav-link:hover::after { width: 100%; }
-		
-		/* Scrollbar */
-		::-webkit-scrollbar { width: 8px; height: 8px; }
-		::-webkit-scrollbar-track { background: #f1f5f9; }
-		.dark ::-webkit-scrollbar-track { background: #1e1b4b; }
-		::-webkit-scrollbar-thumb { background: #a855f7; border-radius: 4px; }
-		::-webkit-scrollbar-thumb:hover { background: #9333ea; }
-		
+		body { font-family: 'Inter', 'Noto Sans SC', system-ui, sans-serif; }
+
+		/* Custom scrollbar — minimal */
+		::-webkit-scrollbar { width: 10px; height: 10px; }
+		::-webkit-scrollbar-track { background: transparent; }
+		::-webkit-scrollbar-thumb { background: #d4d4d8; border-radius: 999px; border: 2px solid transparent; background-clip: content-box; }
+		::-webkit-scrollbar-thumb:hover { background: #a1a1aa; background-clip: content-box; }
+		.dark ::-webkit-scrollbar-thumb { background: #3f3f46; background-clip: content-box; }
+		.dark ::-webkit-scrollbar-thumb:hover { background: #52525b; background-clip: content-box; }
+
 		/* Toast notification */
 		.toast {
-			position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-			padding: 12px 24px; border-radius: 8px; z-index: 9999;
-			background: #10b981; color: white; font-weight: 500;
-			box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-			animation: toast-in 0.3s ease, toast-out 0.3s ease 2.5s forwards;
+			position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+			padding: 10px 18px; border-radius: 8px; z-index: 9999;
+			background: #18181b; color: #fafafa; font-size: 13px; font-weight: 500;
+			box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+			animation: toast-in 0.25s ease, toast-out 0.25s ease 2.5s forwards;
 		}
-		@keyframes toast-in { from { opacity: 0; transform: translateX(-50%) translateY(20px); } }
-		@keyframes toast-out { to { opacity: 0; transform: translateX(-50%) translateY(20px); } }
+		@keyframes toast-in  { from { opacity: 0; transform: translateX(-50%) translateY(8px); } }
+		@keyframes toast-out {   to { opacity: 0; transform: translateX(-50%) translateY(8px); } }
+
+		/* Nav hover micro-animation */
+		.nav-link {
+			position: relative;
+			color: rgb(75 85 99);
+			transition: color 0.15s ease;
+		}
+		.nav-link:hover { color: rgb(17 24 39); }
+		.dark .nav-link { color: rgb(156 163 175); }
+		.dark .nav-link:hover { color: rgb(243 244 246); }
+
+		/* Post card — shared across all list pages */
+		.line-clamp-2 {
+			display: -webkit-box;
+			-webkit-line-clamp: 2;
+			-webkit-box-orient: vertical;
+			overflow: hidden;
+		}
+		.post-card {
+			transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+		}
+		.post-card:hover {
+			border-color: rgb(99 102 241 / 0.35);
+			transform: translateY(-1px);
+			box-shadow: 0 4px 16px -4px rgba(15, 23, 42, 0.06);
+		}
+		.dark .post-card:hover {
+			border-color: rgb(129 140 248 / 0.4);
+			box-shadow: 0 4px 16px -4px rgba(0, 0, 0, 0.4);
+		}
+		.cat-pill {
+			display: inline-flex; align-items: center;
+			padding: 2px 8px;
+			font-size: 11px; font-weight: 500;
+			border-radius: 4px;
+			letter-spacing: 0.01em;
+		}
+
+		/* Generic page header (used by sub-pages, smaller than the Hero) */
+		.page-eyebrow {
+			display: inline-block;
+			font-size: 11px;
+			font-weight: 600;
+			letter-spacing: 0.12em;
+			text-transform: uppercase;
+			color: rgb(99 102 241);
+		}
+		.dark .page-eyebrow { color: rgb(129 140 248); }
+		.page-title {
+			font-size: 28px;
+			font-weight: 600;
+			letter-spacing: -0.02em;
+			color: rgb(17 24 39);
+			margin-top: 8px;
+		}
+		.dark .page-title { color: rgb(243 244 246); }
+		@media (min-width: 768px) {
+			.page-title { font-size: 32px; }
+		}
+		.page-desc {
+			font-size: 14px;
+			color: rgb(107 114 128);
+			margin-top: 8px;
+		}
 	</style>
 </head>
-<body class="gradient-bg min-h-screen text-gray-800 dark:text-gray-100 transition-colors duration-300">
-	<!-- 页面加载指示器 -->
+<body class="min-h-screen text-ink-900 dark:text-ink-100 dark:bg-ink-950 antialiased">
 	<div class="page-loading" id="page-loading"></div>
-	<!-- 导航栏 -->
-	<header class="sticky top-0 z-50 backdrop-blur-xl bg-white/80 dark:bg-indigo-950/80 border-b border-gray-200 dark:border-purple-500/20 transition-colors">
-		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-			<div class="flex items-center justify-between h-16">
-	{% load static %}
+
+	<!-- Top navigation — light, stable, restrained -->
+	<header class="sticky top-0 z-50 backdrop-blur-md bg-white/80 dark:bg-ink-950/80 border-b border-ink-200/70 dark:border-white/5">
+		<div class="max-w-6xl mx-auto px-5 sm:px-6 lg:px-8">
+			<div class="flex items-center justify-between h-14">
+				{% load static %}
 				<!-- Logo -->
 				<a href="{% url 'posts:index' %}" class="flex items-center gap-2.5 group flex-shrink-0">
-					<img src="{% static 'images/logo.jpg' %}" alt="Logo" class="w-9 h-9 rounded-xl shadow-lg shadow-purple-500/25 group-hover:shadow-purple-500/50 transition-shadow object-cover">
-					<span class="text-lg font-bold text-gradient hidden sm:inline">TechBlog</span>
+					<img src="{% static 'images/logo.jpg' %}" alt="Logo" class="w-7 h-7 rounded-md object-cover ring-1 ring-black/5 dark:ring-white/10">
+					<span class="text-[15px] font-semibold tracking-tight text-ink-900 dark:text-ink-100 hidden sm:inline">TechBlog</span>
 				</a>
-				
-				<!-- 导航链接 — 分组排列 -->
-				<nav class="hidden lg:flex items-center">
-					<!-- 内容分类 -->
-					<div class="flex items-center gap-1 px-2">
-						<a href="{% url 'posts:engineering_list' %}" class="nav-link px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-all">
-							Engineering
-						</a>
-						<a href="{% url 'posts:research_list' %}" class="nav-link px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-pink-600 dark:hover:text-pink-400 hover:bg-pink-50 dark:hover:bg-pink-500/10 transition-all">
-							Research
-						</a>
-						<a href="{% url 'posts:notes_list' %}" class="nav-link px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 transition-all">
-							Notes
-						</a>
-						<a href="{% url 'posts:projects_list' %}" class="nav-link px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-500/10 transition-all">
-							Projects
-						</a>
-					</div>
-					<!-- 分隔线 -->
-					<div class="w-px h-5 bg-gray-300 dark:bg-purple-500/30 mx-1"></div>
-					<!-- 其他入口 -->
-					<div class="flex items-center gap-1 px-2">
-						<a href="{% url 'posts:series_list' %}" class="nav-link px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-500/10 transition-all">
-							Series
-						</a>
-						<a href="/rss.xml" class="p-1.5 rounded-lg text-gray-400 dark:text-gray-500 hover:text-orange-500 dark:hover:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-500/10 transition-all" title="RSS">
-							<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19 7.38 20 6.18 20C5 20 4 19 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1Z"/></svg>
-						</a>
-					</div>
+
+				<!-- Primary nav -->
+				<nav class="hidden lg:flex items-center gap-7 text-[13.5px] font-medium">
+					<a href="{% url 'posts:engineering_list' %}" class="nav-link">Engineering</a>
+					<a href="{% url 'posts:research_list' %}"    class="nav-link">Research</a>
+					<a href="{% url 'posts:notes_list' %}"       class="nav-link">Notes</a>
+					<a href="{% url 'posts:projects_list' %}"    class="nav-link">Projects</a>
+					<a href="{% url 'posts:series_list' %}"      class="nav-link">Series</a>
 				</nav>
 
-				<!-- 右侧工具区 -->
-				<div class="flex items-center gap-2 sm:gap-3">
-					<!-- 搜索框 -->
+				<!-- Right-side tools -->
+				<div class="flex items-center gap-2">
 					<form action="{% url 'posts:search' %}" method="get" class="hidden sm:block">
 						<div class="relative">
-							<input type="search" name="q" placeholder="搜索..." value="{{ request.GET.q }}"
-								class="w-40 lg:w-52 px-3.5 py-1.5 pl-9 bg-gray-100 dark:bg-indigo-900/50 border border-gray-200 dark:border-purple-500/30 rounded-full text-sm text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 focus:w-56 lg:focus:w-64 transition-all">
-							<svg class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<input type="search" name="q" placeholder="Search..." value="{{ request.GET.q }}"
+								class="w-44 lg:w-56 h-9 pl-9 pr-3 text-[13px] rounded-full bg-ink-100 dark:bg-white/5 border border-transparent text-ink-900 dark:text-ink-100 placeholder-ink-500 focus:outline-none focus:bg-white dark:focus:bg-ink-950 focus:border-ink-200 dark:focus:border-white/10 focus:w-56 lg:focus:w-72 transition-all">
+							<svg class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-ink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
 							</svg>
 						</div>
 					</form>
-					
-					<!-- 主题切换 -->
-					<button id="theme-toggle" class="p-2 rounded-full bg-gray-100 dark:bg-indigo-900/50 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-indigo-800 hover:text-gray-700 dark:hover:text-gray-200 transition-colors" aria-label="切换主题">
-						<svg class="w-4 h-4 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+
+					<!-- Theme toggle -->
+					<button id="theme-toggle" class="p-2 rounded-full text-ink-500 dark:text-ink-300 hover:bg-ink-100 dark:hover:bg-white/5 hover:text-ink-900 dark:hover:text-ink-100 transition-colors" aria-label="Toggle theme">
+						<svg class="w-4 h-4 hidden dark:block" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
 						</svg>
-						<svg class="w-4 h-4 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+						<svg class="w-4 h-4 block dark:hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
 						</svg>
 					</button>
-					
-					<!-- 移动端菜单按钮 -->
-					<button class="lg:hidden p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white rounded-lg hover:bg-gray-100 dark:hover:bg-purple-500/20 transition-colors" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
-						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+
+					<!-- Mobile menu toggle -->
+					<button class="lg:hidden p-2 text-ink-500 hover:bg-ink-100 dark:hover:bg-white/5 rounded-full transition-colors" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
+						<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
 						</svg>
 					</button>
 				</div>
 			</div>
-			
-			<!-- 移动端菜单 -->
-			<div id="mobile-menu" class="hidden lg:hidden pb-4 pt-2 border-t border-gray-100 dark:border-purple-500/10 mt-1">
-				<nav class="grid grid-cols-2 gap-1.5 mb-3">
-					<a href="{% url 'posts:engineering_list' %}" class="px-4 py-2.5 text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-xl transition-colors font-medium">Engineering</a>
-					<a href="{% url 'posts:research_list' %}" class="px-4 py-2.5 text-sm text-gray-600 dark:text-gray-300 hover:text-pink-600 dark:hover:text-pink-400 hover:bg-pink-50 dark:hover:bg-pink-500/10 rounded-xl transition-colors font-medium">Research</a>
-					<a href="{% url 'posts:notes_list' %}" class="px-4 py-2.5 text-sm text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 rounded-xl transition-colors font-medium">Notes</a>
-					<a href="{% url 'posts:projects_list' %}" class="px-4 py-2.5 text-sm text-gray-600 dark:text-gray-300 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-500/10 rounded-xl transition-colors font-medium">Projects</a>
+
+			<!-- Mobile menu -->
+			<div id="mobile-menu" class="hidden lg:hidden pb-4 pt-2 border-t border-ink-200/70 dark:border-white/5">
+				<nav class="grid grid-cols-2 gap-1 mb-3">
+					<a href="{% url 'posts:engineering_list' %}" class="px-3 py-2 text-sm text-ink-700 dark:text-ink-300 hover:bg-ink-100 dark:hover:bg-white/5 rounded-md">Engineering</a>
+					<a href="{% url 'posts:research_list' %}"    class="px-3 py-2 text-sm text-ink-700 dark:text-ink-300 hover:bg-ink-100 dark:hover:bg-white/5 rounded-md">Research</a>
+					<a href="{% url 'posts:notes_list' %}"       class="px-3 py-2 text-sm text-ink-700 dark:text-ink-300 hover:bg-ink-100 dark:hover:bg-white/5 rounded-md">Notes</a>
+					<a href="{% url 'posts:projects_list' %}"    class="px-3 py-2 text-sm text-ink-700 dark:text-ink-300 hover:bg-ink-100 dark:hover:bg-white/5 rounded-md">Projects</a>
+					<a href="{% url 'posts:series_list' %}"      class="px-3 py-2 text-sm text-ink-700 dark:text-ink-300 hover:bg-ink-100 dark:hover:bg-white/5 rounded-md col-span-2">Series</a>
 				</nav>
-				<div class="flex gap-1.5 mb-3">
-					<a href="{% url 'posts:series_list' %}" class="flex-1 px-4 py-2.5 text-sm text-center text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-500/10 rounded-xl transition-colors font-medium">Series</a>
-					<a href="/rss.xml" class="px-4 py-2.5 text-sm text-gray-500 dark:text-gray-400 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-500/10 rounded-xl transition-colors">RSS</a>
-				</div>
 				<form action="{% url 'posts:search' %}" method="get" class="flex gap-2 sm:hidden">
-					<input type="search" name="q" placeholder="搜索文章..." class="flex-1 px-4 py-2 bg-gray-100 dark:bg-indigo-900/50 border border-gray-200 dark:border-purple-500/30 rounded-full text-sm">
-					<button type="submit" class="px-4 py-2 bg-purple-600 text-white text-sm rounded-full">搜索</button>
+					<input type="search" name="q" placeholder="Search..." class="flex-1 px-3 py-2 bg-ink-100 dark:bg-white/5 rounded-md text-sm">
+					<button type="submit" class="px-4 py-2 bg-ink-900 dark:bg-white text-white dark:text-ink-900 text-sm rounded-md font-medium">Search</button>
 				</form>
 			</div>
 		</div>
 	</header>
-	
-	<!-- 主内容 -->
-	<main class="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+
+	<!-- Main content -->
+	<main class="max-w-6xl mx-auto px-5 sm:px-6 lg:px-8 py-10 md:py-14">
 		{% block content %}{% endblock %}
 	</main>
-	
-	<!-- 页脚 -->
-	<footer class="border-t border-gray-200 dark:border-purple-500/20 mt-auto transition-colors">
-		<div class="max-w-6xl mx-auto px-4 sm:px-6 py-8">
-			<div class="flex flex-col md:flex-row items-center justify-between gap-4">
-				<div class="flex items-center gap-2">
-					<img src="{% static 'images/logo.jpg' %}" alt="Logo" class="w-8 h-8 rounded-lg object-cover">
-					<span class="text-gray-500 dark:text-gray-400 text-sm">© {% now "Y" %} Egbert Lannister's TechBlog</span>
+
+	<!-- Footer — restrained and light -->
+	<footer class="border-t border-ink-200/70 dark:border-white/5 mt-12">
+		<div class="max-w-6xl mx-auto px-5 sm:px-6 lg:px-8 py-7">
+			<div class="flex flex-col sm:flex-row items-center justify-between gap-3 text-[13px]">
+				<div class="flex items-center gap-2 text-ink-500 dark:text-ink-500">
+					<img src="{% static 'images/logo.jpg' %}" alt="" class="w-5 h-5 rounded object-cover opacity-80">
+					<span>© {% now "Y" %} Egbert Lannister · TechBlog</span>
 				</div>
-				<p class="text-gray-400 dark:text-gray-500 text-sm">A space for ideas, words, and wonder.</p>
-				<div class="flex items-center gap-4">
-					<a href="/rss.xml" class="text-gray-400 hover:text-purple-500 dark:hover:text-purple-400 transition-colors">
-						<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19 7.38 20 6.18 20C5 20 4 19 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1Z"/></svg>
-					</a>
-				</div>
+				<p class="text-ink-500 dark:text-ink-500 italic">A space for ideas, words, and wonder.</p>
+				<a href="/rss.xml" class="text-ink-500 hover:text-accent-500 dark:hover:text-accent-400 transition-colors" aria-label="RSS">
+					<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19 7.38 20 6.18 20C5 20 4 19 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1Z"/></svg>
+				</a>
 			</div>
 		</div>
 	</footer>
-	
-	<!-- Toast container -->
+
 	<div id="toast-container"></div>
-	
-	<!-- Theme Toggle Script -->
+
 	<script>
 		const themeToggle = document.getElementById('theme-toggle');
-		
+
 		function setTheme(isDark) {
 			if (isDark) {
 				document.documentElement.classList.add('dark');
@@ -262,36 +276,30 @@
 				document.documentElement.classList.remove('dark');
 				localStorage.setItem('theme', 'light');
 			}
-			// Dispatch custom event for Giscus and other components
 			window.dispatchEvent(new CustomEvent('themechange', { detail: { isDark } }));
 		}
-		
+
 		themeToggle.addEventListener('click', () => {
 			const isDark = !document.documentElement.classList.contains('dark');
 			setTheme(isDark);
 		});
-		
-		// Listen for system theme changes
+
 		window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-			if (!localStorage.getItem('theme')) {
-				setTheme(e.matches);
-			}
+			if (!localStorage.getItem('theme')) setTheme(e.matches);
 		});
-		
-		// Toast utility
+
 		window.showToast = function(message, type = 'success') {
 			const toast = document.createElement('div');
 			toast.className = 'toast';
 			toast.textContent = message;
-			if (type === 'error') toast.style.background = '#ef4444';
+			if (type === 'error') toast.style.background = '#dc2626';
 			document.getElementById('toast-container').appendChild(toast);
 			setTimeout(() => toast.remove(), 3000);
 		};
 	</script>
-	
+
 	{% block extra_js %}{% endblock %}
-	
-	<!-- 页面加载完成后隐藏加载指示器 -->
+
 	<script>
 		window.addEventListener('load', function() {
 			document.body.classList.add('page-loaded');

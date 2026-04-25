@@ -1,0 +1,26 @@
+{% comment %} 共享分页组件 — context: posts (Page 实例) {% endcomment %}
+{% if posts.has_other_pages %}
+<nav class="mt-12 flex items-center justify-center gap-2 text-[13px]">
+	{% if posts.has_previous %}
+	<a href="?page={{ posts.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"
+	   class="px-3.5 py-1.5 rounded-md text-ink-700 dark:text-ink-300 hover:bg-ink-100 dark:hover:bg-white/5 transition-colors">
+		← Previous
+	</a>
+	{% else %}
+	<span class="px-3.5 py-1.5 rounded-md text-ink-300 dark:text-ink-700 cursor-not-allowed">← Previous</span>
+	{% endif %}
+
+	<span class="px-3 py-1.5 text-ink-500 dark:text-ink-500 font-mono text-[12px]">
+		{{ posts.number }} / {{ posts.paginator.num_pages }}
+	</span>
+
+	{% if posts.has_next %}
+	<a href="?page={{ posts.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"
+	   class="px-3.5 py-1.5 rounded-md text-ink-700 dark:text-ink-300 hover:bg-ink-100 dark:hover:bg-white/5 transition-colors">
+		Next →
+	</a>
+	{% else %}
+	<span class="px-3.5 py-1.5 rounded-md text-ink-300 dark:text-ink-700 cursor-not-allowed">Next →</span>
+	{% endif %}
+</nav>
+{% endif %}

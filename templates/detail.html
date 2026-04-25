@@ -156,7 +156,7 @@
 				<svg class="w-4 h-4 mr-2 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
 				</svg>
-				返回文章列表
+				Back to all posts
 			</a>
 			
 		<div class="flex items-center gap-4 mb-4 flex-wrap">
@@ -172,7 +172,7 @@
 					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
 					</svg>
-					{{ post.date|date:"Y年m月d日" }}
+					{{ post.date|date:"Y-m-d" }}
 				</time>
 			</div>
 			
@@ -206,7 +206,7 @@
 						</svg>
 					</div>
 					<div>
-						<p class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">本文属于系列</p>
+						<p class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Part of series</p>
 						<a href="{% url 'posts:series_detail' series_context.series.slug %}" class="font-semibold text-purple-700 dark:text-purple-300 hover:text-purple-600 dark:hover:text-purple-200 transition-colors">
 							{{ series_context.series.title }}
 						</a>
@@ -220,7 +220,7 @@
 						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
 						</svg>
-						目录
+						Contents
 					</button>
 				</div>
 			</div>
@@ -236,7 +236,7 @@
 						</span>
 						<span class="truncate text-sm {% if p.pk == post.pk %}font-semibold{% endif %}">{{ p.title }}</span>
 						{% if p.pk == post.pk %}
-						<span class="flex-shrink-0 text-xs text-purple-500 dark:text-purple-400">(当前)</span>
+						<span class="flex-shrink-0 text-xs text-purple-500 dark:text-purple-400">(current)</span>
 						{% endif %}
 					</a>
 					{% endfor %}
@@ -263,7 +263,7 @@
 							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
 							</svg>
-							上一篇
+							Previous
 						</p>
 						<p class="font-medium text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-300 transition-colors truncate">
 							{{ series_context.prev_post.title }}
@@ -278,7 +278,7 @@
 				<a href="{% url 'posts:post_detail' series_context.next_post.slug %}" class="flex-1 group">
 					<div class="p-4 rounded-xl border border-gray-100 dark:border-purple-500/10 hover:border-purple-300 dark:hover:border-purple-500/30 hover:bg-purple-50/50 dark:hover:bg-purple-500/10 transition-all text-right">
 						<p class="text-xs text-gray-500 dark:text-gray-400 mb-1 flex items-center justify-end gap-1">
-							下一篇
+							Next
 							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
 							</svg>
@@ -299,14 +299,14 @@
 		<div class="bg-white dark:bg-indigo-950/50 backdrop-blur border border-gray-200 dark:border-purple-500/20 rounded-2xl p-6 mb-8 shadow-sm">
 			<div class="flex flex-col sm:flex-row items-center justify-between gap-6">
 				<div>
-					<p class="text-sm text-gray-500 dark:text-gray-400 mb-3 font-medium">分享这篇文章</p>
+					<p class="text-sm text-gray-500 dark:text-gray-400 mb-3 font-medium">Share this post</p>
 					<div class="flex gap-3">
 						<!-- Copy Link Button -->
 						<button id="copy-link-btn" class="px-4 py-2 bg-gray-100 dark:bg-indigo-900/50 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-indigo-800 transition-all border border-gray-200 dark:border-purple-500/30 text-sm font-medium flex items-center gap-2">
 							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
 							</svg>
-							复制链接
+							Copy link
 						</button>
 						
 						<!-- WeChat QR Button -->
@@ -314,7 +314,7 @@
 							<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
 								<path d="M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 01.213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.29.295a.326.326 0 00.167-.054l1.903-1.114a.864.864 0 01.717-.098 10.16 10.16 0 002.837.403c.276 0 .543-.027.811-.05-.857-2.578.157-4.972 1.932-6.446 1.703-1.415 3.882-1.98 5.853-1.838-.576-3.583-4.196-6.348-8.596-6.348zM5.785 5.991c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 01-1.162 1.178A1.17 1.17 0 014.623 7.17c0-.651.52-1.18 1.162-1.18zm5.813 0c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 01-1.162 1.178 1.17 1.17 0 01-1.162-1.178c0-.651.52-1.18 1.162-1.18zm5.34 2.867c-1.797-.052-3.746.512-5.28 1.786-1.72 1.428-2.687 3.72-1.78 6.22.942 2.453 3.666 4.229 6.884 4.229.826 0 1.622-.12 2.361-.336a.722.722 0 01.598.082l1.584.926a.272.272 0 00.14.047c.134 0 .24-.111.24-.247 0-.06-.023-.12-.038-.177l-.327-1.233a.582.582 0 01-.023-.156.49.49 0 01.201-.398C23.024 18.48 24 16.82 24 14.98c0-3.21-3.28-6.01-7.062-6.122zm-1.597 2.553a.97.97 0 01.966.982.97.97 0 01-.966.982.97.97 0 01-.966-.982.97.97 0 01.966-.982zm4.875 0c.533 0 .966.44.966.982a.97.97 0 01-.966.982.97.97 0 01-.966-.982.97.97 0 01.966-.982z"/>
 							</svg>
-							微信分享
+							WeChat
 						</button>
 						
 						<!-- Twitter/X -->
@@ -332,7 +332,7 @@
 					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
 					</svg>
-					返回首页
+					Back to home
 				</a>
 			</div>
 		</div>
@@ -344,7 +344,7 @@
 				<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
 				</svg>
-				评论
+				Comments
 			</h3>
 			<div id="giscus-container">
 				<!-- Giscus 将通过 JavaScript 动态加载，以便正确设置初始主题 -->
@@ -389,7 +389,7 @@
 					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/>
 					</svg>
-					目录
+					Contents
 				</h4>
 				<nav class="max-h-[60vh] overflow-y-auto space-y-1">
 					{% for item in toc_items %}
@@ -419,7 +419,7 @@
 <div id="mobile-toc" class="lg:hidden fixed inset-0 z-40 hidden">
 	<div class="absolute inset-0 bg-black/50" onclick="document.getElementById('mobile-toc').classList.add('hidden')"></div>
 	<div class="absolute bottom-0 left-0 right-0 bg-white dark:bg-indigo-950 rounded-t-2xl p-6 max-h-[60vh] overflow-y-auto">
-		<h4 class="text-lg font-bold text-gray-900 dark:text-white mb-4">目录</h4>
+		<h4 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Contents</h4>
 		<nav class="space-y-2">
 			{% for item in toc_items %}
 			<a href="#{{ item.anchor }}" 
@@ -437,11 +437,11 @@
 <!-- WeChat QR Modal -->
 <div id="qr-modal" class="qr-modal hidden">
 	<div class="qr-modal-content">
-		<h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">微信扫码分享</h3>
+		<h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Scan to share on WeChat</h3>
 		<div id="qr-code" class="mb-4"></div>
-		<p class="text-sm text-gray-500 dark:text-gray-400 mb-4">使用微信扫一扫分享文章</p>
+		<p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Open WeChat and scan to share this post</p>
 		<button onclick="document.getElementById('qr-modal').classList.add('hidden')" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
-			关闭
+			Close
 		</button>
 	</div>
 </div>
@@ -478,20 +478,20 @@ document.addEventListener('DOMContentLoaded', () => {
 		// Add copy button
 		const btn = document.createElement('button');
 		btn.className = 'copy-btn';
-		btn.textContent = '复制';
+		btn.textContent = 'Copy';
 		btn.addEventListener('click', async () => {
 			try {
 				const text = code.innerText;
 				await navigator.clipboard.writeText(text);
-				btn.textContent = '已复制';
+				btn.textContent = 'Copied';
 				btn.classList.add('copied');
 				setTimeout(() => {
-					btn.textContent = '复制';
+					btn.textContent = 'Copy';
 					btn.classList.remove('copied');
 				}, 2000);
 			} catch (err) {
-				btn.textContent = '失败';
-				setTimeout(() => btn.textContent = '复制', 2000);
+				btn.textContent = 'Failed';
+				setTimeout(() => btn.textContent = 'Copy', 2000);
 			}
 		});
 		wrapper.appendChild(btn);
@@ -501,9 +501,9 @@ document.addEventListener('DOMContentLoaded', () => {
 	document.getElementById('copy-link-btn')?.addEventListener('click', async () => {
 		try {
 			await navigator.clipboard.writeText(window.location.href);
-			window.showToast('链接已复制到剪贴板');
+			window.showToast('Link copied to clipboard');
 		} catch (err) {
-			window.showToast('复制失败', 'error');
+			window.showToast('Copy failed', 'error');
 		}
 	});
 	

@@ -1,122 +1,38 @@
 {% extends "base.html" %}
 {% block title %}{{ category_label }} - TechBlog{% endblock %}
+
 {% block content %}
-<!-- 页面标题 -->
-<div class="text-center mb-12">
-	<div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4
-		{% if category == 'engineering' %}bg-blue-100 dark:bg-blue-500/20 border border-blue-200 dark:border-blue-500/30
-		{% elif category == 'research' %}bg-pink-100 dark:bg-pink-500/20 border border-pink-200 dark:border-pink-500/30
-		{% elif category == 'notes' %}bg-emerald-100 dark:bg-emerald-500/20 border border-emerald-200 dark:border-emerald-500/30
-		{% elif category == 'projects' %}bg-amber-100 dark:bg-amber-500/20 border border-amber-200 dark:border-amber-500/30
-		{% endif %}">
-		{% if category == 'engineering' %}
-		<svg class="w-8 h-8 text-blue-500 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
-		</svg>
-		{% elif category == 'research' %}
-		<svg class="w-8 h-8 text-pink-500 dark:text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-		</svg>
-		{% elif category == 'notes' %}
-		<svg class="w-8 h-8 text-emerald-500 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-		</svg>
-		{% elif category == 'projects' %}
-		<svg class="w-8 h-8 text-amber-500 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-		</svg>
+<div class="max-w-[820px] mx-auto">
+
+	<!-- Page header — restrained editorial style, no large gradient icon -->
+	<header class="mb-10 md:mb-12 pb-6 border-b border-ink-200/70 dark:border-white/5">
+		<span class="page-eyebrow">Category</span>
+		<h1 class="page-title">{{ category_label }}</h1>
+		{% if category_desc %}
+		<p class="page-desc">{{ category_desc }}</p>
 		{% endif %}
-	</div>
-	<h1 class="text-4xl md:text-5xl font-bold mb-4">
-		<span class="text-gradient">{{ category_label }}</span>
-	</h1>
-	<p class="text-gray-500 dark:text-gray-400 text-lg">{{ category_desc }}</p>
-</div>
+	</header>
 
-{% if posts %}
-<div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-	{% for post in posts %}
-	<article class="group bg-white dark:bg-indigo-950/50 backdrop-blur border border-gray-200 dark:border-purple-500/20 rounded-2xl overflow-hidden hover:border-purple-300 dark:hover:border-purple-500/40 hover:bg-gray-50 dark:hover:bg-indigo-900/50 transition-all duration-300 card-shine shadow-sm">
-		<div class="h-1.5 bg-gradient-to-r
-			{% if post.category == 'engineering' %}from-blue-500 via-purple-500 to-pink-500
-			{% elif post.category == 'research' %}from-pink-500 via-purple-500 to-blue-500
-			{% elif post.category == 'notes' %}from-emerald-500 via-teal-500 to-cyan-500
-			{% elif post.category == 'projects' %}from-amber-500 via-orange-500 to-red-500
-			{% endif %}"></div>
-		
-		<div class="p-6">
-			<div class="flex items-center justify-between mb-4">
-				<span class="px-3 py-1 text-xs font-semibold rounded-full
-					{% if post.category == 'engineering' %}bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-300 border border-blue-200 dark:border-blue-500/30
-					{% elif post.category == 'research' %}bg-pink-100 dark:bg-pink-500/20 text-pink-600 dark:text-pink-300 border border-pink-200 dark:border-pink-500/30
-					{% elif post.category == 'notes' %}bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/30
-					{% elif post.category == 'projects' %}bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-200 dark:border-amber-500/30
-					{% endif %}">
-					{{ post.get_category_display }}
-				</span>
-				<time class="text-sm text-gray-400 dark:text-gray-500">{{ post.date|date:"Y-m-d" }}</time>
-			</div>
-			
-			<h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-3 group-hover:text-purple-600 dark:group-hover:text-purple-300 transition-colors line-clamp-2">
-				<a href="{% url 'posts:post_detail' post.slug %}" class="hover:underline decoration-purple-500/50 underline-offset-4">
-					{{ post.title }}
-				</a>
-			</h2>
-			
-			{% if post.description %}
-			<p class="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2 leading-relaxed">{{ post.description }}</p>
-			{% endif %}
-			
-			{% if post.tags.all %}
-			<div class="flex flex-wrap gap-2 mb-4">
-				{% for tag in post.tags.all|slice:":3" %}
-				<a href="{% url 'posts:tag_list' tag.name %}" class="px-2.5 py-1 text-xs bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-300 rounded-full hover:bg-purple-200 dark:hover:bg-purple-500/30 transition-colors border border-purple-200 dark:border-purple-500/20">
-					#{{ tag.name }}
-				</a>
-				{% endfor %}
-			</div>
-			{% endif %}
-			
-			<a href="{% url 'posts:post_detail' post.slug %}" class="inline-flex items-center text-sm font-medium text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors group/link">
-				阅读全文
-				<svg class="ml-1.5 w-4 h-4 transform group-hover/link:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-				</svg>
-			</a>
+	{% if posts %}
+	<section class="space-y-5">
+		{% for post in posts %}
+			{% include "_includes/post_card.html" %}
+		{% endfor %}
+	</section>
+
+	{% include "_includes/pagination.html" %}
+
+	{% else %}
+	<div class="text-center py-20">
+		<div class="w-14 h-14 mx-auto mb-5 rounded-xl bg-ink-100 dark:bg-white/5 flex items-center justify-center">
+			<svg class="w-6 h-6 text-ink-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+				<path stroke-linecap="round" stroke-linejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
+			</svg>
 		</div>
-	</article>
-	{% endfor %}
-</div>
-
-{% if posts.has_other_pages %}
-<div class="mt-12 flex items-center justify-center gap-4">
-	{% if posts.has_previous %}
-	<a href="?page={{ posts.previous_page_number }}" class="px-5 py-2.5 bg-white dark:bg-indigo-900/50 border border-gray-200 dark:border-purple-500/30 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-100 dark:hover:bg-indigo-800/50 transition-all font-medium shadow-sm">
-		← 上一页
-	</a>
-	{% endif %}
-	
-	<span class="px-5 py-2.5 bg-purple-100 dark:bg-purple-500/20 border border-purple-200 dark:border-purple-500/30 text-purple-700 dark:text-purple-300 rounded-full font-medium">
-		{{ posts.number }} / {{ posts.paginator.num_pages }}
-	</span>
-	
-	{% if posts.has_next %}
-	<a href="?page={{ posts.next_page_number }}" class="px-5 py-2.5 bg-white dark:bg-indigo-900/50 border border-gray-200 dark:border-purple-500/30 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-100 dark:hover:bg-indigo-800/50 transition-all font-medium shadow-sm">
-		下一页 →
-	</a>
-	{% endif %}
-</div>
-{% endif %}
-
-{% else %}
-<div class="max-w-md mx-auto text-center py-16">
-	<div class="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-purple-100 dark:from-purple-500/20 to-blue-100 dark:to-blue-500/20 border border-purple-200 dark:border-purple-500/30 flex items-center justify-center">
-		<svg class="w-10 h-10 text-purple-500 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path>
-		</svg>
+		<h3 class="text-base font-semibold text-ink-900 dark:text-ink-100 mb-1.5">No posts yet</h3>
+		<p class="text-sm text-ink-500 dark:text-ink-500">No posts in this category.</p>
 	</div>
-	<h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">暂无文章</h3>
-	<p class="text-gray-500 dark:text-gray-400">该分类下还没有文章</p>
+	{% endif %}
+
 </div>
-{% endif %}
 {% endblock %}
