@@ -35,14 +35,12 @@
 	{% endif %}
 
 	{% if posts %}
-	<!-- Post stream — single-column large cards -->
+	<!-- Post stream — single-column large cards (latest 6) -->
 	<section class="space-y-5">
 		{% for post in posts %}
 			{% include "_includes/post_card.html" %}
 		{% endfor %}
 	</section>
-
-	{% include "_includes/pagination.html" %}
 
 	{% else %}
 	<!-- Empty state -->

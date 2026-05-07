@@ -24,10 +24,7 @@ from .utils import render_markdown_with_toc
 # Public views
 # ---------------------------------------------------------------------------
 def index(request):
-    qs = Post.objects.filter(published=True).order_by("-date")
-    paginator = Paginator(qs, 10)
-    posts = paginator.get_page(request.GET.get("page"))
-
+    posts = Post.objects.filter(published=True).order_by("-date")[:6]
     featured_series = Series.objects.filter(is_featured=True).order_by("order")[:3]
 
     return render(request, "index.html", {
