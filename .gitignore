@@ -81,6 +81,10 @@ coverage.xml
 gunicorn.log
 logs/
 
+# Process files
+*.pid
+gunicorn.pid
+
 # Celery
 celerybeat-schedule
 celerybeat.pid
@@ -90,3 +94,7 @@ celerybeat.pid
 *.temp
 tmp/
 temp/
+*.bak
+
+# Backups (local DB snapshots)
+backups/

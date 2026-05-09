@@ -1,28 +1,5 @@
 import re
 import hashlib
-from django.utils.text import slugify
-import uuid
-
-
-def generate_unique_slug(title, instance_pk=None):
-    """Generate unique slug from title"""
-    from .models import Post
-    
-    base_slug = slugify(title)
-    if not base_slug:
-        base_slug = uuid.uuid4().hex[:8]
-    
-    slug = base_slug
-    counter = 1
-    while Post.objects.filter(slug=slug).exclude(pk=instance_pk).exists():
-        slug = f"{base_slug}-{counter}"
-        counter += 1
-    return slug
-
-
-def compute_content_hash(content: str) -> str:
-    """Compute SHA256 hash of content for deduplication"""
-    return hashlib.sha256(content.encode('utf-8')).hexdigest()
 
 
 def slugify_header(text: str, sep: str = '-') -> str:

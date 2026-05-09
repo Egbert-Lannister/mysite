@@ -8,8 +8,7 @@ from django.utils.text import slugify
 from django.utils import timezone
 from taggit.utils import parse_tags
 
-from posts.models import Post
-from posts.utils import generate_unique_slug
+from posts.models import Post, generate_unique_slug
 
 FRONT_MATTER_RE = re.compile(r"^---\n(.*?)\n---\n(.*)$", re.DOTALL)
 
