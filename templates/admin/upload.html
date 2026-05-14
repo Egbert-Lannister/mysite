@@ -10,7 +10,7 @@
 	<div class="flex items-center justify-between mb-6">
 		<div>
 			<h1 class="text-xl font-semibold text-base-900 dark:text-base-100">上传文章</h1>
-			<p class="text-sm text-base-500 dark:text-base-400 mt-1">上传 Markdown 或 Notion 导出 ZIP，下一步预览并编辑</p>
+			<p class="text-sm text-base-500 dark:text-base-400 mt-1">上传 Markdown / Notion 导出 ZIP，或直接在线新建一篇空白文章</p>
 		</div>
 		<a href="{% url 'admin:posts_post_changelist' %}" class="text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline">
 			← 返回文章列表
@@ -81,6 +81,26 @@
 		</div>
 	</form>
 
+	<!-- OR divider -->
+	<div class="flex items-center gap-3 my-6">
+		<span class="flex-1 h-px bg-base-200 dark:bg-base-700"></span>
+		<span class="text-xs uppercase tracking-wider text-base-400 dark:text-base-500">或者</span>
+		<span class="flex-1 h-px bg-base-200 dark:bg-base-700"></span>
+	</div>
+
+	<!-- Compose blank post -->
+	<a href="{% url 'admin_upload_blank' %}" class="block rounded-md border border-dashed border-base-300 dark:border-base-600 bg-white dark:bg-base-900 px-6 py-5 text-center hover:border-primary-400 dark:hover:border-primary-500 hover:bg-primary-50/30 dark:hover:bg-primary-900/10 transition-colors group">
+		<div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+			<svg width="36" height="36" style="width:36px;height:36px;color:rgb(var(--color-primary-500));" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v16m8-8H4"/>
+			</svg>
+			<div>
+				<p class="text-sm font-semibold text-base-900 dark:text-base-100 group-hover:text-primary-600 dark:group-hover:text-primary-400">不上传文件，直接在线编辑</p>
+				<p class="text-xs text-base-500 dark:text-base-400 mt-1">进入编辑器，手动填写元数据并撰写正文</p>
+			</div>
+		</div>
+	</a>
+
 	<!-- Help text -->
 	<div class="mt-6 rounded-md border border-base-200 dark:border-base-700 bg-white dark:bg-base-900 shadow-sm">
 		<div class="border-b border-base-200 dark:border-base-700 px-4 py-3">
@@ -88,7 +108,8 @@
 		</div>
 		<div class="px-4 py-3 text-sm text-base-600 dark:text-base-400 space-y-2">
 			<p>• <strong>带 YAML front matter 的 .md 文件</strong> — 元数据（标题、分类、标签等）自动解析</p>
-			<p>• <strong>Notion 导出 .zip 包</strong> — 标题从 # 标题提取，图片自动处理，元数据下一步手动填写</p>
+			<p>• <strong>Notion 导出 .zip 包</strong> — 标题从 # 标题提取，图片自动处理；自动识别 Notion 双层嵌套 ZIP</p>
+			<p>• <strong>在线新建</strong> — 不上传文件直接进入编辑器</p>
 			<p>• 单文件限制 10MB，ZIP 限制 50MB</p>
 		</div>
 	</div>

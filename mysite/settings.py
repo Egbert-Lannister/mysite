@@ -190,6 +190,7 @@ UNFOLD = {
                 "collapsible": False,
                 "items": [
                     {"title": "上传文章", "icon": "upload_file", "link": "/admin/upload/"},
+                    {"title": "新建文章", "icon": "edit_note", "link": "/admin/upload/blank/"},
                     {"title": "访问站点", "icon": "open_in_new", "link": "/techblog/"},
                 ],
             },

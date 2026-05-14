@@ -4,12 +4,17 @@ Business-logic helpers extracted from views.py / admin.py.
 - parse_upload_file():  Parse an uploaded .md or .zip, return structured metadata.
 - process_markdown_content():  Create / update a Post from parsed data.
 - rewrite_image_paths():  Copy images to MEDIA_ROOT and fix Markdown references.
+- generate_summary():  Ask DeepSeek for a ~30-word English summary when description is empty.
 """
 
 from __future__ import annotations
 
+import json
+import logging
+import os
 import re
 import shutil
+import urllib.request
 import zipfile
 from datetime import datetime
 from pathlib import Path
@@ -23,6 +28,8 @@ from django.utils.text import slugify
 from taggit.utils import parse_tags
 
 from .models import Post, Series, compute_content_hash, generate_series_slug, generate_unique_slug
+
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -205,8 +212,46 @@ def extract_zip_safely(
 # ---------------------------------------------------------------------------
 # Upload file parsing (step 1 — metadata extraction)
 # ---------------------------------------------------------------------------
+def _extract_zip_into(zip_path: Path, dest: Path, warnings: list[str]) -> tuple[Path | None, list[Path]]:
+    """Extract a single zip's md + images into *dest*. Returns (md_path, images)."""
+    md_path: Path | None = None
+    images: list[Path] = []
+    with zipfile.ZipFile(zip_path, "r") as zf:
+        for info in zf.infolist():
+            if info.is_dir():
+                continue
+            target_path = dest / info.filename
+            if not is_safe_path(dest, target_path):
+                warnings.append(f"跳过危险路径: {info.filename}")
+                continue
+            ext = Path(info.filename).suffix.lower().lstrip(".")
+            if ext == "md" and md_path is None:
+                target_path.parent.mkdir(parents=True, exist_ok=True)
+                zf.extract(info, dest)
+                md_path = target_path
+            elif ext in ALLOWED_IMAGE_EXTENSIONS:
+                target_path.parent.mkdir(parents=True, exist_ok=True)
+                zf.extract(info, dest)
+                images.append(target_path)
+    return md_path, images
+
+
+def _find_inner_zips(zip_path: Path) -> list[str]:
+    """Return relative paths of .zip entries inside *zip_path* (Notion double-wrap)."""
+    with zipfile.ZipFile(zip_path, "r") as zf:
+        return [
+            info.filename for info in zf.infolist()
+            if not info.is_dir() and info.filename.lower().endswith(".zip")
+        ]
+
+
 def parse_upload_file(uploaded_file) -> dict[str, Any]:
-    """Parse an uploaded ``.md`` / ``.zip`` and return preview-ready metadata."""
+    """Parse an uploaded ``.md`` / ``.zip`` and return preview-ready metadata.
+
+    Automatically unwraps **Notion double-zip exports**: if the outer ZIP contains
+    no ``.md`` but contains one or more inner ``.zip`` files, the inner zips are
+    extracted in place so the user no longer needs to manually unzip first.
+    """
     import tempfile
 
     filename = uploaded_file.name.lower()
@@ -224,25 +269,42 @@ def parse_upload_file(uploaded_file) -> dict[str, Any]:
             for chunk in uploaded_file.chunks():
                 f.write(chunk)
 
-        md_path = None
-        images: list[Path] = []
-        with zipfile.ZipFile(zip_path, "r") as zf:
-            for info in zf.infolist():
-                if info.is_dir():
-                    continue
-                target_path = staging_dir / info.filename
-                if not is_safe_path(staging_dir, target_path):
-                    result["warnings"].append(f"跳过危险路径: {info.filename}")
-                    continue
-                ext = Path(info.filename).suffix.lower().lstrip(".")
-                if ext == "md" and md_path is None:
-                    target_path.parent.mkdir(parents=True, exist_ok=True)
-                    zf.extract(info, staging_dir)
-                    md_path = target_path
-                elif ext in ALLOWED_IMAGE_EXTENSIONS:
-                    target_path.parent.mkdir(parents=True, exist_ok=True)
-                    zf.extract(info, staging_dir)
-                    images.append(target_path)
+        md_path, images = _extract_zip_into(zip_path, staging_dir, result["warnings"])
+
+        # Notion double-zip auto-unwrap: outer zip contains only inner zip(s).
+        # We keep recursing (cap 3 levels) until we find a real .md.
+        if md_path is None:
+            inner_zips_found = False
+            for _depth in range(3):
+                inner_zips = _find_inner_zips(zip_path)
+                if not inner_zips:
+                    break
+                inner_zips_found = True
+                for inner_name in inner_zips:
+                    inner_extract_root = staging_dir / "inner_unwrap"
+                    inner_extract_root.mkdir(parents=True, exist_ok=True)
+                    inner_target = inner_extract_root / Path(inner_name).name
+                    with zipfile.ZipFile(zip_path, "r") as zf:
+                        with zf.open(inner_name) as src, open(inner_target, "wb") as dst:
+                            shutil.copyfileobj(src, dst)
+                    md_path, more_imgs = _extract_zip_into(
+                        inner_target, staging_dir, result["warnings"]
+                    )
+                    images.extend(more_imgs)
+                    if md_path is not None:
+                        break
+                if md_path is not None:
+                    break
+                # If still no md but there are nested zips inside the inner ones,
+                # continue with the latest inner zip as the new "zip_path"
+                inner_lvl_zips = list((staging_dir / "inner_unwrap").glob("*.zip"))
+                if not inner_lvl_zips:
+                    break
+                zip_path = inner_lvl_zips[0]
+            if md_path is not None and inner_zips_found:
+                result["warnings"].append(
+                    "检测到 Notion 多层嵌套 ZIP，已自动解开内层压缩包"
+                )
 
         if not md_path:
             shutil.rmtree(staging_dir, ignore_errors=True)
@@ -357,7 +419,15 @@ def process_markdown_content(
     raw_category = overrides.get("category") or meta.get("category") or "engineering"
     category_map = {"tech": "engineering", "paper": "research"}
     category = category_map.get(raw_category, raw_category)
-    description = overrides.get("description") or meta.get("description", "")
+    description = (overrides.get("description") or meta.get("description") or "").strip()
+
+    if not description:
+        try:
+            description = generate_summary(title, body)
+            if description:
+                warnings.append("摘要为空，已使用 AI 自动生成约 30 词摘要")
+        except Exception as exc:
+            warnings.append(f"自动摘要生成失败（已留空）：{exc}")
 
     raw_slug = overrides.get("slug") or str(meta.get("slug") or "").strip()
     slug = slugify(raw_slug) if raw_slug else generate_unique_slug(title)
@@ -378,26 +448,41 @@ def process_markdown_content(
     if existing_by_hash:
         warnings.append(f"警告: 发现内容相同的文章「{existing_by_hash.title}」")
 
-    # Handle series from front matter
+    # Handle series — admin form override (id) takes precedence over front matter (name)
     series_instance: Series | None = None
     series_order: int | None = None
-    series_name = meta.get("series")
-    if series_name:
-        series_name = str(series_name).strip()
-        series_slug = slugify(series_name)
-        if not series_slug:
-            series_slug = generate_series_slug(series_name)
 
-        series_instance, series_created = Series.objects.get_or_create(
-            slug=series_slug,
-            defaults={
-                "title": series_name,
-                "description": f"自动创建的系列：{series_name}",
-            },
-        )
-        if series_created:
-            warnings.append(f"已自动创建系列「{series_name}」")
+    override_series_id = (overrides.get("series_id") or "").strip()
+    if override_series_id:
+        try:
+            series_instance = Series.objects.get(pk=int(override_series_id))
+        except (ValueError, Series.DoesNotExist):
+            warnings.append(f"指定的系列 ID 无效，已忽略: {override_series_id}")
+    else:
+        series_name = meta.get("series")
+        if series_name:
+            series_name = str(series_name).strip()
+            series_slug = slugify(series_name)
+            if not series_slug:
+                series_slug = generate_series_slug(series_name)
 
+            series_instance, series_created = Series.objects.get_or_create(
+                slug=series_slug,
+                defaults={
+                    "title": series_name,
+                    "description": f"自动创建的系列：{series_name}",
+                },
+            )
+            if series_created:
+                warnings.append(f"已自动创建系列「{series_name}」")
+
+    override_series_order = (overrides.get("series_order") or "").strip()
+    if override_series_order:
+        try:
+            series_order = int(override_series_order)
+        except (ValueError, TypeError):
+            warnings.append(f"系列内排序无效，已忽略: {override_series_order}")
+    elif series_instance is not None:
         series_order_raw = meta.get("series_order")
         if series_order_raw is not None:
             try:
@@ -423,3 +508,95 @@ def process_markdown_content(
         post.tags.set(parse_tags(tags_str))
 
     return post, created, warnings
+
+
+# ---------------------------------------------------------------------------
+# AI-assisted summary (DeepSeek, OpenAI-compatible API)
+# ---------------------------------------------------------------------------
+def _strip_markdown(text: str, max_chars: int = 6000) -> str:
+    """Quick best-effort plaintext extraction, capped at *max_chars*."""
+    t = re.sub(r"```[\s\S]*?```", " ", text)            # fenced code
+    t = re.sub(r"!\[[^\]]*\]\([^)]+\)", " ", t)         # images
+    t = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", t)      # links
+    t = re.sub(r"`[^`]+`", " ", t)                       # inline code
+    t = re.sub(r"^#{1,6}\s+", "", t, flags=re.MULTILINE) # heading markers
+    t = re.sub(r"^\s*[-*+]\s+", "", t, flags=re.MULTILINE)  # bullets
+    t = re.sub(r"[*_>#~]+", "", t)
+    t = re.sub(r"\n{2,}", "\n\n", t).strip()
+    if len(t) > max_chars:
+        t = t[:max_chars]
+    return t
+
+
+def generate_summary(title: str, body: str, *, max_words: int = 30) -> str:
+    """Generate ~``max_words`` English summary via DeepSeek chat API.
+
+    Returns empty string if the API key is missing or the request fails.
+    Honors ``DEEPSEEK_API_KEY`` / optional ``DEEPSEEK_API_BASE`` / ``DEEPSEEK_MODEL``.
+    """
+    api_key = (
+        getattr(settings, "DEEPSEEK_API_KEY", None)
+        or os.environ.get("DEEPSEEK_API_KEY")
+        or ""
+    ).strip()
+    if not api_key:
+        return ""
+
+    api_base = (
+        getattr(settings, "DEEPSEEK_API_BASE", None)
+        or os.environ.get("DEEPSEEK_API_BASE")
+        or "https://api.deepseek.com/v1"
+    ).rstrip("/")
+    model = (
+        getattr(settings, "DEEPSEEK_MODEL", None)
+        or os.environ.get("DEEPSEEK_MODEL")
+        or "deepseek-chat"
+    )
+
+    plain = _strip_markdown(body)
+    if not plain.strip():
+        return ""
+
+    system_prompt = (
+        "You write concise, neutral English summaries for technical blog posts. "
+        f"Reply with ONE single sentence of about {max_words} words. "
+        "No quotes, no markdown, no leading 'This article' / 'In this post'. "
+        "Just the summary itself."
+    )
+    user_prompt = f"Title: {title}\n\nContent:\n{plain}\n\nWrite the summary now."
+
+    payload = {
+        "model": model,
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ],
+        "temperature": 0.4,
+        "max_tokens": 160,
+        "stream": False,
+    }
+
+    req = urllib.request.Request(
+        f"{api_base}/chat/completions",
+        data=json.dumps(payload).encode("utf-8"),
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {api_key}",
+        },
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+    except Exception as exc:
+        logger.warning("DeepSeek summary call failed: %s", exc)
+        return ""
+
+    try:
+        text = (data["choices"][0]["message"]["content"] or "").strip()
+    except (KeyError, IndexError, TypeError):
+        return ""
+    # tidy up: drop wrapping quotes / trailing whitespace
+    text = text.strip().strip('"').strip("'").strip()
+    text = re.sub(r"\s+", " ", text)
+    return text

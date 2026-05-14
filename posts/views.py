@@ -183,6 +183,9 @@ def admin_upload(request):
             "md_filename": parsed["md_filename"],
             "has_frontmatter": parsed["has_frontmatter"],
             "warnings": parsed["warnings"],
+            "series_id": "",
+            "series_order": "",
+            "mode": "upload",
         }
         return redirect("admin_upload_preview")
 
@@ -196,13 +199,35 @@ def admin_upload(request):
     return render(request, "admin/upload.html", context)
 
 
+def admin_upload_blank(request):
+    """Skip step 1 — seed an empty preview session and jump straight to the editor."""
+    request.session["upload_preview"] = {
+        "title": "",
+        "slug": "",
+        "description": "",
+        "category": "engineering",
+        "tags": "",
+        "date": "",
+        "content": "",
+        "image_count": 0,
+        "staging_dir": "",
+        "md_filename": "",
+        "has_frontmatter": False,
+        "warnings": [],
+        "series_id": "",
+        "series_order": "",
+        "mode": "blank",
+    }
+    return redirect("admin_upload_preview")
+
+
 def admin_upload_preview(request):
     """Step 2: Preview parsed content, let user edit, then publish."""
     category_choices = Post.CATEGORY_CHOICES
     preview_data = request.session.get("upload_preview")
 
     if not preview_data:
-        messages.error(request, "没有待预览的上传内容，请先上传文件")
+        messages.error(request, "没有待预览的内容，请先上传文件或新建空白文章")
         return redirect("admin_upload")
 
     if request.method == "POST":
@@ -211,11 +236,19 @@ def admin_upload_preview(request):
             val = request.POST.get(field, "").strip()
             if val:
                 overrides[field] = val
+        # Series fields are allowed to be empty (= no series)
+        overrides["series_id"] = request.POST.get("series_id", "").strip()
+        overrides["series_order"] = request.POST.get("series_order", "").strip()
+
         content_override = request.POST.get("content", "").strip()
 
         staging_dir = preview_data.get("staging_dir", "")
         md_filename = preview_data.get("md_filename", "")
         text = content_override or preview_data.get("content", "")
+
+        if not text.strip():
+            messages.error(request, "正文不能为空")
+            return redirect("admin_upload_preview")
 
         images: list[Path] = []
         temp_dir: Path | None = None
@@ -253,6 +286,8 @@ def admin_upload_preview(request):
         "data": preview_data,
         "preview_html": preview_html,
         "category_choices": category_choices,
+        "series_options": Series.objects.all().order_by("title"),
+        "is_blank_mode": preview_data.get("mode") == "blank",
         "title": "预览与编辑",
         "content_title": "预览与编辑",
     })

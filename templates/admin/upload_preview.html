@@ -98,11 +98,19 @@
 	<!-- Header -->
 	<div class="flex items-center justify-between mb-6">
 		<div>
-			<h1 class="text-xl font-semibold text-base-900 dark:text-base-100">预览与编辑</h1>
-			<p class="text-sm text-base-500 dark:text-base-400 mt-1">确认元数据和内容后发布（正文布局与文章管理编辑页一致：左 Markdown / 右预览）</p>
+			<h1 class="text-xl font-semibold text-base-900 dark:text-base-100">
+				{% if is_blank_mode %}新建文章{% else %}预览与编辑{% endif %}
+			</h1>
+			<p class="text-sm text-base-500 dark:text-base-400 mt-1">
+				{% if is_blank_mode %}
+					手动填写元数据并撰写正文，确认后即可发布（摘要留空将由 AI 自动生成 ~30 词英文摘要）
+				{% else %}
+					确认元数据和内容后发布（正文布局与文章管理编辑页一致：左 Markdown / 右预览）
+				{% endif %}
+			</p>
 		</div>
 		<a href="{% url 'admin_upload' %}" class="text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline">
-			← 重新上传
+			← 重新选择
 		</a>
 	</div>
 
@@ -192,9 +200,37 @@
 					<input type="text" name="tags" id="id_tags" value="{{ data.tags }}" placeholder="逗号分隔；单个标签可含空格，如: deep learning, pytorch"
 						class="w-full rounded-md border border-base-300 dark:border-base-600 bg-white dark:bg-base-800 px-3 py-2 text-sm text-base-900 dark:text-base-100 placeholder-base-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition-colors">
 				</div>
+
+				<!-- Series / 系列归属 -->
+				<div class="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-4">
+					<div>
+						<label for="id_series_id" class="block text-xs font-medium text-base-700 dark:text-base-300 mb-1">所属系列</label>
+						<select name="series_id" id="id_series_id"
+							class="w-full rounded-md border border-base-300 dark:border-base-600 bg-white dark:bg-base-800 px-3 py-2 text-sm text-base-900 dark:text-base-100 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition-colors">
+							<option value="">— 不归属系列 —</option>
+							{% for s in series_options %}
+							<option value="{{ s.pk }}" {% if data.series_id|stringformat:"s" == s.pk|stringformat:"s" %}selected{% endif %}>{{ s.title }}</option>
+							{% endfor %}
+						</select>
+						<p class="text-xs text-base-500 dark:text-base-400 mt-1">
+							如需新建系列，请先在
+							<a href="{% url 'admin:posts_series_add' %}" target="_blank" class="text-primary-600 dark:text-primary-400 hover:underline">系列管理</a>
+							中创建后再回到此处选择。
+						</p>
+					</div>
+					<div class="sm:w-32">
+						<label for="id_series_order" class="block text-xs font-medium text-base-700 dark:text-base-300 mb-1">系列内排序</label>
+						<input type="number" name="series_order" id="id_series_order" value="{{ data.series_order }}" min="1" step="1" placeholder="1"
+							class="w-full rounded-md border border-base-300 dark:border-base-600 bg-white dark:bg-base-800 px-3 py-2 text-sm text-base-900 dark:text-base-100 placeholder-base-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition-colors">
+					</div>
+				</div>
+
 				<div>
-					<label for="id_description" class="block text-xs font-medium text-base-700 dark:text-base-300 mb-1">摘要</label>
-					<textarea name="description" id="id_description" rows="2" placeholder="文章简介，显示在列表页"
+					<label for="id_description" class="block text-xs font-medium text-base-700 dark:text-base-300 mb-1">
+						摘要
+						<span class="ml-1 text-base-400 dark:text-base-500 font-normal">（留空将由 AI 自动生成约 30 词英文摘要）</span>
+					</label>
+					<textarea name="description" id="id_description" rows="2" placeholder="文章简介，显示在列表页；留空将自动生成"
 						class="w-full rounded-md border border-base-300 dark:border-base-600 bg-white dark:bg-base-800 px-3 py-2 text-sm text-base-900 dark:text-base-100 placeholder-base-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition-colors resize-y">{{ data.description }}</textarea>
 				</div>
 			</div>
@@ -228,7 +264,7 @@
 		<div class="flex items-center justify-between">
 			<a href="{% url 'admin_upload' %}" class="inline-flex items-center gap-1.5 text-sm font-medium text-base-600 dark:text-base-400 hover:text-base-900 dark:hover:text-base-200 transition-colors">
 				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-				重新上传
+				{% if is_blank_mode %}放弃并返回{% else %}重新上传{% endif %}
 			</a>
 			<button type="submit" class="inline-flex items-center gap-2 rounded-md bg-primary-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 transition-colors">
 				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>

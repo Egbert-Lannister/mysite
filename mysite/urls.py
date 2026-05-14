@@ -12,6 +12,7 @@ from posts import views as posts_views
 urlpatterns = [
     # Upload routes under /admin/ — wrapped with admin_view for full Unfold context
     path('admin/upload/', admin.site.admin_view(posts_views.admin_upload), name='admin_upload'),
+    path('admin/upload/blank/', admin.site.admin_view(posts_views.admin_upload_blank), name='admin_upload_blank'),
     path('admin/upload/preview/', admin.site.admin_view(posts_views.admin_upload_preview), name='admin_upload_preview'),
     path(
         'admin/posts/preview-markdown/',

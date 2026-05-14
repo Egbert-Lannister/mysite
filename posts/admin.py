@@ -59,7 +59,7 @@ admin.site.unregister(Tag)
 class TagAdmin(BaseTagAdmin, ModelAdmin):
     list_display = ["name", "slug", "post_count"]
     search_fields = ["name", "slug"]
-
+    
     @display(description="文章数量")
     def post_count(self, obj):
         return obj.taggit_taggeditem_items.count()
@@ -107,7 +107,7 @@ class SeriesAdmin(ModelAdmin):
     prepopulated_fields = {"slug": ("title",)}
     ordering = ["order", "-created_at"]
     change_form_template = "admin/posts/series/change_form.html"
-
+    
     fieldsets = (
         ("基本信息", {
             "fields": ("title", "slug", "description"),
@@ -118,26 +118,26 @@ class SeriesAdmin(ModelAdmin):
             "description": "封面图片支持文件选择或剪贴板粘贴上传",
         }),
     )
-
+    
     @display(description="系列标题")
     def display_title(self, obj):
         return obj.title
-
+    
     @display(description="文章数量")
     def display_post_count(self, obj):
         count = obj.post_count
         return format_html(
             '<span class="text-primary-600 font-semibold">{}</span> 篇', count
         )
-
+    
     @display(description="排序")
     def display_order(self, obj):
         return obj.order
-
+    
     @display(description="首页推荐", label={"是": "success", "否": "warning"})
     def display_featured(self, obj):
         return "是" if obj.is_featured else "否"
-
+    
     @display(description="最近更新")
     def display_updated(self, obj):
         latest = obj.latest_post_date
@@ -175,7 +175,7 @@ class PostAdminForm(forms.ModelForm):
     def clean(self):
         cleaned = super().clean()
         upload_file = cleaned.get("upload_file")
-
+        
         if upload_file:
             filename = upload_file.name.lower()
             if filename.endswith(".zip"):
@@ -184,7 +184,7 @@ class PostAdminForm(forms.ModelForm):
                 self._process_md(upload_file, cleaned)
             else:
                 raise forms.ValidationError("不支持的文件格式，请上传 .md 或 .zip 文件")
-
+        
         for field_name in ("title", "content", "date", "category"):
             if not cleaned.get(field_name):
                 if field_name == "date":
@@ -215,13 +215,13 @@ class PostAdminForm(forms.ModelForm):
                 temp_path = Path(tmp)
                 md_path, images, warnings = extract_zip_safely(file, temp_path)
                 self._upload_warnings.extend(warnings)
-
+                
                 if not md_path:
                     raise forms.ValidationError("ZIP 文件中未找到 .md 文件")
-
+                
                 text = md_path.read_text(encoding="utf-8")
                 self._parse_markdown(text, cleaned)
-
+                
                 if images:
                     slug = cleaned.get("slug") or generate_unique_slug(
                         cleaned.get("title", "untitled")
@@ -234,7 +234,7 @@ class PostAdminForm(forms.ModelForm):
                         self._upload_warnings.append(
                             f"以下图片引用未在 ZIP 中找到: {', '.join(missing)}"
                         )
-
+        
         except zipfile.BadZipFile:
             raise forms.ValidationError("无效的 ZIP 文件")
         except forms.ValidationError:
@@ -247,11 +247,11 @@ class PostAdminForm(forms.ModelForm):
 
         FRONT_MATTER_RE = re.compile(r"^---\n(.*?)\n---\n(.*)$", re.DOTALL)
         m = FRONT_MATTER_RE.match(text)
-
+        
         if m:
             fm_raw, body = m.groups()
             meta = yaml.safe_load(fm_raw) or {}
-
+            
             if meta.get("title"):
                 cleaned["title"] = meta["title"]
             if meta.get("description"):
@@ -265,7 +265,7 @@ class PostAdminForm(forms.ModelForm):
                 raw_cat = meta["category"]
                 cat_map = {"tech": "engineering", "paper": "research"}
                 cleaned["category"] = cat_map.get(raw_cat, raw_cat)
-
+            
             raw_slug = str(meta.get("slug") or "").strip()
             if raw_slug:
                 slug = slugify(raw_slug)
@@ -276,9 +276,9 @@ class PostAdminForm(forms.ModelForm):
                 cleaned["slug"] = generate_unique_slug(
                     meta.get("title") or cleaned.get("title", "")
                 )
-
+            
             cleaned["content"] = body.strip()
-
+            
             tags = meta.get("tags", [])
             if isinstance(tags, list):
                 self._tags_str = ", ".join(str(t) for t in tags)
@@ -296,7 +296,7 @@ class PostAdminForm(forms.ModelForm):
             if cleaned.get("title") and not cleaned.get("slug"):
                 cleaned["slug"] = generate_unique_slug(cleaned["title"])
             self._upload_warnings.append("未检测到 YAML front matter，已从内容自动提取元数据")
-
+        
         content_hash = compute_content_hash(cleaned["content"])
         existing = (
             Post.objects.filter(content_hash=content_hash)
@@ -339,7 +339,7 @@ class PostAdmin(ModelAdmin):
     date_hierarchy = "date"
     list_per_page = 20
     readonly_fields = ("content_hash", "created_at", "updated_at")
-
+    
     change_form_template = "admin/posts/post/change_form.html"
 
     fieldsets = (
@@ -367,11 +367,11 @@ class PostAdmin(ModelAdmin):
             "description": "系统自动生成的信息",
         }),
     )
-
+    
     @display(description="标题")
     def display_title(self, obj):
         return obj.title
-
+    
     @display(
         description="分类",
         label={
@@ -383,15 +383,15 @@ class PostAdmin(ModelAdmin):
     )
     def display_category(self, obj):
         return obj.get_category_display()
-
+    
     @display(description="发布日期")
     def display_date(self, obj):
         return obj.date.strftime("%Y-%m-%d")
-
+    
     @display(description="状态", label={"已发布": "success", "草稿": "warning"})
     def display_status(self, obj):
         return "已发布" if obj.published else "草稿"
-
+    
     @display(description="操作")
     def display_actions(self, obj):
         url = reverse("posts:post_detail", args=[obj.slug])

@@ -205,6 +205,35 @@ class ZipUploadServiceTests(TestCase):
             self.assertIn("/media/posts/test-slug/", new_content)
             self.assertEqual(len(missing), 0)
 
+    def test_parse_upload_file_unwraps_double_nested_zip(self):
+        """Notion sometimes wraps the export inside another zip; we should auto-unwrap."""
+        # Inner zip = real Notion export (md + image)
+        inner_buf = self._make_zip({
+            "Some Notion Page 1234567890abcdef.md": b"# Notion Title\n\nBody",
+            "Some Notion Page 1234567890abcdef/img.png": b"PNG",
+        })
+        outer_buf = self._make_zip({"Export-abc.zip": inner_buf.getvalue()})
+
+        class _Fake:
+            def __init__(self, data: bytes, name: str):
+                self._data = data
+                self.name = name
+                self.size = len(data)
+
+            def chunks(self):
+                yield self._data
+
+            def read(self):
+                return self._data
+
+        fake = _Fake(outer_buf.getvalue(), "Export-outer.zip")
+        result = parse_upload_file(fake)
+        self.assertEqual(result["title"], "Notion Title")
+        self.assertEqual(result["image_count"], 1)
+        self.assertTrue(any("Notion 多层嵌套" in w for w in result["warnings"]))
+        # Clean up staging dir
+        shutil.rmtree(result["staging_dir"], ignore_errors=True)
+
     @classmethod
     def tearDownClass(cls):
         super().tearDownClass()

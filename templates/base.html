@@ -247,18 +247,44 @@
 		{% block content %}{% endblock %}
 	</main>
 
-	<!-- Footer — restrained and light -->
+	<!-- Footer — single-row, tagline centered with side elements equidistant -->
 	<footer class="border-t border-ink-200/70 dark:border-white/5 mt-12">
 		<div class="max-w-6xl mx-auto px-5 sm:px-6 lg:px-8 py-7">
-			<div class="flex flex-col sm:flex-row items-center justify-between gap-3 text-[13px]">
-				<div class="flex items-center gap-2 text-ink-500 dark:text-ink-500">
-					<img src="{% static 'images/logo.jpg' %}" alt="" class="w-5 h-5 rounded object-cover opacity-80">
-					<span>© {% now "Y" %} Egbert Lannister · TechBlog</span>
+			<!--
+				Grid is 1fr | auto | 1fr so the centered tagline column auto-sizes
+				and the two outer columns are *equal width*, then we right-align
+				the left content and left-align the right content. Result: the
+				visible gap from each side element to the centered tagline is
+				identical regardless of side-element length.
+			-->
+			<div class="hidden sm:grid items-center gap-x-16 lg:gap-x-28 text-[12.5px] text-ink-500 dark:text-ink-500"
+				 style="grid-template-columns: 1fr auto 1fr;">
+				<div class="flex items-center justify-end gap-2 min-w-0">
+					<img src="{% static 'images/logo.jpg' %}" alt="" class="w-4 h-4 rounded object-cover opacity-80 flex-shrink-0">
+					<span class="truncate">© {% now "Y" %} Egbert Lannister · TechBlog</span>
 				</div>
-				<p class="text-ink-500 dark:text-ink-500 italic">A space for ideas, words, and wonder.</p>
-				<a href="/rss.xml" class="text-ink-500 hover:text-accent-500 dark:hover:text-accent-400 transition-colors" aria-label="RSS">
-					<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19 7.38 20 6.18 20C5 20 4 19 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1Z"/></svg>
-				</a>
+				<p class="text-[13.5px] text-ink-700 dark:text-ink-300 tracking-tight whitespace-nowrap">
+					A space for ideas, words, and wonder.
+				</p>
+				<div class="flex items-center justify-start">
+					<a href="/rss.xml" class="inline-flex items-center gap-1 hover:text-accent-500 dark:hover:text-accent-400 transition-colors" aria-label="Subscribe to RSS feed">
+						<svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19 7.38 20 6.18 20C5 20 4 19 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1Z"/></svg>
+						RSS
+					</a>
+				</div>
+			</div>
+			<!-- Mobile fallback: stack centered to avoid cramping on narrow screens -->
+			<div class="flex sm:hidden flex-col items-center gap-3 text-center">
+				<p class="text-[13.5px] text-ink-700 dark:text-ink-300 tracking-tight">A space for ideas, words, and wonder.</p>
+				<div class="flex items-center gap-3 text-[12.5px] text-ink-500 dark:text-ink-500">
+					<img src="{% static 'images/logo.jpg' %}" alt="" class="w-4 h-4 rounded object-cover opacity-80">
+					<span>© {% now "Y" %} Egbert Lannister · TechBlog</span>
+					<span class="text-ink-300 dark:text-white/10" aria-hidden="true">·</span>
+					<a href="/rss.xml" class="inline-flex items-center gap-1 hover:text-accent-500 dark:hover:text-accent-400 transition-colors" aria-label="Subscribe to RSS feed">
+						<svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19 7.38 20 6.18 20C5 20 4 19 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1Z"/></svg>
+						RSS
+					</a>
+				</div>
 			</div>
 		</div>
 	</footer>
