@@ -19,6 +19,7 @@ from .models import Post, Series, compute_content_hash, generate_series_slug, ge
 from .services import (
     extract_title_from_markdown,
     extract_zip_safely,
+    generate_tags,
     is_safe_path,
     parse_upload_file,
     process_markdown_content,
@@ -277,3 +278,58 @@ class ProcessMarkdownTests(TestCase):
     def tearDownClass(cls):
         super().tearDownClass()
         shutil.rmtree(TEMP_MEDIA, ignore_errors=True)
+
+
+class GenerateTagsParsingTests(TestCase):
+    """Verify the tag-cleanup parser handles ratty model outputs without an API call."""
+
+    def _fake_deepseek(self, content: str):
+        """Build a function that mimics urllib.request.urlopen returning *content*."""
+        import json as _json
+        from io import BytesIO
+
+        class _Resp:
+            def __init__(self, payload: dict):
+                self._b = _json.dumps(payload).encode("utf-8")
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *_a):
+                return False
+
+            def read(self):
+                return self._b
+
+        payload = {"choices": [{"message": {"content": content}}]}
+        return lambda req, timeout=20: _Resp(payload)
+
+    def test_returns_empty_without_api_key(self):
+        with patch.dict("os.environ", {"DEEPSEEK_API_KEY": ""}, clear=False):
+            self.assertEqual(generate_tags("t", "body"), [])
+
+    def test_parses_comma_separated(self):
+        with patch.dict("os.environ", {"DEEPSEEK_API_KEY": "fake"}, clear=False), patch(
+            "urllib.request.urlopen",
+            side_effect=self._fake_deepseek("python, django, web development"),
+        ):
+            tags = generate_tags("Title", "Plenty of body content here.", count=3)
+        self.assertEqual(tags, ["python", "django", "web development"])
+
+    def test_strips_enumerators_and_quotes(self):
+        with patch.dict("os.environ", {"DEEPSEEK_API_KEY": "fake"}, clear=False), patch(
+            "urllib.request.urlopen",
+            side_effect=self._fake_deepseek(
+                '1. "PyTorch"\n2) deep-learning\n- "Transformers!"'
+            ),
+        ):
+            tags = generate_tags("T", "Body content.", count=3)
+        self.assertEqual(tags, ["pytorch", "deep-learning", "transformers"])
+
+    def test_dedupes_and_limits(self):
+        with patch.dict("os.environ", {"DEEPSEEK_API_KEY": "fake"}, clear=False), patch(
+            "urllib.request.urlopen",
+            side_effect=self._fake_deepseek("python, Python, django, rest, rest"),
+        ):
+            tags = generate_tags("T", "Body.", count=3)
+        self.assertEqual(tags, ["python", "django", "rest"])

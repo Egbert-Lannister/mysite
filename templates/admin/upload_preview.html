@@ -7,7 +7,140 @@
 {% block extrahead %}
 {{ block.super }}
 <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/flatpickr/4.6.13/flatpickr.min.css">
 <style>
+	/* Flatpickr calendar — modernized to match Unfold admin colors */
+	.flatpickr-calendar {
+		font-family: inherit;
+		font-size: 13px;
+		border-radius: 10px;
+		box-shadow: 0 10px 40px -10px rgba(15, 23, 42, 0.18), 0 2px 8px -2px rgba(15, 23, 42, 0.08);
+		border: 1px solid rgb(229 231 235);
+		padding: 4px;
+		width: 320px;
+	}
+	.flatpickr-calendar.open { animation: fp-fade-in .14s ease; }
+	@keyframes fp-fade-in {
+		from { opacity: 0; transform: translateY(-4px); }
+		to   { opacity: 1; transform: translateY(0); }
+	}
+	.flatpickr-months { padding: 4px 4px 2px; }
+	.flatpickr-month {
+		color: rgb(17 24 39);
+		height: 36px;
+	}
+	.flatpickr-current-month {
+		padding-top: 6px;
+		font-size: 14px;
+		font-weight: 600;
+	}
+	.flatpickr-current-month .flatpickr-monthDropdown-months,
+	.flatpickr-current-month input.cur-year {
+		font-weight: 600;
+		color: rgb(17 24 39);
+	}
+	.flatpickr-current-month .flatpickr-monthDropdown-months:hover,
+	.flatpickr-current-month input.cur-year:hover {
+		background: rgb(243 244 246);
+		border-radius: 4px;
+	}
+	.flatpickr-prev-month, .flatpickr-next-month {
+		fill: rgb(107 114 128);
+		padding: 8px;
+		border-radius: 6px;
+		transition: background-color .15s ease;
+	}
+	.flatpickr-prev-month:hover, .flatpickr-next-month:hover {
+		background: rgb(243 244 246);
+		fill: rgb(17 24 39);
+	}
+	.flatpickr-weekdays { background: transparent; height: 28px; }
+	span.flatpickr-weekday {
+		font-weight: 600;
+		font-size: 11px;
+		color: rgb(107 114 128);
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+	}
+	.dayContainer { padding: 2px 0; }
+	.flatpickr-day {
+		border-radius: 7px;
+		font-weight: 500;
+		color: rgb(31 41 55);
+		max-width: 40px;
+		height: 36px;
+		line-height: 36px;
+		transition: background-color .12s ease, color .12s ease;
+	}
+	.flatpickr-day:hover {
+		background: rgb(243 244 246);
+		border-color: transparent;
+	}
+	.flatpickr-day.today {
+		border-color: rgb(var(--color-primary-500));
+	}
+	.flatpickr-day.today:hover { background: rgb(var(--color-primary-50)); }
+	.flatpickr-day.selected,
+	.flatpickr-day.selected:hover,
+	.flatpickr-day.startRange,
+	.flatpickr-day.endRange,
+	.flatpickr-day.selected.startRange,
+	.flatpickr-day.selected.endRange {
+		background: rgb(var(--color-primary-600));
+		border-color: rgb(var(--color-primary-600));
+		color: white;
+		box-shadow: 0 4px 10px -4px rgba(var(--color-primary-600), 0.5);
+	}
+	.flatpickr-day.prevMonthDay, .flatpickr-day.nextMonthDay,
+	.flatpickr-day.flatpickr-disabled, .flatpickr-day.flatpickr-disabled:hover {
+		color: rgb(209 213 219);
+	}
+	.flatpickr-time {
+		border-top: 1px solid rgb(229 231 235);
+		margin-top: 4px;
+	}
+	.flatpickr-time input, .flatpickr-time .flatpickr-time-separator,
+	.flatpickr-time .flatpickr-am-pm {
+		color: rgb(17 24 39);
+		font-weight: 600;
+		font-size: 13px;
+	}
+	.flatpickr-time input:hover, .flatpickr-time input:focus {
+		background: rgb(243 244 246);
+	}
+	.numInputWrapper:hover { background: transparent; }
+
+	/* Dark mode */
+	.dark .flatpickr-calendar {
+		background: rgb(17 24 39);
+		border-color: rgb(55 65 81);
+		box-shadow: 0 12px 40px -10px rgba(0, 0, 0, 0.5);
+	}
+	.dark .flatpickr-month { color: rgb(229 231 235); }
+	.dark .flatpickr-current-month .flatpickr-monthDropdown-months,
+	.dark .flatpickr-current-month input.cur-year { color: rgb(229 231 235); }
+	.dark .flatpickr-current-month .flatpickr-monthDropdown-months:hover,
+	.dark .flatpickr-current-month input.cur-year:hover { background: rgba(255,255,255,0.06); }
+	.dark .flatpickr-monthDropdown-months .flatpickr-monthDropdown-month { background: rgb(17 24 39); color: rgb(229 231 235); }
+	.dark .flatpickr-prev-month, .dark .flatpickr-next-month { fill: rgb(156 163 175); }
+	.dark .flatpickr-prev-month:hover, .dark .flatpickr-next-month:hover {
+		background: rgba(255,255,255,0.06);
+		fill: rgb(229 231 235);
+	}
+	.dark span.flatpickr-weekday { color: rgb(156 163 175); }
+	.dark .flatpickr-day {
+		color: rgb(209 213 219);
+	}
+	.dark .flatpickr-day:hover { background: rgba(255,255,255,0.06); }
+	.dark .flatpickr-day.prevMonthDay, .dark .flatpickr-day.nextMonthDay,
+	.dark .flatpickr-day.flatpickr-disabled, .dark .flatpickr-day.flatpickr-disabled:hover {
+		color: rgb(75 85 99);
+	}
+	.dark .flatpickr-time { border-top-color: rgb(55 65 81); }
+	.dark .flatpickr-time input, .dark .flatpickr-time .flatpickr-time-separator,
+	.dark .flatpickr-time .flatpickr-am-pm { color: rgb(229 231 235); }
+	.dark .flatpickr-time input:hover, .dark .flatpickr-time input:focus { background: rgba(255,255,255,0.06); }
+
 	.preview-content { line-height: 1.75; font-size: 0.875rem; }
 	.preview-content h1 { font-size: 1.5rem; font-weight: 700; margin: 1.25rem 0 0.5rem; }
 	.preview-content h2 { font-size: 1.25rem; font-weight: 600; margin: 1rem 0 0.375rem; }
@@ -191,14 +324,25 @@
 					</div>
 					<div>
 						<label for="id_date" class="block text-xs font-medium text-base-700 dark:text-base-300 mb-1">发布日期</label>
-						<input type="text" name="date" id="id_date" value="{{ data.date }}" placeholder="留空使用当前时间"
-							class="w-full rounded-md border border-base-300 dark:border-base-600 bg-white dark:bg-base-800 px-3 py-2 text-sm text-base-900 dark:text-base-100 placeholder-base-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition-colors">
+						<div class="relative">
+							<input type="text" name="date" id="id_date" value="{{ data.date }}" placeholder="点击选择日期与时间，留空使用当前时间" autocomplete="off"
+								class="w-full rounded-md border border-base-300 dark:border-base-600 bg-white dark:bg-base-800 pl-9 pr-3 py-2 text-sm text-base-900 dark:text-base-100 placeholder-base-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition-colors cursor-pointer">
+							<svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-base-400 dark:text-base-500 pointer-events-none" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3M3.5 11h17M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+						</div>
 					</div>
 				</div>
 				<div>
-					<label for="id_tags" class="block text-xs font-medium text-base-700 dark:text-base-300 mb-1">标签</label>
+					<div class="flex items-center justify-between mb-1">
+						<label for="id_tags" class="text-xs font-medium text-base-700 dark:text-base-300">标签</label>
+						<button type="button" id="ai-generate-tags-btn"
+							class="inline-flex items-center gap-1.5 rounded-md border border-primary-200 dark:border-primary-500/40 bg-primary-50 dark:bg-primary-900/20 px-2 py-1 text-[11px] font-medium text-primary-700 dark:text-primary-300 hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
+							<svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z"/></svg>
+							<span class="ai-tags-btn-label">AI 生成 3 个 Tag</span>
+						</button>
+					</div>
 					<input type="text" name="tags" id="id_tags" value="{{ data.tags }}" placeholder="逗号分隔；单个标签可含空格，如: deep learning, pytorch"
 						class="w-full rounded-md border border-base-300 dark:border-base-600 bg-white dark:bg-base-800 px-3 py-2 text-sm text-base-900 dark:text-base-100 placeholder-base-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition-colors">
+					<p id="ai-tags-status" class="text-xs mt-1 hidden"></p>
 				</div>
 
 				<!-- Series / 系列归属 -->
@@ -276,6 +420,118 @@
 
 <script src="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
 <script src="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/flatpickr/4.6.13/l10n/zh.min.js"></script>
+<script>
+// ============================================================================
+// Date picker (flatpickr) — single popover calendar with year/month dropdown
+// ============================================================================
+(function () {
+	const input = document.getElementById("id_date");
+	if (!input || typeof flatpickr !== "function") return;
+
+	// Pre-normalize ISO-ish initial values so flatpickr can parse them robustly.
+	const raw = (input.value || "").trim();
+	let initial = null;
+	if (raw) {
+		const d = new Date(raw.includes("T") ? raw : raw.replace(" ", "T"));
+		if (!isNaN(d.getTime())) initial = d;
+	}
+
+	flatpickr(input, {
+		locale: (window.flatpickr && window.flatpickr.l10ns && window.flatpickr.l10ns.zh) ? "zh" : "default",
+		enableTime: true,
+		time_24hr: true,
+		minuteIncrement: 1,
+		dateFormat: "Y-m-d H:i:S",
+		altInput: false,
+		allowInput: true,
+		defaultDate: initial,
+		monthSelectorType: "dropdown",
+		position: "auto",
+		nextArrow: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>',
+		prevArrow: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>',
+	});
+})();
+
+// ============================================================================
+// AI tag generation — POST title + content -> DeepSeek -> fill #id_tags
+// ============================================================================
+(function () {
+	const btn = document.getElementById("ai-generate-tags-btn");
+	const titleEl = document.getElementById("id_title");
+	const contentEl = document.getElementById("id_content");
+	const tagsEl = document.getElementById("id_tags");
+	const statusEl = document.getElementById("ai-tags-status");
+	const csrftoken = document.querySelector("[name=csrfmiddlewaretoken]");
+	const csrf = csrftoken ? csrftoken.value : "";
+	const endpoint = "{% url 'admin_post_generate_tags' %}";
+	if (!btn || !contentEl || !tagsEl) return;
+
+	const label = btn.querySelector(".ai-tags-btn-label");
+	const originalText = label ? label.textContent : "";
+
+	function setStatus(text, kind /* 'ok' | 'err' | '' */) {
+		if (!statusEl) return;
+		statusEl.textContent = text || "";
+		statusEl.classList.toggle("hidden", !text);
+		statusEl.classList.remove("text-red-500", "dark:text-red-400", "text-green-600", "dark:text-green-400", "text-base-500", "dark:text-base-400");
+		if (kind === "err") statusEl.classList.add("text-red-500", "dark:text-red-400");
+		else if (kind === "ok") statusEl.classList.add("text-green-600", "dark:text-green-400");
+		else statusEl.classList.add("text-base-500", "dark:text-base-400");
+	}
+
+	btn.addEventListener("click", async () => {
+		const title = (titleEl && titleEl.value || "").trim();
+		const content = (contentEl.value || "").trim();
+		if (!content) {
+			setStatus("请先填写正文再生成标签", "err");
+			return;
+		}
+		btn.disabled = true;
+		if (label) label.textContent = "正在生成…";
+		setStatus("正在调用 DeepSeek …", "");
+
+		const body = new URLSearchParams();
+		body.set("title", title);
+		body.set("content", content);
+		body.set("count", "3");
+		body.set("csrfmiddlewaretoken", csrf);
+
+		try {
+			const r = await fetch(endpoint, {
+				method: "POST",
+				headers: { "X-Requested-With": "XMLHttpRequest" },
+				body: body,
+				credentials: "same-origin",
+			});
+			const data = await r.json().catch(() => ({}));
+			if (!r.ok || !data.ok) {
+				throw new Error(data.error || ("HTTP " + r.status));
+			}
+			const newTags = Array.isArray(data.tags) ? data.tags : [];
+			if (!newTags.length) {
+				throw new Error("未获取到有效标签");
+			}
+			// Merge: keep existing user-entered tags, append AI tags without duplicates.
+			const existing = (tagsEl.value || "")
+				.split(",").map(s => s.trim().toLowerCase()).filter(Boolean);
+			const merged = [...existing];
+			for (const t of newTags) {
+				const lower = t.toLowerCase();
+				if (!merged.includes(lower)) merged.push(t);
+			}
+			tagsEl.value = merged.join(", ");
+			setStatus("已添加 " + newTags.length + " 个 AI 标签：" + newTags.join("、"), "ok");
+		} catch (err) {
+			setStatus("生成失败：" + (err.message || err), "err");
+		} finally {
+			btn.disabled = false;
+			if (label) label.textContent = originalText;
+		}
+	});
+})();
+</script>
 <script>
 (function () {
 	const previewUrl = "{% url 'admin_post_preview_markdown' %}";

@@ -14,6 +14,7 @@ from django.views.decorators.http import require_POST
 from .models import Post, Series
 from .services import (
     ALLOWED_IMAGE_EXTENSIONS,
+    generate_tags,
     parse_upload_file,
     process_markdown_content,
 )
@@ -303,6 +304,44 @@ def admin_preview_markdown(request):
     except Exception as e:
         return JsonResponse({"ok": False, "html": "", "error": str(e)}, status=400)
     return JsonResponse({"ok": True, "html": html, "error": None})
+
+
+@require_POST
+def admin_generate_tags(request):
+    """Staff-only: ask DeepSeek for 3 topical tags based on title + content."""
+    title = request.POST.get("title", "").strip()
+    content = request.POST.get("content", "").strip()
+    try:
+        count = int(request.POST.get("count", "3"))
+    except (TypeError, ValueError):
+        count = 3
+    count = max(1, min(count, 8))
+
+    if not content:
+        return JsonResponse(
+            {"ok": False, "tags": [], "error": "正文为空，无法生成标签"},
+            status=400,
+        )
+
+    try:
+        tags = generate_tags(title, content, count=count)
+    except Exception as exc:
+        return JsonResponse(
+            {"ok": False, "tags": [], "error": f"调用 DeepSeek 失败: {exc}"},
+            status=502,
+        )
+
+    if not tags:
+        return JsonResponse(
+            {
+                "ok": False,
+                "tags": [],
+                "error": "未能从 DeepSeek 获取到标签（可能未配置 DEEPSEEK_API_KEY，或请求失败）",
+            },
+            status=502,
+        )
+
+    return JsonResponse({"ok": True, "tags": tags, "error": None})
 
 
 # ---------------------------------------------------------------------------

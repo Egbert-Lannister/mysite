@@ -600,3 +600,98 @@ def generate_summary(title: str, body: str, *, max_words: int = 30) -> str:
     text = text.strip().strip('"').strip("'").strip()
     text = re.sub(r"\s+", " ", text)
     return text
+
+
+def generate_tags(title: str, body: str, *, count: int = 3) -> list[str]:
+    """Generate ~``count`` keyword tags via DeepSeek chat API.
+
+    Returns a list of short, lowercase, hyphen-friendly tag strings. Empty list
+    if the API key is missing, the request fails, or the model returns nothing
+    usable. Honors the same env vars as :func:`generate_summary`.
+    """
+    api_key = (
+        getattr(settings, "DEEPSEEK_API_KEY", None)
+        or os.environ.get("DEEPSEEK_API_KEY")
+        or ""
+    ).strip()
+    if not api_key:
+        return []
+
+    api_base = (
+        getattr(settings, "DEEPSEEK_API_BASE", None)
+        or os.environ.get("DEEPSEEK_API_BASE")
+        or "https://api.deepseek.com/v1"
+    ).rstrip("/")
+    model = (
+        getattr(settings, "DEEPSEEK_MODEL", None)
+        or os.environ.get("DEEPSEEK_MODEL")
+        or "deepseek-chat"
+    )
+
+    plain = _strip_markdown(body)
+    if not plain.strip():
+        return []
+
+    system_prompt = (
+        "You extract concise topical tags for technical blog posts. "
+        f"Return EXACTLY {count} tags as a comma-separated list, no numbering, "
+        "no explanations, no quotes. Each tag must be 1-3 lowercase words "
+        "(letters, digits, hyphens or single spaces only — no punctuation). "
+        "Prefer well-known technical keywords readers might search for."
+    )
+    user_prompt = (
+        f"Title: {title}\n\nContent:\n{plain}\n\n"
+        f"Output exactly {count} comma-separated tags now."
+    )
+
+    payload = {
+        "model": model,
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ],
+        "temperature": 0.3,
+        "max_tokens": 60,
+        "stream": False,
+    }
+
+    req = urllib.request.Request(
+        f"{api_base}/chat/completions",
+        data=json.dumps(payload).encode("utf-8"),
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {api_key}",
+        },
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+    except Exception as exc:
+        logger.warning("DeepSeek tag call failed: %s", exc)
+        return []
+
+    try:
+        raw = (data["choices"][0]["message"]["content"] or "").strip()
+    except (KeyError, IndexError, TypeError):
+        return []
+
+    parts = re.split(r"[,\n;]+", raw)
+    tags: list[str] = []
+    seen: set[str] = set()
+    for raw_tag in parts:
+        # Strip enumerators like "1.", "1)", "-", surrounding quotes/brackets.
+        t = re.sub(r"^\s*(?:\d+[\.\)]\s*|[-*•·]\s*)", "", raw_tag).strip()
+        t = t.strip(' "\'`*_[](){}<>—–')
+        t = re.sub(r"\s+", " ", t).lower()
+        # Allow only letters, digits, single hyphens/spaces.
+        t = re.sub(r"[^a-z0-9\u4e00-\u9fff\- ]+", "", t).strip()
+        if not t or len(t) > 32:
+            continue
+        if t in seen:
+            continue
+        seen.add(t)
+        tags.append(t)
+        if len(tags) >= count:
+            break
+    return tags

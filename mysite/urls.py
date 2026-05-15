@@ -20,6 +20,11 @@ urlpatterns = [
         name='admin_post_preview_markdown',
     ),
     path(
+        'admin/posts/generate-tags/',
+        admin.site.admin_view(posts_views.admin_generate_tags),
+        name='admin_post_generate_tags',
+    ),
+    path(
         'admin/upload-cover-image/',
         admin.site.admin_view(posts_views.upload_cover_image),
         name='admin_upload_cover_image',
