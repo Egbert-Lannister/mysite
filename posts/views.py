@@ -122,7 +122,7 @@ def post_detail(request, slug: str):
     if post.series:
         series_posts = Post.objects.filter(
             series=post.series, published=True,
-        ).order_by("series_order")
+        ).order_by("date")
         total_posts = series_posts.count()
         current_index = None
         for idx, p in enumerate(series_posts, 1):

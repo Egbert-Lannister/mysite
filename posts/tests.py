@@ -52,8 +52,10 @@ class SeriesModelTests(TestCase):
 
     def test_get_posts_returns_published_ordered(self):
         now = timezone.now()
+        from datetime import timedelta
+        earlier = now - timedelta(days=1)
         p1 = Post.objects.create(
-            title="First", slug="first", content="c1", date=now,
+            title="First", slug="first", content="c1", date=earlier,
             category="engineering", series=self.series, series_order=2,
         )
         p2 = Post.objects.create(
@@ -68,8 +70,9 @@ class SeriesModelTests(TestCase):
 
         posts = list(self.series.get_posts())
         self.assertEqual(len(posts), 2)
-        self.assertEqual(posts[0].pk, p2.pk)
-        self.assertEqual(posts[1].pk, p1.pk)
+        # Oldest first (ascending date order)
+        self.assertEqual(posts[0].pk, p1.pk)
+        self.assertEqual(posts[1].pk, p2.pk)
 
     def test_post_count(self):
         now = timezone.now()
@@ -112,10 +115,11 @@ class PostModelTests(TestCase):
         self.assertEqual(p.content_hash, compute_content_hash("abc"))
 
     def test_series_prev_next(self):
+        from datetime import timedelta
         now = timezone.now()
         s = Series.objects.create(title="S", slug="s")
         p1 = Post.objects.create(
-            title="A", slug="a", content="a", date=now,
+            title="A", slug="a", content="a", date=now - timedelta(days=1),
             category="engineering", series=s, series_order=1,
         )
         p2 = Post.objects.create(

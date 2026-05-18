@@ -96,11 +96,11 @@ class Series(models.Model):
         return reverse("posts:series_detail", args=[self.slug])
 
     def get_posts(self):
-        """Return published posts in this series, ordered by series_order then date."""
+        """Return published posts in this series, oldest first."""
         return (
             self.posts
             .filter(published=True)
-            .order_by("series_order", "-date")
+            .order_by("date")
         )
 
     @property
@@ -188,27 +188,27 @@ class Post(models.Model):
         return reverse("posts:post_detail", args=[self.slug])
 
     def get_series_prev(self) -> "Post | None":
-        if not self.series or self.series_order is None:
+        if not self.series:
             return None
         return (
             Post.objects.filter(
                 series=self.series,
-                series_order__lt=self.series_order,
+                date__lt=self.date,
                 published=True,
             )
-            .order_by("-series_order")
+            .order_by("-date")
             .first()
         )
 
     def get_series_next(self) -> "Post | None":
-        if not self.series or self.series_order is None:
+        if not self.series:
             return None
         return (
             Post.objects.filter(
                 series=self.series,
-                series_order__gt=self.series_order,
+                date__gt=self.date,
                 published=True,
             )
-            .order_by("series_order")
+            .order_by("date")
             .first()
         )
