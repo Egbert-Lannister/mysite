@@ -27,6 +27,15 @@ CSRF_TRUSTED_ORIGINS = [
     'https://www.egbert-lannister.com',
 ]
 
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = not DEBUG
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+SECURE_HSTS_SECONDS = 31536000 if not DEBUG else 0
+SECURE_HSTS_INCLUDE_SUBDOMAINS = not DEBUG
+SECURE_HSTS_PRELOAD = not DEBUG
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
 INSTALLED_APPS = [
     'unfold',
     'unfold.contrib.filters',
@@ -39,11 +48,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'django.contrib.syndication',
-    'django.contrib.postgres',
     'taggit',
-    'tailwind',
     'posts',
-    'theme',
 ]
 
 if DEBUG:
@@ -51,7 +57,6 @@ if DEBUG:
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -89,6 +94,8 @@ DATABASES = {
         ssl_require=False,
     )
 }
+if DATABASES["default"]["ENGINE"] == "django.db.backends.sqlite3":
+    DATABASES["default"].setdefault("OPTIONS", {})["timeout"] = 20
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -113,12 +120,12 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 STORAGES = {
     'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
-    'staticfiles': {'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage'},
+    'staticfiles': {
+        'BACKEND': 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage',
+    },
 }
 
 SITE_ID = 1
-
-TAILWIND_APP_NAME = 'theme'
 INTERNAL_IPS = ['127.0.0.1', 'localhost']
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -132,6 +139,7 @@ TAGGIT_TAGS_FROM_STRING = 'posts.taggit_helpers.parse_tags_allow_spaces'
 UPLOAD_MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB per file
 UPLOAD_MAX_ZIP_SIZE = 50 * 1024 * 1024   # 50MB for zip
 UPLOAD_ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'}
+MARKDOWN_PREVIEW_MAX_CHARS = 100_000
 
 # =============================================================================
 # Giscus Comments Configuration
@@ -145,6 +153,9 @@ GISCUS_REACTIONS_ENABLED = '1'
 GISCUS_EMIT_METADATA = '0'
 GISCUS_INPUT_POSITION = 'bottom'
 GISCUS_LANG = 'zh-CN'
+
+# External AI calls are optional admin helpers and must never hold a worker for long.
+AI_REQUEST_TIMEOUT = float(os.environ.get("AI_REQUEST_TIMEOUT", "8"))
 
 # =============================================================================
 # Django Unfold Admin Configuration

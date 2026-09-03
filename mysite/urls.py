@@ -25,6 +25,11 @@ urlpatterns = [
         name='admin_post_generate_tags',
     ),
     path(
+        'admin/posts/generate-summary/',
+        admin.site.admin_view(posts_views.admin_generate_summary),
+        name='admin_post_generate_summary',
+    ),
+    path(
         'admin/upload-cover-image/',
         admin.site.admin_view(posts_views.upload_cover_image),
         name='admin_upload_cover_image',
@@ -37,8 +42,6 @@ urlpatterns = [
     path('', RedirectView.as_view(url='/techblog/', permanent=True)),
 ]
 
-# Always serve user-uploaded media files (posts images, etc.)
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
 if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns.insert(0, path('__reload__/', include('django_browser_reload.urls')))

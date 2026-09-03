@@ -32,6 +32,8 @@ ENV/
 # Database
 *.sqlite3
 db.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
 
 # Static files (generated)
 staticfiles/
@@ -76,9 +78,13 @@ coverage.xml
 .mypy_cache/
 .dmypy.json
 
-# Logs
+# Logs (including rotated / compressed copies)
 *.log
+*.log.[0-9]*
+*.log.*.gz
 gunicorn.log
+gunicorn-error.log*
+access.log*
 logs/
 
 # Process files

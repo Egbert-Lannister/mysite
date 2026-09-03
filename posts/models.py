@@ -7,13 +7,6 @@ from django.db import models
 from django.utils.text import slugify
 from taggit.managers import TaggableManager
 
-try:
-    from django.contrib.postgres.indexes import GinIndex
-    HAS_PG = True
-except Exception:
-    GinIndex = None
-    HAS_PG = False
-
 
 def generate_unique_slug(title: str, instance_pk: int | None = None) -> str:
     """Generate unique slug from title."""
@@ -159,9 +152,14 @@ class Post(models.Model):
         verbose_name = "文章"
         verbose_name_plural = "文章管理"
         indexes = [
-            GinIndex(fields=["title", "content"], name="posts_post_title_gin")
-            if HAS_PG
-            else models.Index(fields=["date"], name="posts_post_date_idx")
+            models.Index(
+                fields=["published", "date"],
+                name="posts_post_pub_date_idx",
+            ),
+            models.Index(
+                fields=["category", "published", "date"],
+                name="posts_post_cat_pub_idx",
+            ),
         ]
         constraints = [
             models.UniqueConstraint(

@@ -14,6 +14,7 @@ from django.views.decorators.http import require_POST
 from .models import Post, Series
 from .services import (
     ALLOWED_IMAGE_EXTENSIONS,
+    generate_summary,
     generate_tags,
     parse_upload_file,
     process_markdown_content,
@@ -299,6 +300,16 @@ def admin_upload_preview(request):
 def admin_preview_markdown(request):
     """Staff-only: render Markdown + math placeholders the same way as the public site."""
     content = request.POST.get("content", "")
+    max_chars = int(getattr(settings, "MARKDOWN_PREVIEW_MAX_CHARS", 100_000))
+    if len(content) > max_chars:
+        return JsonResponse(
+            {
+                "ok": False,
+                "html": "",
+                "error": f"正文过长，预览上限为 {max_chars} 字符",
+            },
+            status=413,
+        )
     try:
         html, _ = render_markdown_with_toc(content)
     except Exception as e:
@@ -342,6 +353,32 @@ def admin_generate_tags(request):
         )
 
     return JsonResponse({"ok": True, "tags": tags, "error": None})
+
+
+@require_POST
+def admin_generate_summary(request):
+    """Staff-only: generate an optional summary without blocking publication."""
+    title = request.POST.get("title", "").strip()
+    content = request.POST.get("content", "").strip()
+
+    if not content:
+        return JsonResponse(
+            {"ok": False, "summary": "", "error": "正文为空，无法生成摘要"},
+            status=400,
+        )
+
+    summary = generate_summary(title, content)
+    if not summary:
+        return JsonResponse(
+            {
+                "ok": False,
+                "summary": "",
+                "error": "未能生成摘要，请稍后重试或手动填写",
+            },
+            status=502,
+        )
+
+    return JsonResponse({"ok": True, "summary": summary, "error": None})
 
 
 # ---------------------------------------------------------------------------

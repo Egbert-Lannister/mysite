@@ -12,8 +12,14 @@ from pathlib import Path
 from unittest.mock import patch
 
 from django.conf import settings
+from django.contrib import admin
+from django.contrib.auth import get_user_model
+from django.db import connection
 from django.test import TestCase, override_settings
+from django.test.utils import CaptureQueriesContext
+from django.urls import reverse
 from django.utils import timezone
+from taggit.models import Tag
 
 from .models import Post, Series, compute_content_hash, generate_series_slug, generate_unique_slug
 from .services import (
@@ -278,6 +284,15 @@ class ProcessMarkdownTests(TestCase):
         _, _, warnings = process_markdown_content(md2, [], None, overrides={"slug": "copy"})
         self.assertTrue(any("内容相同" in w for w in warnings))
 
+    @patch("posts.services.generate_summary")
+    def test_publish_does_not_wait_for_ai_summary(self, generate_summary_mock):
+        md = "---\ntitle: No Blocking AI\ncategory: notes\n---\nBody."
+        post, created, _ = process_markdown_content(md, [], None)
+
+        self.assertTrue(created)
+        self.assertEqual(post.description, "")
+        generate_summary_mock.assert_not_called()
+
     @classmethod
     def tearDownClass(cls):
         super().tearDownClass()
@@ -337,3 +352,74 @@ class GenerateTagsParsingTests(TestCase):
         ):
             tags = generate_tags("T", "Body.", count=3)
         self.assertEqual(tags, ["python", "django", "rest"])
+
+
+class AdminPerformanceTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = get_user_model().objects.create_superuser(
+            username="admin-performance",
+            email="admin@example.com",
+            password="test-password",
+        )
+        now = timezone.now()
+        for index in range(10):
+            series = Series.objects.create(
+                title=f"Series {index}",
+                slug=f"series-{index}",
+            )
+            post = Post.objects.create(
+                title=f"Post {index}",
+                slug=f"post-{index}",
+                description="description",
+                content="body",
+                date=now,
+                category="notes",
+                series=series,
+                series_order=index + 1,
+            )
+            post.tags.add(f"tag-{index}")
+
+    def _admin_request(self, path):
+        from django.test import RequestFactory
+
+        request = RequestFactory().get(path)
+        request.user = self.user
+        return request
+
+    def test_tag_changelist_uses_constant_query_count(self):
+        model_admin = admin.site._registry[Tag]
+        request = self._admin_request("/admin/taggit/tag/")
+
+        with CaptureQueriesContext(connection) as queries:
+            response = model_admin.changelist_view(request)
+            response.render()
+
+        self.assertLessEqual(len(queries), 10)
+
+    def test_series_changelist_uses_constant_query_count(self):
+        model_admin = admin.site._registry[Series]
+        request = self._admin_request("/admin/posts/series/")
+
+        with CaptureQueriesContext(connection) as queries:
+            response = model_admin.changelist_view(request)
+            response.render()
+
+        self.assertLessEqual(len(queries), 10)
+
+    def test_post_changelist_defers_content(self):
+        model_admin = admin.site._registry[Post]
+        request = self._admin_request("/admin/posts/post/")
+        queryset = model_admin.get_queryset(request)
+
+        self.assertIn("content", queryset.query.deferred_loading[0])
+
+    def test_preview_rejects_oversized_markdown(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse("admin_post_preview_markdown"),
+            {"content": "x" * (settings.MARKDOWN_PREVIEW_MAX_CHARS + 1)},
+            secure=True,
+        )
+
+        self.assertEqual(response.status_code, 413)

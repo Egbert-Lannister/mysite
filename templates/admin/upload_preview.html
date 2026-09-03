@@ -1,13 +1,13 @@
 {% extends "admin/base_site.html" %}
-{% load i18n %}
+{% load i18n static %}
 
 {% block title %}预览与编辑 - 上传文章{% endblock %}
 {% block content_title %}{% endblock %}
 
 {% block extrahead %}
 {{ block.super }}
-<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.9/katex.min.css">
-<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/flatpickr/4.6.13/flatpickr.min.css">
+<link rel="stylesheet" href="{% static 'vendor/katex/katex.min.css' %}">
+<link rel="stylesheet" href="{% static 'vendor/flatpickr/flatpickr.min.css' %}">
 <style>
 	/* Flatpickr calendar — modernized to match Unfold admin colors */
 	.flatpickr-calendar {
@@ -236,7 +236,7 @@
 			</h1>
 			<p class="text-sm text-base-500 dark:text-base-400 mt-1">
 				{% if is_blank_mode %}
-					手动填写元数据并撰写正文，确认后即可发布（摘要留空将由 AI 自动生成 ~30 词英文摘要）
+					手动填写元数据并撰写正文，确认后即可发布；摘要可选填或手动触发 AI 生成
 				{% else %}
 					确认元数据和内容后发布（正文布局与文章管理编辑页一致：左 Markdown / 右预览）
 				{% endif %}
@@ -370,12 +370,19 @@
 				</div>
 
 				<div>
-					<label for="id_description" class="block text-xs font-medium text-base-700 dark:text-base-300 mb-1">
-						摘要
-						<span class="ml-1 text-base-400 dark:text-base-500 font-normal">（留空将由 AI 自动生成约 30 词英文摘要）</span>
-					</label>
-					<textarea name="description" id="id_description" rows="2" placeholder="文章简介，显示在列表页；留空将自动生成"
+					<div class="flex items-center justify-between mb-1">
+						<label for="id_description" class="text-xs font-medium text-base-700 dark:text-base-300">
+							摘要
+							<span class="ml-1 text-base-400 dark:text-base-500 font-normal">（可选，不影响发布）</span>
+						</label>
+						<button type="button" id="ai-generate-summary-btn"
+							class="inline-flex items-center rounded-md border border-primary-200 dark:border-primary-500/40 bg-primary-50 dark:bg-primary-900/20 px-2 py-1 text-[11px] font-medium text-primary-700 dark:text-primary-300 hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
+							<span class="ai-summary-btn-label">AI 生成摘要</span>
+						</button>
+					</div>
+					<textarea name="description" id="id_description" rows="2" placeholder="文章简介，显示在列表页"
 						class="w-full rounded-md border border-base-300 dark:border-base-600 bg-white dark:bg-base-800 px-3 py-2 text-sm text-base-900 dark:text-base-100 placeholder-base-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition-colors resize-y">{{ data.description }}</textarea>
+					<p id="ai-summary-status" class="text-xs mt-1 hidden"></p>
 				</div>
 			</div>
 		</div>
@@ -418,10 +425,10 @@
 	</form>
 </div>
 
-<script src="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
-<script src="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
-<script src="https://cdn.bootcdn.net/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"></script>
-<script src="https://cdn.bootcdn.net/ajax/libs/flatpickr/4.6.13/l10n/zh.min.js"></script>
+<script src="{% static 'vendor/katex/katex.min.js' %}"></script>
+<script src="{% static 'vendor/katex/contrib/auto-render.min.js' %}"></script>
+<script src="{% static 'vendor/flatpickr/flatpickr.min.js' %}"></script>
+<script src="{% static 'vendor/flatpickr/l10n/zh.min.js' %}"></script>
 <script>
 // ============================================================================
 // Date picker (flatpickr) — single popover calendar with year/month dropdown
@@ -498,12 +505,15 @@
 		body.set("count", "3");
 		body.set("csrfmiddlewaretoken", csrf);
 
+		const controller = new AbortController();
+		const timeoutId = setTimeout(function () { controller.abort(); }, 10000);
 		try {
 			const r = await fetch(endpoint, {
 				method: "POST",
 				headers: { "X-Requested-With": "XMLHttpRequest" },
 				body: body,
 				credentials: "same-origin",
+				signal: controller.signal,
 			});
 			const data = await r.json().catch(() => ({}));
 			if (!r.ok || !data.ok) {
@@ -524,8 +534,82 @@
 			tagsEl.value = merged.join(", ");
 			setStatus("已添加 " + newTags.length + " 个 AI 标签：" + newTags.join("、"), "ok");
 		} catch (err) {
-			setStatus("生成失败：" + (err.message || err), "err");
+			setStatus(
+				err.name === "AbortError" ? "生成超时，请稍后重试" : "生成失败：" + (err.message || err),
+				"err"
+			);
 		} finally {
+			clearTimeout(timeoutId);
+			btn.disabled = false;
+			if (label) label.textContent = originalText;
+		}
+	});
+})();
+</script>
+<script>
+// ============================================================================
+// Optional AI summary — never runs during publication.
+// ============================================================================
+(function () {
+	const btn = document.getElementById("ai-generate-summary-btn");
+	const titleEl = document.getElementById("id_title");
+	const contentEl = document.getElementById("id_content");
+	const descriptionEl = document.getElementById("id_description");
+	const statusEl = document.getElementById("ai-summary-status");
+	const csrftoken = document.querySelector("[name=csrfmiddlewaretoken]");
+	const csrf = csrftoken ? csrftoken.value : "";
+	const endpoint = "{% url 'admin_post_generate_summary' %}";
+	if (!btn || !contentEl || !descriptionEl) return;
+
+	const label = btn.querySelector(".ai-summary-btn-label");
+	const originalText = label ? label.textContent : "";
+
+	function setStatus(text, isError) {
+		if (!statusEl) return;
+		statusEl.textContent = text || "";
+		statusEl.classList.toggle("hidden", !text);
+		statusEl.classList.toggle("text-red-500", Boolean(isError));
+		statusEl.classList.toggle("text-green-600", !isError && Boolean(text));
+	}
+
+	btn.addEventListener("click", async function () {
+		const content = (contentEl.value || "").trim();
+		if (!content) {
+			setStatus("请先填写正文", true);
+			return;
+		}
+		btn.disabled = true;
+		if (label) label.textContent = "生成中…";
+		setStatus("", false);
+
+		const controller = new AbortController();
+		const timeoutId = setTimeout(function () { controller.abort(); }, 10000);
+		const body = new URLSearchParams();
+		body.set("title", (titleEl && titleEl.value || "").trim());
+		body.set("content", content);
+		body.set("csrfmiddlewaretoken", csrf);
+
+		try {
+			const response = await fetch(endpoint, {
+				method: "POST",
+				headers: { "X-Requested-With": "XMLHttpRequest" },
+				body: body,
+				credentials: "same-origin",
+				signal: controller.signal,
+			});
+			const data = await response.json().catch(function () { return {}; });
+			if (!response.ok || !data.ok) {
+				throw new Error(data.error || ("HTTP " + response.status));
+			}
+			descriptionEl.value = data.summary || "";
+			setStatus("摘要已生成", false);
+		} catch (error) {
+			setStatus(
+				error.name === "AbortError" ? "生成超时，请稍后重试" : "生成失败：" + (error.message || error),
+				true
+			);
+		} finally {
+			clearTimeout(timeoutId);
 			btn.disabled = false;
 			if (label) label.textContent = originalText;
 		}
@@ -535,11 +619,14 @@
 <script>
 (function () {
 	const previewUrl = "{% url 'admin_post_preview_markdown' %}";
+	const autoPreviewMaxChars = 50000;
 	const ta = document.getElementById("id_content");
 	const previewEl = document.getElementById("upload-content-md-preview");
 	const statusEl = document.getElementById("upload-md-preview-status");
 	const csrftoken = document.querySelector("[name=csrfmiddlewaretoken]");
 	const csrf = csrftoken ? csrftoken.value : "";
+	let activeController = null;
+	let requestVersion = 0;
 
 	function debounce(fn, ms) {
 		let t;
@@ -566,6 +653,11 @@
 
 	async function updatePreview() {
 		if (!csrf || !previewEl) return;
+		if (activeController) activeController.abort();
+		const controller = new AbortController();
+		activeController = controller;
+		const currentVersion = ++requestVersion;
+		const timeoutId = setTimeout(function () { controller.abort(); }, 10000);
 		previewEl.classList.add("is-loading");
 		if (statusEl) statusEl.textContent = "渲染中…";
 		const body = new URLSearchParams();
@@ -577,31 +669,42 @@
 				headers: { "X-Requested-With": "XMLHttpRequest" },
 				body: body,
 				credentials: "same-origin",
+				signal: controller.signal,
 			});
 			const data = await r.json();
 			if (!r.ok || !data.ok) throw new Error(data.error || ("HTTP " + r.status));
+			if (currentVersion !== requestVersion) return;
 			previewEl.innerHTML = data.html || "";
 			renderMath(previewEl);
 			if (statusEl) statusEl.textContent = "已同步";
 		} catch (e) {
+			if (e.name === "AbortError") return;
 			previewEl.innerHTML = "<p class=\"text-red-500 text-sm\">预览失败：" + String(e.message || e) + "</p>";
 			if (statusEl) statusEl.textContent = "失败";
 		} finally {
-			previewEl.classList.remove("is-loading");
+			clearTimeout(timeoutId);
+			if (currentVersion === requestVersion) {
+				previewEl.classList.remove("is-loading");
+			}
 		}
 	}
 
-	function kick() {
-		if (window.renderMathInElement && window.katex) {
-			renderMath(previewEl);
-			if (statusEl) statusEl.textContent = "已同步";
-		} else {
-			setTimeout(kick, 30);
-		}
+	if (window.renderMathInElement && window.katex) {
+		renderMath(previewEl);
+		if (statusEl) statusEl.textContent = "已同步";
+	} else if (statusEl) {
+		statusEl.textContent = "数学渲染组件加载失败";
 	}
-	kick();
 
-	ta.addEventListener("input", debounce(updatePreview, 450));
+	const debouncedPreview = debounce(updatePreview, 900);
+	ta.addEventListener("input", function () {
+		if (ta.value.length > autoPreviewMaxChars) {
+			if (activeController) activeController.abort();
+			if (statusEl) statusEl.textContent = "内容较长，请点击刷新预览";
+			return;
+		}
+		debouncedPreview();
+	});
 	document.getElementById("upload-md-preview-refresh")?.addEventListener("click", function (e) {
 		e.preventDefault();
 		updatePreview();

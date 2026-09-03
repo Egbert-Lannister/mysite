@@ -11,6 +11,7 @@ from django.contrib.auth.admin import GroupAdmin as BaseGroupAdmin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import Group, User
 from django.contrib.sites.models import Site
+from django.db.models import Count, Max, Q
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import format_html
@@ -59,10 +60,15 @@ admin.site.unregister(Tag)
 class TagAdmin(BaseTagAdmin, ModelAdmin):
     list_display = ["name", "slug", "post_count"]
     search_fields = ["name", "slug"]
-    
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).annotate(
+            _post_count=Count("taggit_taggeditem_items", distinct=True),
+        )
+
     @display(description="文章数量")
     def post_count(self, obj):
-        return obj.taggit_taggeditem_items.count()
+        return obj._post_count
 
 
 # ---------------------------------------------------------------------------
@@ -118,16 +124,29 @@ class SeriesAdmin(ModelAdmin):
             "description": "封面图片支持文件选择或剪贴板粘贴上传",
         }),
     )
-    
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).annotate(
+            _post_count=Count(
+                "posts",
+                filter=Q(posts__published=True),
+                distinct=True,
+            ),
+            _latest_post_date=Max(
+                "posts__date",
+                filter=Q(posts__published=True),
+            ),
+        )
+
     @display(description="系列标题")
     def display_title(self, obj):
         return obj.title
     
     @display(description="文章数量")
     def display_post_count(self, obj):
-        count = obj.post_count
         return format_html(
-            '<span class="text-primary-600 font-semibold">{}</span> 篇', count
+            '<span class="text-primary-600 font-semibold">{}</span> 篇',
+            obj._post_count,
         )
     
     @display(description="排序")
@@ -140,7 +159,7 @@ class SeriesAdmin(ModelAdmin):
     
     @display(description="最近更新")
     def display_updated(self, obj):
-        latest = obj.latest_post_date
+        latest = obj._latest_post_date
         return latest.strftime("%Y-%m-%d") if latest else "-"
 
 
@@ -333,7 +352,7 @@ class PostAdmin(ModelAdmin):
     )
     list_filter = ("category", "published", "tags", "date")
     list_filter_submit = True
-    search_fields = ("title", "description", "content")
+    search_fields = ("title", "description")
     prepopulated_fields = {"slug": ("title",)}
     actions = [make_published, make_unpublished]
     date_hierarchy = "date"
@@ -367,6 +386,14 @@ class PostAdmin(ModelAdmin):
             "description": "系统自动生成的信息",
         }),
     )
+
+    def get_queryset(self, request):
+        return (
+            super()
+            .get_queryset(request)
+            .select_related("series")
+            .defer("content")
+        )
     
     @display(description="标题")
     def display_title(self, obj):

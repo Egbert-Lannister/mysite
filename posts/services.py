@@ -41,6 +41,10 @@ ALLOWED_IMAGE_EXTENSIONS: set[str] = getattr(
 )
 MAX_FILE_SIZE: int = getattr(settings, "UPLOAD_MAX_FILE_SIZE", 10 * 1024 * 1024)
 MAX_ZIP_SIZE: int = getattr(settings, "UPLOAD_MAX_ZIP_SIZE", 50 * 1024 * 1024)
+AI_REQUEST_TIMEOUT: float = max(
+    1.0,
+    min(float(getattr(settings, "AI_REQUEST_TIMEOUT", 8)), 20.0),
+)
 
 FRONT_MATTER_RE = re.compile(r"^---\n(.*?)\n---\n(.*)$", re.DOTALL)
 IMG_PATTERN = re.compile(r'!\[([^\]]*)\]\(([^)\s]+)(?:\s+"[^"]*")?\)')
@@ -421,14 +425,6 @@ def process_markdown_content(
     category = category_map.get(raw_category, raw_category)
     description = (overrides.get("description") or meta.get("description") or "").strip()
 
-    if not description:
-        try:
-            description = generate_summary(title, body)
-            if description:
-                warnings.append("摘要为空，已使用 AI 自动生成约 30 词摘要")
-        except Exception as exc:
-            warnings.append(f"自动摘要生成失败（已留空）：{exc}")
-
     raw_slug = overrides.get("slug") or str(meta.get("slug") or "").strip()
     slug = slugify(raw_slug) if raw_slug else generate_unique_slug(title)
     if not slug:
@@ -586,7 +582,7 @@ def generate_summary(title: str, body: str, *, max_words: int = 30) -> str:
         method="POST",
     )
     try:
-        with urllib.request.urlopen(req, timeout=20) as resp:
+        with urllib.request.urlopen(req, timeout=AI_REQUEST_TIMEOUT) as resp:
             data = json.loads(resp.read().decode("utf-8"))
     except Exception as exc:
         logger.warning("DeepSeek summary call failed: %s", exc)
@@ -665,7 +661,7 @@ def generate_tags(title: str, body: str, *, count: int = 3) -> list[str]:
         method="POST",
     )
     try:
-        with urllib.request.urlopen(req, timeout=20) as resp:
+        with urllib.request.urlopen(req, timeout=AI_REQUEST_TIMEOUT) as resp:
             data = json.loads(resp.read().decode("utf-8"))
     except Exception as exc:
         logger.warning("DeepSeek tag call failed: %s", exc)
