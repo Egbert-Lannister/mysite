@@ -1,13 +1,15 @@
 {% comment %} 共享分页组件 — context: posts (Page 实例) {% endcomment %}
 {% if posts.has_other_pages %}
-<nav class="mt-12 flex items-center justify-center gap-2 text-[13px]">
+<nav class="mt-10 sm:mt-12 flex items-center justify-center gap-1 sm:gap-2 text-[13px]">
 	{% if posts.has_previous %}
 	<a href="?page={{ posts.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"
-	   class="px-3.5 py-1.5 rounded-md text-ink-700 dark:text-ink-300 hover:bg-ink-100 dark:hover:bg-white/5 transition-colors">
-		← Previous
+	   class="px-3 sm:px-3.5 py-2 sm:py-1.5 rounded-md text-ink-700 dark:text-ink-300 hover:bg-ink-100 dark:hover:bg-white/5 transition-colors">
+		<span class="sm:hidden">←</span><span class="hidden sm:inline">← Previous</span>
 	</a>
 	{% else %}
-	<span class="px-3.5 py-1.5 rounded-md text-ink-300 dark:text-ink-700 cursor-not-allowed">← Previous</span>
+	<span class="px-3 sm:px-3.5 py-2 sm:py-1.5 rounded-md text-ink-300 dark:text-ink-700 cursor-not-allowed">
+		<span class="sm:hidden">←</span><span class="hidden sm:inline">← Previous</span>
+	</span>
 	{% endif %}
 
 	<span class="px-3 py-1.5 text-ink-500 dark:text-ink-500 font-mono text-[12px]">
@@ -16,11 +18,13 @@
 
 	{% if posts.has_next %}
 	<a href="?page={{ posts.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"
-	   class="px-3.5 py-1.5 rounded-md text-ink-700 dark:text-ink-300 hover:bg-ink-100 dark:hover:bg-white/5 transition-colors">
-		Next →
+	   class="px-3 sm:px-3.5 py-2 sm:py-1.5 rounded-md text-ink-700 dark:text-ink-300 hover:bg-ink-100 dark:hover:bg-white/5 transition-colors">
+		<span class="sm:hidden">→</span><span class="hidden sm:inline">Next →</span>
 	</a>
 	{% else %}
-	<span class="px-3.5 py-1.5 rounded-md text-ink-300 dark:text-ink-700 cursor-not-allowed">Next →</span>
+	<span class="px-3 sm:px-3.5 py-2 sm:py-1.5 rounded-md text-ink-300 dark:text-ink-700 cursor-not-allowed">
+		<span class="sm:hidden">→</span><span class="hidden sm:inline">Next →</span>
+	</span>
 	{% endif %}
 </nav>
 {% endif %}

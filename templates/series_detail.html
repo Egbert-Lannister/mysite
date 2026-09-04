@@ -15,10 +15,10 @@
 	</a>
 
 	<!-- Series header -->
-	<header class="mb-10 md:mb-12 pb-8 border-b border-ink-200/70 dark:border-white/5">
+	<header class="mb-8 md:mb-12 pb-6 sm:pb-8 border-b border-ink-200/70 dark:border-white/5">
 		<span class="page-eyebrow">Series</span>
 		<h1 class="page-title">{{ series.title }}</h1>
-		<p class="page-desc flex items-center gap-2">
+		<p class="page-desc flex items-center gap-2 flex-wrap">
 			<span class="font-mono text-[12px]">{{ post_count }} article{{ post_count|pluralize }}</span>
 			{% if series.latest_post_date %}
 			<span class="text-ink-300 dark:text-ink-700">·</span>
@@ -52,7 +52,7 @@
 			{% for post in posts %}
 			<li>
 				<a href="{% url 'posts:post_detail' post.slug %}"
-				   class="post-card group flex items-start gap-4 p-4 md:p-5 bg-white dark:bg-white/[0.03] border border-ink-200/80 dark:border-white/[0.07] rounded-lg">
+				   class="post-card group flex items-start gap-3 sm:gap-4 p-3.5 sm:p-4 md:p-5 bg-white dark:bg-white/[0.03] border border-ink-200/80 dark:border-white/[0.07] rounded-lg">
 					<!-- Index number -->
 					<span class="flex-shrink-0 w-8 h-8 rounded-md bg-ink-100 dark:bg-white/5 text-ink-700 dark:text-ink-300 font-mono text-[13px] font-medium flex items-center justify-center group-hover:bg-accent-50 dark:group-hover:bg-accent-500/10 group-hover:text-accent-600 dark:group-hover:text-accent-400 transition-colors">
 						{% if post.series_order %}{{ post.series_order }}{% else %}{{ forloop.counter }}{% endif %}
@@ -86,7 +86,7 @@
 						{% endif %}
 					</div>
 
-					<svg class="w-4 h-4 text-ink-300 dark:text-ink-700 flex-shrink-0 mt-1 transform group-hover:translate-x-0.5 group-hover:text-accent-500 transition-all" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+					<svg class="hidden sm:block w-4 h-4 text-ink-300 dark:text-ink-700 flex-shrink-0 mt-1 transform group-hover:translate-x-0.5 group-hover:text-accent-500 transition-all" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
 						<path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
 					</svg>
 				</a>

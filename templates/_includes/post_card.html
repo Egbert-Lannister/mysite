@@ -3,7 +3,7 @@
 
 context: post (Post 实例), 可选 highlight_tag (string)
 {% endcomment %}
-<article class="post-card group bg-white dark:bg-white/[0.03] border border-ink-200/80 dark:border-white/[0.07] rounded-xl p-6 md:p-7">
+<article class="post-card group bg-white dark:bg-white/[0.03] border border-ink-200/80 dark:border-white/[0.07] rounded-xl p-4 sm:p-6 md:p-7">
 
 	<!-- meta 行：分类 · (系列?) · 日期 -->
 	<div class="flex items-center justify-between gap-3 mb-3 text-[12px]">
@@ -20,7 +20,7 @@ context: post (Post 实例), 可选 highlight_tag (string)
 			{% if post.series %}
 			<span class="text-ink-300 dark:text-ink-700 select-none">·</span>
 			<a href="{% url 'posts:series_detail' post.series.slug %}"
-			   class="cat-pill bg-accent-50 dark:bg-accent-500/10 text-accent-600 dark:text-accent-300 hover:bg-accent-100 dark:hover:bg-accent-500/20 transition-colors truncate max-w-[220px]"
+			   class="cat-pill bg-accent-50 dark:bg-accent-500/10 text-accent-600 dark:text-accent-300 hover:bg-accent-100 dark:hover:bg-accent-500/20 transition-colors truncate max-w-[9.5rem] sm:max-w-[220px]"
 			   title="{{ post.series.title }}">
 				{{ post.series.title }}
 			</a>

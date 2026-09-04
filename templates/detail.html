@@ -15,22 +15,32 @@
 <script src="https://cdn.bootcdn.net/ajax/libs/qrcode/1.5.3/qrcode.min.js" defer></script>
 <style>
 	/* Article content styles */
-	.article-content { line-height: 1.8; }
+	.article-content {
+		line-height: 1.8;
+		overflow-wrap: anywhere;
+		word-break: break-word;
+	}
 	.article-content h1, .article-content h2, .article-content h3 {
 		scroll-margin-top: 80px;
+		overflow-wrap: anywhere;
 	}
 	.article-content h1 {
-		font-size: 2rem; font-weight: 700; margin-top: 2.5rem; margin-bottom: 1rem;
+		font-size: 1.5rem; font-weight: 700; margin-top: 2rem; margin-bottom: 0.85rem;
 		padding-bottom: 0.5rem; border-bottom: 1px solid rgba(139, 92, 246, 0.3);
 	}
 	.article-content h2 {
-		font-size: 1.5rem; font-weight: 600; margin-top: 2rem; margin-bottom: 0.75rem;
+		font-size: 1.25rem; font-weight: 600; margin-top: 1.75rem; margin-bottom: 0.65rem;
 	}
 	.article-content h3 {
-		font-size: 1.25rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: 0.5rem;
+		font-size: 1.1rem; font-weight: 600; margin-top: 1.35rem; margin-bottom: 0.5rem;
+	}
+	@media (min-width: 768px) {
+		.article-content h1 { font-size: 2rem; margin-top: 2.5rem; margin-bottom: 1rem; }
+		.article-content h2 { font-size: 1.5rem; margin-top: 2rem; margin-bottom: 0.75rem; }
+		.article-content h3 { font-size: 1.25rem; margin-top: 1.5rem; }
 	}
 	.article-content p { margin-bottom: 1.25rem; }
-	.article-content ul, .article-content ol { margin-bottom: 1.25rem; padding-left: 1.5rem; }
+	.article-content ul, .article-content ol { margin-bottom: 1.25rem; padding-left: 1.25rem; }
 	.article-content li { margin-bottom: 0.5rem; }
 	.article-content ul li { list-style-type: disc; }
 	.article-content ol li { list-style-type: decimal; }
@@ -51,8 +61,9 @@
 	
 	/* Code blocks */
 	.article-content pre {
-		border-radius: 0.75rem; padding: 1rem; margin-bottom: 1.5rem;
-		overflow-x: auto; position: relative;
+		border-radius: 0.75rem; padding: 0.85rem 0.9rem; margin-bottom: 1.5rem;
+		overflow-x: auto; -webkit-overflow-scrolling: touch;
+		position: relative; max-width: 100%;
 	}
 	.article-content pre {
 		background: #f8fafc !important; border: 1px solid #e2e8f0;
@@ -61,18 +72,25 @@
 		background: #0f172a !important; border: 1px solid rgba(139, 92, 246, 0.3);
 	}
 	.article-content pre code {
-		background: transparent; padding: 0; font-size: 0.875rem;
-		color: #1e293b;
+		background: transparent; padding: 0; font-size: 0.8125rem;
+		color: #1e293b; white-space: pre; word-break: normal; overflow-wrap: normal;
 	}
 	.dark .article-content pre code {
 		color: #e5e7eb;
 	}
+	@media (min-width: 768px) {
+		.article-content pre { padding: 1rem; }
+		.article-content pre code { font-size: 0.875rem; }
+	}
 	
 	/* Blockquote */
 	.article-content blockquote {
-		border-left: 4px solid #8b5cf6; padding: 1rem 1.5rem; margin: 1.5rem 0;
+		border-left: 4px solid #8b5cf6; padding: 0.75rem 1rem; margin: 1.25rem 0;
 		border-radius: 0 0.5rem 0.5rem 0; font-style: italic;
 		background: #f5f3ff; color: #5b21b6;
+	}
+	@media (min-width: 768px) {
+		.article-content blockquote { padding: 1rem 1.5rem; margin: 1.5rem 0; }
 	}
 	.dark .article-content blockquote {
 		background: rgba(139, 92, 246, 0.1); color: #d1d5db;
@@ -80,11 +98,20 @@
 	
 	/* Table */
 	.article-content table {
-		width: 100%; border-collapse: collapse; margin-bottom: 1.5rem;
+		width: 100%; min-width: 480px; border-collapse: collapse; margin-bottom: 1.5rem;
 		border-radius: 0.5rem; overflow: hidden;
 	}
+	.article-content .table-scroll {
+		max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch;
+		margin-bottom: 1.5rem;
+	}
+	.article-content .table-scroll table { margin-bottom: 0; }
 	.article-content th, .article-content td {
-		border: 1px solid #e2e8f0; padding: 0.75rem 1rem; text-align: left;
+		border: 1px solid #e2e8f0; padding: 0.5rem 0.65rem; text-align: left;
+		font-size: 0.875rem;
+	}
+	@media (min-width: 768px) {
+		.article-content th, .article-content td { padding: 0.75rem 1rem; font-size: inherit; }
 	}
 	.dark .article-content th, .dark .article-content td {
 		border-color: rgba(139, 92, 246, 0.3);
@@ -98,9 +125,12 @@
 	.article-content tr:hover { background: #faf5ff; }
 	.dark .article-content tr:hover { background: rgba(139, 92, 246, 0.1); }
 	
-	.article-content img {
-		max-width: 100%; height: auto; border-radius: 0.5rem; margin: 1.5rem 0;
+	.article-content img,
+	.article-content video,
+	.article-content iframe {
+		max-width: 100%; height: auto; border-radius: 0.5rem; margin: 1.25rem 0;
 	}
+	.article-content iframe { height: auto; min-height: 180px; }
 	.article-content hr {
 		border: none; height: 1px; margin: 2rem 0;
 		background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.5), transparent);
@@ -110,8 +140,9 @@
 	.article-content .katex-display {
 		overflow-x: auto; overflow-y: hidden;
 		padding: 0.5rem 0; margin: 1rem 0;
+		max-width: 100%; -webkit-overflow-scrolling: touch;
 	}
-	.article-content .katex { font-size: 1.1em; }
+	.article-content .katex { font-size: 1.05em; }
 	
 	/* Copy button */
 	.code-block-wrapper { position: relative; }
@@ -126,6 +157,9 @@
 	.code-block-wrapper:hover .copy-btn { opacity: 1; }
 	.copy-btn:hover { background: rgba(139, 92, 246, 0.4); }
 	.copy-btn.copied { background: rgba(34, 197, 94, 0.3); color: #22c55e; border-color: rgba(34, 197, 94, 0.5); }
+	@media (hover: none) {
+		.copy-btn { opacity: 1; }
+	}
 	
 	/* TOC — editorial sidebar look */
 	.toc-rail {
@@ -178,34 +212,38 @@
 	}
 	.dark .toc-eyebrow { color: rgb(129 140 248); }
 	
-	/* QR Modal */
 	.qr-modal {
 		position: fixed; inset: 0; z-index: 100;
 		display: flex; align-items: center; justify-content: center;
+		padding: 16px;
 		background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
 	}
 	.qr-modal-content {
-		background: white; padding: 2rem; border-radius: 1rem;
-		text-align: center; max-width: 320px;
+		background: white; padding: 1.5rem; border-radius: 1rem;
+		text-align: center; width: min(320px, 100%);
 	}
 	.dark .qr-modal-content { background: #1e1b4b; }
+	.qr-modal-content canvas { max-width: 100%; height: auto; }
+
+	#giscus-container { overflow-x: auto; max-width: 100%; }
+	#giscus-container iframe { max-width: 100%; }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="flex gap-8">
+<div class="flex gap-8 min-w-0">
 	<!-- Main Article -->
-	<article class="flex-1 max-w-4xl">
+	<article class="flex-1 min-w-0 max-w-4xl pb-16 lg:pb-0">
 		<!-- Article Header -->
-		<header class="mb-8">
-			<a href="{% url 'posts:index' %}" class="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors mb-6 group">
+		<header class="mb-6 sm:mb-8">
+			<a href="{% url 'posts:index' %}" class="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors mb-4 sm:mb-6 group">
 				<svg class="w-4 h-4 mr-2 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
 				</svg>
 				Back to all posts
 			</a>
 			
-		<div class="flex items-center gap-4 mb-4 flex-wrap">
+		<div class="flex items-center gap-3 sm:gap-4 mb-4 flex-wrap">
 			<span class="px-3 py-1 text-sm font-semibold rounded-full
 				{% if post.category == 'engineering' %}bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-300 border border-blue-200 dark:border-blue-500/30
 				{% elif post.category == 'research' %}bg-pink-100 dark:bg-pink-500/20 text-pink-600 dark:text-pink-300 border border-pink-200 dark:border-pink-500/30
@@ -222,10 +260,10 @@
 				</time>
 			</div>
 			
-			<h1 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">{{ post.title }}</h1>
+			<h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4 leading-tight break-words">{{ post.title }}</h1>
 			
 			{% if post.description %}
-			<p class="text-lg text-gray-600 dark:text-gray-400 mb-6">{{ post.description }}</p>
+			<p class="text-base sm:text-lg text-gray-600 dark:text-gray-400 mb-6">{{ post.description }}</p>
 			{% endif %}
 			
 			{% if post.tags.all %}
@@ -243,22 +281,22 @@
 		
 		{% if series_context %}
 		<!-- Series Info Banner -->
-		<div class="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border border-purple-200 dark:border-purple-500/30 rounded-2xl p-5 mb-8">
-			<div class="flex items-center justify-between flex-wrap gap-4">
-				<div class="flex items-center gap-3">
-					<div class="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white shadow-lg shadow-purple-500/25">
+		<div class="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border border-purple-200 dark:border-purple-500/30 rounded-2xl p-4 sm:p-5 mb-8">
+			<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+				<div class="flex items-center gap-3 min-w-0">
+					<div class="w-10 h-10 flex-shrink-0 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white shadow-lg shadow-purple-500/25">
 						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
 						</svg>
 					</div>
-					<div>
+					<div class="min-w-0">
 						<p class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Part of series</p>
-						<a href="{% url 'posts:series_detail' series_context.series.slug %}" class="font-semibold text-purple-700 dark:text-purple-300 hover:text-purple-600 dark:hover:text-purple-200 transition-colors">
+						<a href="{% url 'posts:series_detail' series_context.series.slug %}" class="font-semibold text-purple-700 dark:text-purple-300 hover:text-purple-600 dark:hover:text-purple-200 transition-colors break-words">
 							{{ series_context.series.title }}
 						</a>
 					</div>
 				</div>
-				<div class="flex items-center gap-2">
+				<div class="flex items-center gap-2 flex-wrap">
 					<span class="px-3 py-1.5 bg-white dark:bg-indigo-950/50 rounded-full text-sm font-medium text-purple-600 dark:text-purple-300 border border-purple-200 dark:border-purple-500/30">
 						{{ series_context.current_index }} / {{ series_context.total }}
 					</span>
@@ -292,7 +330,7 @@
 		{% endif %}
 		
 		<!-- Article Content -->
-		<div class="bg-white dark:bg-indigo-950/50 backdrop-blur border border-gray-200 dark:border-purple-500/20 rounded-2xl p-6 md:p-10 mb-8 shadow-sm">
+		<div class="bg-white dark:bg-indigo-950/50 backdrop-blur border border-gray-200 dark:border-purple-500/20 rounded-2xl p-4 sm:p-6 md:p-10 mb-8 shadow-sm overflow-hidden">
 			<div class="article-content text-gray-700 dark:text-gray-200">
 				{{ html|safe }}
 			</div>
@@ -300,7 +338,7 @@
 		
 		{% if series_context %}
 		<!-- Series Navigation (Prev/Next) -->
-		<div class="bg-white dark:bg-indigo-950/50 backdrop-blur border border-gray-200 dark:border-purple-500/20 rounded-2xl p-6 mb-8 shadow-sm">
+		<div class="bg-white dark:bg-indigo-950/50 backdrop-blur border border-gray-200 dark:border-purple-500/20 rounded-2xl p-4 sm:p-6 mb-8 shadow-sm">
 			<div class="flex flex-col sm:flex-row gap-4">
 				{% if series_context.prev_post %}
 				<a href="{% url 'posts:post_detail' series_context.prev_post.slug %}" class="flex-1 group">
@@ -342,13 +380,13 @@
 		{% endif %}
 		
 		<!-- Share & Actions -->
-		<div class="bg-white dark:bg-indigo-950/50 backdrop-blur border border-gray-200 dark:border-purple-500/20 rounded-2xl p-6 mb-8 shadow-sm">
-			<div class="flex flex-col sm:flex-row items-center justify-between gap-6">
-				<div>
+		<div class="bg-white dark:bg-indigo-950/50 backdrop-blur border border-gray-200 dark:border-purple-500/20 rounded-2xl p-4 sm:p-6 mb-8 shadow-sm">
+			<div class="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+				<div class="w-full sm:w-auto">
 					<p class="text-sm text-gray-500 dark:text-gray-400 mb-3 font-medium">Share this post</p>
-					<div class="flex gap-3">
+					<div class="flex flex-wrap gap-2 sm:gap-3">
 						<!-- Copy Link Button -->
-						<button id="copy-link-btn" class="px-4 py-2 bg-gray-100 dark:bg-indigo-900/50 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-indigo-800 transition-all border border-gray-200 dark:border-purple-500/30 text-sm font-medium flex items-center gap-2">
+						<button id="copy-link-btn" class="px-3.5 sm:px-4 py-2 bg-gray-100 dark:bg-indigo-900/50 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-indigo-800 transition-all border border-gray-200 dark:border-purple-500/30 text-sm font-medium inline-flex items-center gap-2">
 							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
 							</svg>
@@ -374,7 +412,7 @@
 					</div>
 				</div>
 				
-				<a href="{% url 'posts:index' %}" class="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white rounded-full shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all font-medium flex items-center gap-2">
+				<a href="{% url 'posts:index' %}" class="w-full sm:w-auto justify-center px-6 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white rounded-full shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all font-medium inline-flex items-center gap-2">
 					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
 					</svg>
@@ -385,7 +423,7 @@
 		
 		{% if giscus_enabled %}
 		<!-- Giscus Comments -->
-		<div class="bg-white dark:bg-indigo-950/50 backdrop-blur border border-gray-200 dark:border-purple-500/20 rounded-2xl p-6 md:p-10 mb-8 shadow-sm">
+		<div class="bg-white dark:bg-indigo-950/50 backdrop-blur border border-gray-200 dark:border-purple-500/20 rounded-2xl p-4 sm:p-6 md:p-10 mb-8 shadow-sm overflow-hidden">
 			<h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
 				<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
@@ -452,7 +490,7 @@
 
 <!-- Mobile TOC (Collapsible) -->
 {% if toc_items %}
-<div class="lg:hidden fixed bottom-4 right-4 z-50">
+<div class="lg:hidden fixed bottom-4 right-4 z-50" style="bottom: max(1rem, env(safe-area-inset-bottom));">
 	<button id="mobile-toc-toggle" class="h-10 px-3.5 inline-flex items-center gap-1.5 bg-ink-900 text-white dark:bg-white dark:text-ink-900 rounded-full shadow-lg text-[13px] font-medium hover:bg-ink-800 dark:hover:bg-ink-100 transition-colors">
 		<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
 			<path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h10M4 18h7"/>
@@ -627,7 +665,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	// Table responsive wrapper
 	document.querySelectorAll('.article-content table').forEach(table => {
 		const wrapper = document.createElement('div');
-		wrapper.className = 'overflow-x-auto';
+		wrapper.className = 'overflow-x-auto table-scroll';
 		table.parentNode.insertBefore(wrapper, table);
 		wrapper.appendChild(table);
 	});

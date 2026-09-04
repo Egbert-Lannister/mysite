@@ -2,7 +2,7 @@
 <html lang="zh-CN" class="scroll-smooth">
 <head>
 	<meta charset="utf-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 	<title>{% block title %}TechBlog{% endblock %}</title>
 	<meta name="description" content="{% block meta_description %}{% endblock %}">
 	<link rel="alternate" type="application/rss+xml" title="RSS" href="/rss.xml" />
@@ -85,7 +85,12 @@
 		}
 	</script>
 	<style>
-		body { font-family: 'Inter', 'Noto Sans SC', system-ui, sans-serif; }
+		html, body { max-width: 100%; overflow-x: clip; }
+		body {
+			font-family: 'Inter', 'Noto Sans SC', system-ui, sans-serif;
+			padding-left: env(safe-area-inset-left);
+			padding-right: env(safe-area-inset-right);
+		}
 
 		/* Custom scrollbar — minimal */
 		::-webkit-scrollbar { width: 10px; height: 10px; }
@@ -169,20 +174,50 @@
 			color: rgb(107 114 128);
 			margin-top: 8px;
 		}
+
+		/* --- Mobile layout --- */
+		.site-header { padding-top: env(safe-area-inset-top); }
+		.tap-target {
+			min-width: 44px;
+			min-height: 44px;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+		}
+
+		@media (max-width: 639px) {
+			.page-title { font-size: 24px; line-height: 1.25; word-break: break-word; }
+			.toast { max-width: calc(100vw - 32px); left: 16px; right: 16px; transform: none; }
+			@keyframes toast-in  { from { opacity: 0; transform: translateY(8px); } }
+			@keyframes toast-out {   to { opacity: 0; transform: translateY(8px); } }
+		}
+
+		@media (hover: none) {
+			.post-card:hover {
+				transform: none;
+				box-shadow: none;
+				border-color: rgb(229 231 235 / 0.8);
+			}
+			.dark .post-card:hover { border-color: rgb(255 255 255 / 0.07); }
+		}
+
+		@media (max-width: 767px) {
+			.post-card { padding: 1.05rem 1.1rem; }
+		}
 	</style>
 </head>
 <body class="min-h-screen text-ink-900 dark:text-ink-100 dark:bg-ink-950 antialiased">
 	<div class="page-loading" id="page-loading"></div>
 
 	<!-- Top navigation — light, stable, restrained -->
-	<header class="sticky top-0 z-50 backdrop-blur-md bg-white/80 dark:bg-ink-950/80 border-b border-ink-200/70 dark:border-white/5">
-		<div class="max-w-6xl mx-auto px-5 sm:px-6 lg:px-8">
+	<header class="site-header sticky top-0 z-50 backdrop-blur-md bg-white/80 dark:bg-ink-950/80 border-b border-ink-200/70 dark:border-white/5">
+		<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 			<div class="flex items-center justify-between h-14">
 				{% load static %}
 				<!-- Logo -->
-				<a href="{% url 'posts:index' %}" class="flex items-center gap-2.5 group flex-shrink-0">
+				<a href="{% url 'posts:index' %}" class="flex items-center gap-2 min-w-0 group flex-shrink-0">
 					<img src="{% static 'images/logo.jpg' %}" alt="Logo" class="w-7 h-7 rounded-md object-cover ring-1 ring-black/5 dark:ring-white/10">
-					<span class="text-[15px] font-semibold tracking-tight text-ink-900 dark:text-ink-100 hidden sm:inline">TechBlog</span>
+					<span class="text-[15px] font-semibold tracking-tight text-ink-900 dark:text-ink-100 truncate">TechBlog</span>
 				</a>
 
 				<!-- Primary nav -->
@@ -195,7 +230,7 @@
 				</nav>
 
 				<!-- Right-side tools -->
-				<div class="flex items-center gap-2">
+				<div class="flex items-center gap-0.5 sm:gap-2">
 					<form action="{% url 'posts:search' %}" method="get" class="hidden sm:block">
 						<div class="relative">
 							<input type="search" name="q" placeholder="Search..." value="{{ request.GET.q }}"
@@ -207,7 +242,7 @@
 					</form>
 
 					<!-- Theme toggle -->
-					<button id="theme-toggle" class="p-2 rounded-full text-ink-500 dark:text-ink-300 hover:bg-ink-100 dark:hover:bg-white/5 hover:text-ink-900 dark:hover:text-ink-100 transition-colors" aria-label="Toggle theme">
+					<button id="theme-toggle" class="tap-target p-2 rounded-full text-ink-500 dark:text-ink-300 hover:bg-ink-100 dark:hover:bg-white/5 hover:text-ink-900 dark:hover:text-ink-100 transition-colors" aria-label="Toggle theme">
 						<svg class="w-4 h-4 hidden dark:block" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
 							<path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
 						</svg>
@@ -217,9 +252,12 @@
 					</button>
 
 					<!-- Mobile menu toggle -->
-					<button class="lg:hidden p-2 text-ink-500 hover:bg-ink-100 dark:hover:bg-white/5 rounded-full transition-colors" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
-						<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+					<button id="mobile-menu-toggle" class="lg:hidden tap-target p-2 text-ink-500 hover:bg-ink-100 dark:hover:bg-white/5 rounded-full transition-colors" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">
+						<svg id="icon-menu" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
 							<path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+						</svg>
+						<svg id="icon-close" class="w-5 h-5 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
 						</svg>
 					</button>
 				</div>
@@ -227,29 +265,29 @@
 
 			<!-- Mobile menu -->
 			<div id="mobile-menu" class="hidden lg:hidden pb-4 pt-2 border-t border-ink-200/70 dark:border-white/5">
-				<nav class="grid grid-cols-2 gap-1 mb-3">
-					<a href="{% url 'posts:engineering_list' %}" class="px-3 py-2 text-sm text-ink-700 dark:text-ink-300 hover:bg-ink-100 dark:hover:bg-white/5 rounded-md">Engineering</a>
-					<a href="{% url 'posts:research_list' %}"    class="px-3 py-2 text-sm text-ink-700 dark:text-ink-300 hover:bg-ink-100 dark:hover:bg-white/5 rounded-md">Research</a>
-					<a href="{% url 'posts:notes_list' %}"       class="px-3 py-2 text-sm text-ink-700 dark:text-ink-300 hover:bg-ink-100 dark:hover:bg-white/5 rounded-md">Notes</a>
-					<a href="{% url 'posts:projects_list' %}"    class="px-3 py-2 text-sm text-ink-700 dark:text-ink-300 hover:bg-ink-100 dark:hover:bg-white/5 rounded-md">Projects</a>
-					<a href="{% url 'posts:series_list' %}"      class="px-3 py-2 text-sm text-ink-700 dark:text-ink-300 hover:bg-ink-100 dark:hover:bg-white/5 rounded-md col-span-2">Series</a>
+				<nav class="flex flex-col gap-0.5 mb-3">
+					<a href="{% url 'posts:engineering_list' %}" class="px-3 py-2.5 text-[15px] text-ink-700 dark:text-ink-300 hover:bg-ink-100 dark:hover:bg-white/5 rounded-md">Engineering</a>
+					<a href="{% url 'posts:research_list' %}"    class="px-3 py-2.5 text-[15px] text-ink-700 dark:text-ink-300 hover:bg-ink-100 dark:hover:bg-white/5 rounded-md">Research</a>
+					<a href="{% url 'posts:notes_list' %}"       class="px-3 py-2.5 text-[15px] text-ink-700 dark:text-ink-300 hover:bg-ink-100 dark:hover:bg-white/5 rounded-md">Notes</a>
+					<a href="{% url 'posts:projects_list' %}"    class="px-3 py-2.5 text-[15px] text-ink-700 dark:text-ink-300 hover:bg-ink-100 dark:hover:bg-white/5 rounded-md">Projects</a>
+					<a href="{% url 'posts:series_list' %}"      class="px-3 py-2.5 text-[15px] text-ink-700 dark:text-ink-300 hover:bg-ink-100 dark:hover:bg-white/5 rounded-md">Series</a>
 				</nav>
 				<form action="{% url 'posts:search' %}" method="get" class="flex gap-2 sm:hidden">
-					<input type="search" name="q" placeholder="Search..." class="flex-1 px-3 py-2 bg-ink-100 dark:bg-white/5 rounded-md text-sm">
-					<button type="submit" class="px-4 py-2 bg-ink-900 dark:bg-white text-white dark:text-ink-900 text-sm rounded-md font-medium">Search</button>
+					<input type="search" name="q" placeholder="Search..." value="{{ request.GET.q }}" class="flex-1 min-w-0 px-3 py-2.5 bg-ink-100 dark:bg-white/5 rounded-md text-base">
+					<button type="submit" class="px-4 py-2.5 bg-ink-900 dark:bg-white text-white dark:text-ink-900 text-sm rounded-md font-medium flex-shrink-0">Search</button>
 				</form>
 			</div>
 		</div>
 	</header>
 
 	<!-- Main content -->
-	<main class="max-w-6xl mx-auto px-5 sm:px-6 lg:px-8 py-10 md:py-14">
+	<main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 md:py-14">
 		{% block content %}{% endblock %}
 	</main>
 
 	<!-- Footer — single-row, tagline centered with side elements equidistant -->
-	<footer class="border-t border-ink-200/70 dark:border-white/5 mt-12">
-		<div class="max-w-6xl mx-auto px-5 sm:px-6 lg:px-8 py-7">
+	<footer class="border-t border-ink-200/70 dark:border-white/5 mt-8 sm:mt-12 pb-[env(safe-area-inset-bottom)]">
+		<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-7">
 			<!--
 				Grid is 1fr | auto | 1fr so the centered tagline column auto-sizes
 				and the two outer columns are *equal width*, then we right-align
@@ -276,10 +314,9 @@
 			<!-- Mobile fallback: stack centered to avoid cramping on narrow screens -->
 			<div class="flex sm:hidden flex-col items-center gap-3 text-center">
 				<p class="text-[13.5px] text-ink-700 dark:text-ink-300 tracking-tight">A space for ideas, words, and wonder.</p>
-				<div class="flex items-center gap-3 text-[12.5px] text-ink-500 dark:text-ink-500">
+				<div class="flex items-center justify-center gap-x-3 gap-y-1 flex-wrap text-[12.5px] text-ink-500 dark:text-ink-500">
 					<img src="{% static 'images/logo.jpg' %}" alt="" class="w-4 h-4 rounded object-cover opacity-80">
-					<span>© {% now "Y" %} Egbert Lannister · TechBlog</span>
-					<span class="text-ink-300 dark:text-white/10" aria-hidden="true">·</span>
+					<span>© {% now "Y" %} Egbert Lannister</span>
 					<a href="/rss.xml" class="inline-flex items-center gap-1 hover:text-accent-500 dark:hover:text-accent-400 transition-colors" aria-label="Subscribe to RSS feed">
 						<svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19 7.38 20 6.18 20C5 20 4 19 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1Z"/></svg>
 						RSS
@@ -293,6 +330,23 @@
 
 	<script>
 		const themeToggle = document.getElementById('theme-toggle');
+		const mobileMenu = document.getElementById('mobile-menu');
+		const mobileToggle = document.getElementById('mobile-menu-toggle');
+		const iconMenu = document.getElementById('icon-menu');
+		const iconClose = document.getElementById('icon-close');
+
+		function setMobileMenuOpen(open) {
+			if (!mobileMenu || !mobileToggle) return;
+			mobileMenu.classList.toggle('hidden', !open);
+			iconMenu?.classList.toggle('hidden', open);
+			iconClose?.classList.toggle('hidden', !open);
+			mobileToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+			mobileToggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+		}
+
+		mobileToggle?.addEventListener('click', () => {
+			setMobileMenuOpen(mobileMenu.classList.contains('hidden'));
+		});
 
 		function setTheme(isDark) {
 			if (isDark) {

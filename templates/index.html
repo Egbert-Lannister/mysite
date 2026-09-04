@@ -6,8 +6,8 @@
 
 	<!-- Hero — restrained and compact -->
 
-	<section class="text-center mb-10 md:mb-14">
-		<h1 class="text-3xl md:text-4xl font-semibold tracking-tight text-ink-900 dark:text-ink-100 mb-3">
+	<section class="text-center mb-8 sm:mb-10 md:mb-14">
+		<h1 class="text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight text-ink-900 dark:text-ink-100 mb-3">
 			Recently
 		</h1>
 		<p class="text-[14.5px] text-ink-500 dark:text-ink-500">
@@ -17,18 +17,18 @@
 
 	{% if featured_series %}
 	<!-- Featured Series — minimal single-row pill strip -->
-	<section class="mb-10 flex items-center gap-2 flex-wrap pb-6 border-b border-ink-200/70 dark:border-white/5">
-		<span class="text-[11px] font-medium uppercase tracking-wider text-ink-500 dark:text-ink-500 mr-1">
+	<section class="mb-8 sm:mb-10 flex items-center gap-2 flex-wrap pb-6 border-b border-ink-200/70 dark:border-white/5">
+		<span class="text-[11px] font-medium uppercase tracking-wider text-ink-500 dark:text-ink-500 mr-1 w-full sm:w-auto">
 			Featured Series
 		</span>
 		{% for series in featured_series %}
 		<a href="{% url 'posts:series_detail' series.slug %}"
-		   class="inline-flex items-center gap-1.5 px-2.5 py-1 text-[12.5px] font-medium rounded-md
+		   class="inline-flex items-center gap-1.5 max-w-full px-2.5 py-1 text-[12.5px] font-medium rounded-md
 		          bg-ink-100 dark:bg-white/5 text-ink-700 dark:text-ink-300
 		          hover:bg-accent-50 dark:hover:bg-accent-500/10 hover:text-accent-600 dark:hover:text-accent-400
 		          transition-colors">
-			{{ series.title }}
-			<span class="text-ink-500 dark:text-ink-500">·{{ series.post_count }}</span>
+			<span class="truncate max-w-[16rem] sm:max-w-[22rem]">{{ series.title }}</span>
+			<span class="text-ink-500 dark:text-ink-500 flex-shrink-0">·{{ series.post_count }}</span>
 		</a>
 		{% endfor %}
 	</section>
