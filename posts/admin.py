@@ -19,12 +19,13 @@ from django.utils.text import slugify
 from taggit.admin import TagAdmin as BaseTagAdmin
 from taggit.models import Tag
 from taggit.utils import parse_tags
-from unfold.admin import ModelAdmin
+from unfold.admin import ModelAdmin, StackedInline
 from unfold.decorators import display
 from unfold.forms import AdminPasswordChangeForm, UserChangeForm, UserCreationForm
 import yaml
 
-from .models import Post, Series, compute_content_hash, generate_unique_slug
+from .models import Post, Project, ProjectMedia, Series, compute_content_hash, generate_unique_slug
+from .forms import ProjectMediaModelForm, ProjectModelForm
 from .services import ALLOWED_IMAGE_EXTENSIONS, extract_zip_safely, rewrite_image_paths
 
 # ---------------------------------------------------------------------------
@@ -184,6 +185,9 @@ class PostAdminForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields["category"].choices = [
+            choice for choice in Post.CATEGORY_CHOICES if choice[0] != "projects"
+        ]
         self.fields["date"].initial = timezone.now()
         for field_name in ("title", "slug", "content", "date", "category"):
             if field_name in self.fields:
@@ -340,6 +344,16 @@ class PostAdminForm(forms.ModelForm):
 # ---------------------------------------------------------------------------
 # Post Admin
 # ---------------------------------------------------------------------------
+class ProjectMediaInline(StackedInline):
+    model = ProjectMedia
+    form = ProjectMediaModelForm
+    extra = 1
+    fields = ("file", "width", "height", "file_size", "kind", "section", "title", "group_name", "description", "order")
+    readonly_fields = ("width", "height", "file_size")
+    verbose_name = "图片 / 视频"
+    verbose_name_plural = "05 · 实验图片与视频（尺寸自动识别，按实验组和顺序排版）"
+
+
 @admin.register(Post)
 class PostAdmin(ModelAdmin):
     form = PostAdminForm
@@ -363,8 +377,8 @@ class PostAdmin(ModelAdmin):
 
     fieldsets = (
         ("基本信息", {
-            "fields": ("title", "slug", "upload_file"),
-            "description": "填写文章基本信息，或上传 .md/.zip 文件自动导入",
+            "fields": ("title", "slug"),
+            "description": "直接编辑现有文章；新建或文件导入请使用独立的上传文章流程。",
         }),
         ("文章内容", {
             "fields": ("description", "content"),
@@ -388,12 +402,10 @@ class PostAdmin(ModelAdmin):
     )
 
     def get_queryset(self, request):
-        return (
-            super()
-            .get_queryset(request)
-            .select_related("series")
-            .defer("content")
-        )
+        queryset = super().get_queryset(request).select_related("series").defer("content")
+        if self.model is Post:
+            queryset = queryset.exclude(category="projects")
+        return queryset
     
     @display(description="标题")
     def display_title(self, obj):
@@ -421,9 +433,12 @@ class PostAdmin(ModelAdmin):
     
     @display(description="操作")
     def display_actions(self, obj):
-        url = reverse("posts:post_detail", args=[obj.slug])
+        if not obj.published:
+            return "草稿"
+        route = "posts:project_detail" if obj.category == "projects" else "posts:post_detail"
+        url = reverse(route, args=[obj.slug])
         return format_html(
-            '<a href="{}" target="_blank" style="color: #8b5cf6;">查看 →</a>', url
+            '<a href="{}" target="_blank" rel="noopener" style="color: #2563eb;">查看 →</a>', url
         )
 
     def add_view(self, request, form_url="", extra_context=None):
@@ -436,3 +451,74 @@ class PostAdmin(ModelAdmin):
             from django.contrib import messages
             for warning in form._upload_warnings:
                 messages.warning(request, warning)
+
+
+@admin.register(Project)
+class ProjectAdmin(PostAdmin):
+    form = ProjectModelForm
+    inlines = (ProjectMediaInline,)
+    readonly_fields = PostAdmin.readonly_fields + ("project_content_mode",)
+    list_display = (
+        "display_title", "display_project_status", "display_date",
+        "display_featured", "display_status", "display_actions",
+    )
+    list_filter = ("project_status", "project_featured", "published", "tags", "date")
+    fieldsets = (
+        ("01 · 基本信息", {
+            "fields": ("title", "slug", "description", "project_status"),
+            "description": "标题、摘要与状态会用于项目卡片和研究式项目页。",
+        }),
+        ("02 · 技术栈与标签", {"fields": ("project_tech_stack", "tags")}),
+        ("03 · GitHub / Paper / Demo", {
+            "fields": ("github_url", "paper_url", "demo_url"),
+            "description": "仅填写真实 HTTP/HTTPS 资源；没有链接时留空，前台不会显示按钮。",
+        }),
+        ("04 · 封面", {
+            "fields": ("project_cover",),
+            "description": "封面可留空。方法图、框架图和实验媒体请在下方独立分组中上传。",
+        }),
+        ("06 · Overview", {
+            "fields": ("content",),
+            "description": "问题、目标与项目范围；支持 Markdown 与数学公式。",
+            "classes": ("wide",),
+        }),
+        ("07 · Method", {
+            "fields": ("project_method",),
+            "description": "方法、模型与实现路径。方法图和框架图会显示在这一节。",
+            "classes": ("wide",),
+        }),
+        ("08 · Experiments & Conclusion", {
+            "fields": ("project_experiments", "project_conclusion"),
+            "description": "实验说明与结论分开维护；具体媒体按实验组紧邻展示。",
+            "classes": ("wide",),
+        }),
+        ("发布设置", {"fields": ("date", "published", "project_featured")}),
+        ("系统信息", {
+            "fields": ("project_content_mode", "content_hash", "created_at", "updated_at"),
+            "classes": ("collapse",),
+        }),
+    )
+
+    def get_fieldsets(self, request, obj=None):
+        fieldsets = list(super().get_fieldsets(request, obj))
+        if not obj or obj.project_content_mode != "html":
+            return fieldsets
+        result = []
+        for title, options in fieldsets:
+            if title.startswith("06 ·"):
+                result.append(("HTML 项目正文", {**options, "description": "来自安全 HTML ZIP 导入；公开渲染前会再次清理。"}))
+            elif not title.startswith("07 ·") and not title.startswith("08 ·"):
+                result.append((title, options))
+        return result
+
+    @display(description="项目状态")
+    def display_project_status(self, obj):
+        return obj.get_project_status_display()
+
+    @display(description="精选")
+    def display_featured(self, obj):
+        return "精选" if obj.project_featured else "—"
+
+    def add_view(self, request, form_url="", extra_context=None):
+        from django.shortcuts import redirect
+        return redirect("admin_project_upload_blank")

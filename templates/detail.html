@@ -1,693 +1,96 @@
 {% extends "base.html" %}
-{% block title %}{{ post.title }} - TechBlog{% endblock %}
-{% block meta_description %}{{ post.description }}{% endblock %}
+{% load static english_dates %}
+{% block title %}{{ post.title }} · TechBlog{% endblock %}
+{% block meta_description %}{{ post.description|default:post.title }}{% endblock %}
 {% block extra_head %}
-<!-- 预加载代码高亮 CSS (使用国内 CDN bootcdn 加速) -->
-<link rel="preload" href="https://cdn.bootcdn.net/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" as="style">
-<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" class="hljs-dark">
-<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/highlight.js/11.9.0/styles/github.min.css" class="hljs-light" disabled>
-<!-- KaTeX for LaTeX math rendering -->
-<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.9/katex.min.css">
-<script defer src="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
-<script defer src="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
-	onload="(function(){var el=document.querySelector('.article-content');if(!el||!window.renderMathInElement)return;renderMathInElement(el,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false,ignoredTags:['script','noscript','style','textarea','pre','code']});})();"></script>
-<!-- QRCode library (使用国内 CDN) -->
-<script src="https://cdn.bootcdn.net/ajax/libs/qrcode/1.5.3/qrcode.min.js" defer></script>
-<style>
-	/* Article content styles */
-	.article-content {
-		line-height: 1.8;
-		overflow-wrap: anywhere;
-		word-break: break-word;
-	}
-	.article-content h1, .article-content h2, .article-content h3 {
-		scroll-margin-top: 80px;
-		overflow-wrap: anywhere;
-	}
-	.article-content h1 {
-		font-size: 1.5rem; font-weight: 700; margin-top: 2rem; margin-bottom: 0.85rem;
-		padding-bottom: 0.5rem; border-bottom: 1px solid rgba(139, 92, 246, 0.3);
-	}
-	.article-content h2 {
-		font-size: 1.25rem; font-weight: 600; margin-top: 1.75rem; margin-bottom: 0.65rem;
-	}
-	.article-content h3 {
-		font-size: 1.1rem; font-weight: 600; margin-top: 1.35rem; margin-bottom: 0.5rem;
-	}
-	@media (min-width: 768px) {
-		.article-content h1 { font-size: 2rem; margin-top: 2.5rem; margin-bottom: 1rem; }
-		.article-content h2 { font-size: 1.5rem; margin-top: 2rem; margin-bottom: 0.75rem; }
-		.article-content h3 { font-size: 1.25rem; margin-top: 1.5rem; }
-	}
-	.article-content p { margin-bottom: 1.25rem; }
-	.article-content ul, .article-content ol { margin-bottom: 1.25rem; padding-left: 1.25rem; }
-	.article-content li { margin-bottom: 0.5rem; }
-	.article-content ul li { list-style-type: disc; }
-	.article-content ol li { list-style-type: decimal; }
-	.article-content a { color: #8b5cf6; text-decoration: underline; text-underline-offset: 2px; }
-	.article-content a:hover { color: #7c3aed; }
-	
-	/* Inline code */
-	.article-content code {
-		font-family: 'JetBrains Mono', monospace; font-size: 0.875rem;
-		padding: 0.125rem 0.375rem; border-radius: 0.25rem;
-	}
-	.article-content code {
-		background: #f3e8ff; color: #7c3aed;
-	}
-	.dark .article-content code {
-		background: rgba(139, 92, 246, 0.2); color: #c084fc;
-	}
-	
-	/* Code blocks */
-	.article-content pre {
-		border-radius: 0.75rem; padding: 0.85rem 0.9rem; margin-bottom: 1.5rem;
-		overflow-x: auto; -webkit-overflow-scrolling: touch;
-		position: relative; max-width: 100%;
-	}
-	.article-content pre {
-		background: #f8fafc !important; border: 1px solid #e2e8f0;
-	}
-	.dark .article-content pre {
-		background: #0f172a !important; border: 1px solid rgba(139, 92, 246, 0.3);
-	}
-	.article-content pre code {
-		background: transparent; padding: 0; font-size: 0.8125rem;
-		color: #1e293b; white-space: pre; word-break: normal; overflow-wrap: normal;
-	}
-	.dark .article-content pre code {
-		color: #e5e7eb;
-	}
-	@media (min-width: 768px) {
-		.article-content pre { padding: 1rem; }
-		.article-content pre code { font-size: 0.875rem; }
-	}
-	
-	/* Blockquote */
-	.article-content blockquote {
-		border-left: 4px solid #8b5cf6; padding: 0.75rem 1rem; margin: 1.25rem 0;
-		border-radius: 0 0.5rem 0.5rem 0; font-style: italic;
-		background: #f5f3ff; color: #5b21b6;
-	}
-	@media (min-width: 768px) {
-		.article-content blockquote { padding: 1rem 1.5rem; margin: 1.5rem 0; }
-	}
-	.dark .article-content blockquote {
-		background: rgba(139, 92, 246, 0.1); color: #d1d5db;
-	}
-	
-	/* Table */
-	.article-content table {
-		width: 100%; min-width: 480px; border-collapse: collapse; margin-bottom: 1.5rem;
-		border-radius: 0.5rem; overflow: hidden;
-	}
-	.article-content .table-scroll {
-		max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch;
-		margin-bottom: 1.5rem;
-	}
-	.article-content .table-scroll table { margin-bottom: 0; }
-	.article-content th, .article-content td {
-		border: 1px solid #e2e8f0; padding: 0.5rem 0.65rem; text-align: left;
-		font-size: 0.875rem;
-	}
-	@media (min-width: 768px) {
-		.article-content th, .article-content td { padding: 0.75rem 1rem; font-size: inherit; }
-	}
-	.dark .article-content th, .dark .article-content td {
-		border-color: rgba(139, 92, 246, 0.3);
-	}
-	.article-content th {
-		background: #f5f3ff; font-weight: 600; color: #5b21b6;
-	}
-	.dark .article-content th {
-		background: rgba(139, 92, 246, 0.2); color: #f3f4f6;
-	}
-	.article-content tr:hover { background: #faf5ff; }
-	.dark .article-content tr:hover { background: rgba(139, 92, 246, 0.1); }
-	
-	.article-content img,
-	.article-content video,
-	.article-content iframe {
-		max-width: 100%; height: auto; border-radius: 0.5rem; margin: 1.25rem 0;
-	}
-	.article-content iframe { height: auto; min-height: 180px; }
-	.article-content hr {
-		border: none; height: 1px; margin: 2rem 0;
-		background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.5), transparent);
-	}
-	
-	/* KaTeX math */
-	.article-content .katex-display {
-		overflow-x: auto; overflow-y: hidden;
-		padding: 0.5rem 0; margin: 1rem 0;
-		max-width: 100%; -webkit-overflow-scrolling: touch;
-	}
-	.article-content .katex { font-size: 1.05em; }
-	
-	/* Copy button */
-	.code-block-wrapper { position: relative; }
-	.copy-btn {
-		position: absolute; right: 0.75rem; top: 0.75rem;
-		padding: 0.375rem 0.75rem; font-size: 0.75rem;
-		background: rgba(139, 92, 246, 0.2); color: #8b5cf6;
-		border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 0.375rem;
-		cursor: pointer; opacity: 0; transition: opacity 0.2s, background 0.2s;
-		font-family: inherit;
-	}
-	.code-block-wrapper:hover .copy-btn { opacity: 1; }
-	.copy-btn:hover { background: rgba(139, 92, 246, 0.4); }
-	.copy-btn.copied { background: rgba(34, 197, 94, 0.3); color: #22c55e; border-color: rgba(34, 197, 94, 0.5); }
-	@media (hover: none) {
-		.copy-btn { opacity: 1; }
-	}
-	
-	/* TOC — editorial sidebar look */
-	.toc-rail {
-		position: relative;
-		padding-left: 14px;
-	}
-	.toc-rail::before {
-		content: ""; position: absolute; left: 0; top: 4px; bottom: 4px; width: 1px;
-		background: rgb(229 231 235);
-	}
-	.dark .toc-rail::before { background: rgba(255,255,255,0.08); }
-	.toc-item {
-		position: relative;
-		display: block;
-		color: rgb(107 114 128);
-		font-size: 13px;
-		line-height: 1.5;
-		padding: 5px 0 5px 0;
-		transition: color 0.15s ease;
-	}
-	.dark .toc-item { color: rgb(156 163 175); }
-	.toc-item:hover { color: rgb(99 102 241); }
-	.dark .toc-item:hover { color: rgb(129 140 248); }
-	.toc-item.active {
-		color: rgb(17 24 39);
-		font-weight: 600;
-	}
-	.dark .toc-item.active { color: rgb(243 244 246); }
-	.toc-item.active::before {
-		content: ""; position: absolute;
-		left: -14px; top: 50%; transform: translateY(-50%);
-		width: 2px; height: 16px;
-		background: rgb(99 102 241);
-		border-radius: 2px;
-	}
-	.dark .toc-item.active::before { background: rgb(129 140 248); }
-	.toc-l2 { font-size: 13px; }
-	.toc-l3 { font-size: 12.5px; padding-left: 12px; color: rgb(120 128 140); }
-	.toc-l4 { font-size: 12px; padding-left: 24px; color: rgb(140 148 160); }
-	.toc-l5 { font-size: 12px; padding-left: 36px; color: rgb(160 168 180); }
-	.dark .toc-l3 { color: rgb(140 148 160); }
-	.dark .toc-l4 { color: rgb(120 128 140); }
-	.dark .toc-l5 { color: rgb(100 108 120); }
-	.toc-eyebrow {
-		display: inline-flex; align-items: center; gap: 6px;
-		font-size: 10.5px; font-weight: 600; letter-spacing: 0.12em;
-		text-transform: uppercase;
-		color: rgb(99 102 241);
-		margin-bottom: 14px;
-	}
-	.dark .toc-eyebrow { color: rgb(129 140 248); }
-	
-	.qr-modal {
-		position: fixed; inset: 0; z-index: 100;
-		display: flex; align-items: center; justify-content: center;
-		padding: 16px;
-		background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
-	}
-	.qr-modal-content {
-		background: white; padding: 1.5rem; border-radius: 1rem;
-		text-align: center; width: min(320px, 100%);
-	}
-	.dark .qr-modal-content { background: #1e1b4b; }
-	.qr-modal-content canvas { max-width: 100%; height: auto; }
-
-	#giscus-container { overflow-x: auto; max-width: 100%; }
-	#giscus-container iframe { max-width: 100%; }
-</style>
+<link rel="stylesheet" href="{% static 'vendor/katex/katex.min.css' %}">
+<script defer src="{% static 'vendor/katex/katex.min.js' %}"></script>
+<script defer src="{% static 'vendor/katex/contrib/auto-render.min.js' %}"></script>
+<script defer src="{% static 'vendor/qrcodejs/qrcode.min.js' %}"></script>
 {% endblock %}
 
 {% block content %}
-<div class="flex gap-8 min-w-0">
-	<!-- Main Article -->
-	<article class="flex-1 min-w-0 max-w-4xl pb-16 lg:pb-0">
-		<!-- Article Header -->
-		<header class="mb-6 sm:mb-8">
-			<a href="{% url 'posts:index' %}" class="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors mb-4 sm:mb-6 group">
-				<svg class="w-4 h-4 mr-2 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-				</svg>
-				Back to all posts
-			</a>
-			
-		<div class="flex items-center gap-3 sm:gap-4 mb-4 flex-wrap">
-			<span class="px-3 py-1 text-sm font-semibold rounded-full
-				{% if post.category == 'engineering' %}bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-300 border border-blue-200 dark:border-blue-500/30
-				{% elif post.category == 'research' %}bg-pink-100 dark:bg-pink-500/20 text-pink-600 dark:text-pink-300 border border-pink-200 dark:border-pink-500/30
-				{% elif post.category == 'notes' %}bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/30
-				{% elif post.category == 'projects' %}bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-200 dark:border-amber-500/30
-				{% endif %}">
-				{{ post.get_category_display }}
-			</span>
-				<time class="text-gray-500 dark:text-gray-400 text-sm flex items-center gap-1.5">
-					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-					</svg>
-					{{ post.date|date:"Y-m-d" }}
-				</time>
-			</div>
-			
-			<h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4 leading-tight break-words">{{ post.title }}</h1>
-			
-			{% if post.description %}
-			<p class="text-base sm:text-lg text-gray-600 dark:text-gray-400 mb-6">{{ post.description }}</p>
-			{% endif %}
-			
-			{% if post.tags.all %}
-			<div class="flex flex-wrap gap-2">
-				{% for tag in post.tags.all %}
-				<a href="{% url 'posts:tag_list' tag.name %}" class="px-3 py-1.5 text-sm bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-300 rounded-full hover:bg-purple-200 dark:hover:bg-purple-500/30 transition-colors border border-purple-200 dark:border-purple-500/20">
-					#{{ tag.name }}
-				</a>
-				{% endfor %}
-			</div>
-			{% endif %}
-		</header>
-		
-		<div class="h-px bg-gradient-to-r from-transparent via-purple-500/50 to-transparent mb-8"></div>
-		
+{% url 'posts:index' as index_url %}
+<div class="shell article-wrap">
+	<header class="article-head">
+		<a href="{{ index_url }}" class="back-link">← All articles</a>
+		<div class="article-kicker">
+			<span class="cat">{{ post.get_category_display }}</span>
+			<time datetime="{{ post.date|date:'c' }}">{{ post.date|english_date }}</time>
+			<span data-reading-time hidden></span>
+		</div>
+		<h1>{{ post.title }}</h1>
+		{% if post.description %}<p class="article-dek">{{ post.description }}</p>{% endif %}
+		{% with tags=post.tags.all %}{% if tags %}<div class="article-tags" aria-label="Article tags">{% for tag in tags %}<a href="{% url 'posts:tag_list' tag.name %}" class="chip">#{{ tag.name }}</a>{% endfor %}</div>{% endif %}{% endwith %}
+	</header>
+
+	<div class="article-left" aria-hidden="false">
+		<div class="share-rail" aria-label="Quick share">
+			<p>Share</p>
+			<button type="button" class="icon-btn" data-copy-link aria-label="Copy link" title="Copy link"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg></button>
+			<button type="button" class="icon-btn" data-wechat-share aria-label="WeChat QR code" title="WeChat QR code"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 18h2v2h-2zM14 18h2M18 14h2"/></svg></button>
+			<a class="icon-btn" href="https://twitter.com/intent/tweet?text={{ post.title|urlencode }}&amp;url={{ request.build_absolute_uri|urlencode }}" target="_blank" rel="noopener noreferrer" aria-label="Post on X" title="Post on X"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4l16 16M20 4 4 20"/></svg></a>
+		</div>
+	</div>
+
+	{% include "_includes/toc.html" %}
+
+	<article data-article>
 		{% if series_context %}
-		<!-- Series Info Banner -->
-		<div class="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border border-purple-200 dark:border-purple-500/30 rounded-2xl p-4 sm:p-5 mb-8">
-			<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-				<div class="flex items-center gap-3 min-w-0">
-					<div class="w-10 h-10 flex-shrink-0 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white shadow-lg shadow-purple-500/25">
-						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-						</svg>
-					</div>
-					<div class="min-w-0">
-						<p class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Part of series</p>
-						<a href="{% url 'posts:series_detail' series_context.series.slug %}" class="font-semibold text-purple-700 dark:text-purple-300 hover:text-purple-600 dark:hover:text-purple-200 transition-colors break-words">
-							{{ series_context.series.title }}
-						</a>
-					</div>
-				</div>
-				<div class="flex items-center gap-2 flex-wrap">
-					<span class="px-3 py-1.5 bg-white dark:bg-indigo-950/50 rounded-full text-sm font-medium text-purple-600 dark:text-purple-300 border border-purple-200 dark:border-purple-500/30">
-						{{ series_context.current_index }} / {{ series_context.total }}
-					</span>
-					<button id="toggle-series-toc" class="px-3 py-1.5 bg-purple-100 dark:bg-purple-500/20 rounded-full text-sm font-medium text-purple-600 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-500/30 transition-colors flex items-center gap-1">
-						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
-						</svg>
-						Contents
-					</button>
-				</div>
-			</div>
-			
-			<!-- Series TOC (Collapsible) -->
-			<div id="series-toc" class="hidden mt-4 pt-4 border-t border-purple-200 dark:border-purple-500/30">
-				<div class="max-h-64 overflow-y-auto space-y-1">
-					{% for p in series_context.posts %}
-					<a href="{% url 'posts:post_detail' p.slug %}" 
-					   class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors {% if p.pk == post.pk %}bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-200{% else %}hover:bg-white/50 dark:hover:bg-indigo-950/30 text-gray-600 dark:text-gray-400{% endif %}">
-						<span class="flex-shrink-0 w-6 h-6 rounded text-xs font-semibold flex items-center justify-center {% if p.pk == post.pk %}bg-purple-500 text-white{% else %}bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300{% endif %}">
-							{% if p.series_order %}{{ p.series_order }}{% else %}{{ forloop.counter }}{% endif %}
-						</span>
-						<span class="truncate text-sm {% if p.pk == post.pk %}font-semibold{% endif %}">{{ p.title }}</span>
-						{% if p.pk == post.pk %}
-						<span class="flex-shrink-0 text-xs text-purple-500 dark:text-purple-400">(current)</span>
-						{% endif %}
-					</a>
-					{% endfor %}
-				</div>
-			</div>
-		</div>
+		<details class="series-box">
+			<summary>
+				<span class="series-box-meter" style="--p: {% widthratio series_context.current_index series_context.total 100 %}"><span>{{ series_context.current_index }}/{{ series_context.total }}</span></span>
+				<span class="series-box-copy"><small>Part of the series</small><strong>{{ series_context.series.title }}</strong></span>
+				<svg class="series-box-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+			</summary>
+			<ol>{% for p in series_context.posts %}
+				<li><a href="{{ p.get_absolute_url }}"{% if p.pk == post.pk %} aria-current="page"{% endif %}><b>{{ forloop.counter|stringformat:"02d" }}</b><span>{{ p.title }}</span></a></li>
+			{% endfor %}</ol>
+			<a class="series-box-all" href="{% url 'posts:series_detail' series_context.series.slug %}">Open series page →</a>
+		</details>
 		{% endif %}
-		
-		<!-- Article Content -->
-		<div class="bg-white dark:bg-indigo-950/50 backdrop-blur border border-gray-200 dark:border-purple-500/20 rounded-2xl p-4 sm:p-6 md:p-10 mb-8 shadow-sm overflow-hidden">
-			<div class="article-content text-gray-700 dark:text-gray-200">
-				{{ html|safe }}
-			</div>
-		</div>
-		
-		{% if series_context %}
-		<!-- Series Navigation (Prev/Next) -->
-		<div class="bg-white dark:bg-indigo-950/50 backdrop-blur border border-gray-200 dark:border-purple-500/20 rounded-2xl p-4 sm:p-6 mb-8 shadow-sm">
-			<div class="flex flex-col sm:flex-row gap-4">
-				{% if series_context.prev_post %}
-				<a href="{% url 'posts:post_detail' series_context.prev_post.slug %}" class="flex-1 group">
-					<div class="p-4 rounded-xl border border-gray-100 dark:border-purple-500/10 hover:border-purple-300 dark:hover:border-purple-500/30 hover:bg-purple-50/50 dark:hover:bg-purple-500/10 transition-all">
-						<p class="text-xs text-gray-500 dark:text-gray-400 mb-1 flex items-center gap-1">
-							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-							</svg>
-							Previous
-						</p>
-						<p class="font-medium text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-300 transition-colors truncate">
-							{{ series_context.prev_post.title }}
-						</p>
-					</div>
-				</a>
-				{% else %}
-				<div class="flex-1"></div>
-				{% endif %}
-				
-				{% if series_context.next_post %}
-				<a href="{% url 'posts:post_detail' series_context.next_post.slug %}" class="flex-1 group">
-					<div class="p-4 rounded-xl border border-gray-100 dark:border-purple-500/10 hover:border-purple-300 dark:hover:border-purple-500/30 hover:bg-purple-50/50 dark:hover:bg-purple-500/10 transition-all text-right">
-						<p class="text-xs text-gray-500 dark:text-gray-400 mb-1 flex items-center justify-end gap-1">
-							Next
-							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-							</svg>
-						</p>
-						<p class="font-medium text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-300 transition-colors truncate">
-							{{ series_context.next_post.title }}
-						</p>
-					</div>
-				</a>
-				{% else %}
-				<div class="flex-1"></div>
-				{% endif %}
-			</div>
-		</div>
+
+		<div class="prose">{{ html|safe }}</div>
+
+		{% if series_context.prev_post or series_context.next_post %}
+		<nav class="prevnext" aria-label="Series navigation">
+			{% if series_context.prev_post %}<a href="{{ series_context.prev_post.get_absolute_url }}" class="prev"><small>← Previous in series</small><strong>{{ series_context.prev_post.title }}</strong></a>{% endif %}
+			{% if series_context.next_post %}<a href="{{ series_context.next_post.get_absolute_url }}" class="next"><small>Next in series →</small><strong>{{ series_context.next_post.title }}</strong></a>{% endif %}
+		</nav>
 		{% endif %}
-		
-		<!-- Share & Actions -->
-		<div class="bg-white dark:bg-indigo-950/50 backdrop-blur border border-gray-200 dark:border-purple-500/20 rounded-2xl p-4 sm:p-6 mb-8 shadow-sm">
-			<div class="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
-				<div class="w-full sm:w-auto">
-					<p class="text-sm text-gray-500 dark:text-gray-400 mb-3 font-medium">Share this post</p>
-					<div class="flex flex-wrap gap-2 sm:gap-3">
-						<!-- Copy Link Button -->
-						<button id="copy-link-btn" class="px-3.5 sm:px-4 py-2 bg-gray-100 dark:bg-indigo-900/50 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-indigo-800 transition-all border border-gray-200 dark:border-purple-500/30 text-sm font-medium inline-flex items-center gap-2">
-							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-							</svg>
-							Copy link
-						</button>
-						
-						<!-- WeChat QR Button -->
-						<button id="wechat-share-btn" class="px-4 py-2 bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-300 rounded-full hover:bg-green-200 dark:hover:bg-green-500/30 transition-all border border-green-200 dark:border-green-500/30 text-sm font-medium flex items-center gap-2">
-							<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-								<path d="M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 01.213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.29.295a.326.326 0 00.167-.054l1.903-1.114a.864.864 0 01.717-.098 10.16 10.16 0 002.837.403c.276 0 .543-.027.811-.05-.857-2.578.157-4.972 1.932-6.446 1.703-1.415 3.882-1.98 5.853-1.838-.576-3.583-4.196-6.348-8.596-6.348zM5.785 5.991c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 01-1.162 1.178A1.17 1.17 0 014.623 7.17c0-.651.52-1.18 1.162-1.18zm5.813 0c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 01-1.162 1.178 1.17 1.17 0 01-1.162-1.178c0-.651.52-1.18 1.162-1.18zm5.34 2.867c-1.797-.052-3.746.512-5.28 1.786-1.72 1.428-2.687 3.72-1.78 6.22.942 2.453 3.666 4.229 6.884 4.229.826 0 1.622-.12 2.361-.336a.722.722 0 01.598.082l1.584.926a.272.272 0 00.14.047c.134 0 .24-.111.24-.247 0-.06-.023-.12-.038-.177l-.327-1.233a.582.582 0 01-.023-.156.49.49 0 01.201-.398C23.024 18.48 24 16.82 24 14.98c0-3.21-3.28-6.01-7.062-6.122zm-1.597 2.553a.97.97 0 01.966.982.97.97 0 01-.966.982.97.97 0 01-.966-.982.97.97 0 01.966-.982zm4.875 0c.533 0 .966.44.966.982a.97.97 0 01-.966.982.97.97 0 01-.966-.982.97.97 0 01.966-.982z"/>
-							</svg>
-							WeChat
-						</button>
-						
-						<!-- Twitter/X -->
-						<a href="https://twitter.com/intent/tweet?text={{ post.title|urlencode }}&url={{ request.build_absolute_uri|urlencode }}" 
-						   target="_blank" rel="noopener noreferrer"
-						   class="px-4 py-2 bg-gray-900 dark:bg-gray-800 text-white rounded-full hover:bg-gray-800 dark:hover:bg-gray-700 transition-all text-sm font-medium flex items-center gap-2">
-							<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-								<path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-							</svg>
-						</a>
-					</div>
-				</div>
-				
-				<a href="{% url 'posts:index' %}" class="w-full sm:w-auto justify-center px-6 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white rounded-full shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all font-medium inline-flex items-center gap-2">
-					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-					</svg>
-					Back to home
-				</a>
+
+		<section class="article-end" aria-label="Share this article">
+			<p>Found this useful?<small>Share it with someone who would.</small></p>
+			<div>
+				<button type="button" class="btn btn-sm" data-copy-link>Copy link</button>
+				<button type="button" class="btn btn-sm" data-wechat-share>WeChat QR</button>
+				<button type="button" class="btn btn-sm" data-native-share data-share-title="{{ post.title }}">Share…</button>
+				<a href="https://twitter.com/intent/tweet?text={{ post.title|urlencode }}&amp;url={{ request.build_absolute_uri|urlencode }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm">Post on X ↗</a>
 			</div>
-		</div>
-		
+		</section>
+
 		{% if giscus_enabled %}
-		<!-- Giscus Comments -->
-		<div class="bg-white dark:bg-indigo-950/50 backdrop-blur border border-gray-200 dark:border-purple-500/20 rounded-2xl p-4 sm:p-6 md:p-10 mb-8 shadow-sm overflow-hidden">
-			<h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
-				<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
-				</svg>
-				Comments
-			</h3>
-			<div id="giscus-container">
-				<!-- Giscus 将通过 JavaScript 动态加载，以便正确设置初始主题 -->
-			</div>
-			<script>
-				// 动态加载 Giscus，确保初始主题与站点主题一致
-				(function() {
-					const container = document.getElementById('giscus-container');
-					const isDark = document.documentElement.classList.contains('dark');
-					const theme = isDark ? 'dark' : 'light';
-					
-					const script = document.createElement('script');
-					script.id = 'giscus-script';
-					script.src = 'https://giscus.app/client.js';
-					script.setAttribute('data-repo', '{{ giscus.repo }}');
-					script.setAttribute('data-repo-id', '{{ giscus.repo_id }}');
-					script.setAttribute('data-category', '{{ giscus.category }}');
-					script.setAttribute('data-category-id', '{{ giscus.category_id }}');
-					script.setAttribute('data-mapping', '{{ giscus.mapping }}');
-					script.setAttribute('data-strict', '0');
-					script.setAttribute('data-reactions-enabled', '{{ giscus.reactions_enabled }}');
-					script.setAttribute('data-emit-metadata', '{{ giscus.emit_metadata }}');
-					script.setAttribute('data-input-position', '{{ giscus.input_position }}');
-					script.setAttribute('data-theme', theme);
-					script.setAttribute('data-lang', '{{ giscus.lang }}');
-					script.crossOrigin = 'anonymous';
-					script.async = true;
-					
-					container.appendChild(script);
-				})();
-			</script>
-		</div>
+		<section class="comments" aria-labelledby="comments-heading">
+			<h2 id="comments-heading">Comments</h2>
+			<div id="giscus-container"
+				data-repo="{{ giscus.repo }}" data-repo-id="{{ giscus.repo_id }}"
+				data-category="{{ giscus.category }}" data-category-id="{{ giscus.category_id }}"
+				data-mapping="{{ giscus.mapping }}" data-reactions="{{ giscus.reactions_enabled }}"
+				data-metadata="{{ giscus.emit_metadata }}" data-input-position="{{ giscus.input_position }}" data-lang="{{ giscus.lang }}"></div>
+		</section>
 		{% endif %}
 	</article>
-	
-	<!-- TOC Sidebar (Desktop) -->
-	{% if toc_items %}
-	<aside class="hidden lg:block w-60 flex-shrink-0">
-		<div class="sticky top-24">
-			<div class="px-1">
-				<span class="toc-eyebrow">
-					<svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h10M4 18h7"/>
-					</svg>
-					On this page
-				</span>
-				<nav class="toc-rail max-h-[70vh] overflow-y-auto">
-					{% for item in toc_items %}
-					<a href="#{{ item.anchor }}"
-					   data-level="{{ item.level }}"
-					   class="toc-item toc-l{{ item.level }}">{{ item.title }}</a>
-					{% endfor %}
-				</nav>
-			</div>
-		</div>
-	</aside>
-	{% endif %}
 </div>
 
-<!-- Mobile TOC (Collapsible) -->
-{% if toc_items %}
-<div class="lg:hidden fixed bottom-4 right-4 z-50" style="bottom: max(1rem, env(safe-area-inset-bottom));">
-	<button id="mobile-toc-toggle" class="h-10 px-3.5 inline-flex items-center gap-1.5 bg-ink-900 text-white dark:bg-white dark:text-ink-900 rounded-full shadow-lg text-[13px] font-medium hover:bg-ink-800 dark:hover:bg-ink-100 transition-colors">
-		<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-			<path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h10M4 18h7"/>
-		</svg>
-		Contents
-	</button>
-</div>
-<div id="mobile-toc" class="lg:hidden fixed inset-0 z-40 hidden">
-	<div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="document.getElementById('mobile-toc').classList.add('hidden')"></div>
-	<div class="absolute bottom-0 left-0 right-0 bg-white dark:bg-ink-950 rounded-t-2xl p-6 pb-8 max-h-[70vh] overflow-y-auto border-t border-ink-200 dark:border-white/5">
-		<div class="flex items-center justify-between mb-4">
-			<span class="toc-eyebrow !mb-0">On this page</span>
-			<button onclick="document.getElementById('mobile-toc').classList.add('hidden')" class="text-ink-500 hover:text-ink-900 dark:hover:text-ink-100">
-				<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-			</button>
-		</div>
-		<nav class="toc-rail">
-			{% for item in toc_items %}
-			<a href="#{{ item.anchor }}"
-			   onclick="document.getElementById('mobile-toc').classList.add('hidden')"
-			   data-level="{{ item.level }}"
-			   class="toc-item toc-l{{ item.level }}">{{ item.title }}</a>
-			{% endfor %}
-		</nav>
+{% include "_includes/toc_mobile.html" %}
+
+<div id="qr-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="qr-title" hidden>
+	<button type="button" class="scrim" data-modal-close tabindex="-1" aria-label="Close"></button>
+	<div class="modal-card">
+		<h2 id="qr-title">Share on WeChat</h2>
+		<div id="qr-code" class="qr-box" aria-live="polite"></div>
+		<p>Scan the QR code with WeChat.</p>
+		<button type="button" class="btn btn-sm" data-modal-close style="margin-top:16px">Close</button>
 	</div>
 </div>
-{% endif %}
-
-<!-- WeChat QR Modal -->
-<div id="qr-modal" class="qr-modal hidden">
-	<div class="qr-modal-content">
-		<h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Scan to share on WeChat</h3>
-		<div id="qr-code" class="mb-4"></div>
-		<p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Open WeChat and scan to share this post</p>
-		<button onclick="document.getElementById('qr-modal').classList.add('hidden')" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
-			Close
-		</button>
-	</div>
-</div>
-{% endblock %}
-
-{% block extra_js %}
-<!-- 代码高亮 JS (使用国内 CDN bootcdn 加速) -->
-<script src="https://cdn.bootcdn.net/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-	// Apply syntax highlighting
-	hljs.highlightAll();
-	
-	// Update highlight.js theme based on dark mode
-	function updateHljsTheme() {
-		const isDark = document.documentElement.classList.contains('dark');
-		document.querySelectorAll('link.hljs-dark').forEach(l => l.disabled = !isDark);
-		document.querySelectorAll('link.hljs-light').forEach(l => l.disabled = isDark);
-	}
-	updateHljsTheme();
-	window.addEventListener('themechange', updateHljsTheme);
-	
-	// Wrap code blocks and add copy buttons
-	document.querySelectorAll('.article-content pre').forEach(pre => {
-		const code = pre.querySelector('code');
-		if (!code) return;
-		
-		// Wrap in container
-		const wrapper = document.createElement('div');
-		wrapper.className = 'code-block-wrapper';
-		pre.parentNode.insertBefore(wrapper, pre);
-		wrapper.appendChild(pre);
-		
-		// Add copy button
-		const btn = document.createElement('button');
-		btn.className = 'copy-btn';
-		btn.textContent = 'Copy';
-		btn.addEventListener('click', async () => {
-			try {
-				const text = code.innerText;
-				await navigator.clipboard.writeText(text);
-				btn.textContent = 'Copied';
-				btn.classList.add('copied');
-				setTimeout(() => {
-					btn.textContent = 'Copy';
-					btn.classList.remove('copied');
-				}, 2000);
-			} catch (err) {
-				btn.textContent = 'Failed';
-				setTimeout(() => btn.textContent = 'Copy', 2000);
-			}
-		});
-		wrapper.appendChild(btn);
-	});
-	
-	// Copy link button
-	document.getElementById('copy-link-btn')?.addEventListener('click', async () => {
-		try {
-			await navigator.clipboard.writeText(window.location.href);
-			window.showToast('Link copied to clipboard');
-		} catch (err) {
-			window.showToast('Copy failed', 'error');
-		}
-	});
-	
-	// WeChat QR code
-	document.getElementById('wechat-share-btn')?.addEventListener('click', () => {
-		const modal = document.getElementById('qr-modal');
-		const container = document.getElementById('qr-code');
-		container.innerHTML = '';
-		
-		QRCode.toCanvas(container, window.location.href, {
-			width: 200,
-			margin: 2,
-			color: { dark: '#000000', light: '#ffffff' }
-		}, (error) => {
-			if (error) console.error(error);
-		});
-		
-		// Actually create a canvas
-		const canvas = document.createElement('canvas');
-		container.appendChild(canvas);
-		QRCode.toCanvas(canvas, window.location.href, { width: 200 });
-		
-		modal.classList.remove('hidden');
-	});
-	
-	// Close modal on click outside
-	document.getElementById('qr-modal')?.addEventListener('click', (e) => {
-		if (e.target.id === 'qr-modal') {
-			e.target.classList.add('hidden');
-		}
-	});
-	
-	// Mobile TOC toggle
-	document.getElementById('mobile-toc-toggle')?.addEventListener('click', () => {
-		document.getElementById('mobile-toc').classList.toggle('hidden');
-	});
-	
-	// Series TOC toggle
-	document.getElementById('toggle-series-toc')?.addEventListener('click', () => {
-		const toc = document.getElementById('series-toc');
-		if (toc) toc.classList.toggle('hidden');
-	});
-	
-	// Update Giscus theme on dark mode change
-	{% if giscus_enabled %}
-	function updateGiscusTheme() {
-		const isDark = document.documentElement.classList.contains('dark');
-		const theme = isDark ? 'dark' : 'light';
-		const iframe = document.querySelector('iframe.giscus-frame');
-		if (iframe) {
-			iframe.contentWindow.postMessage(
-				{ giscus: { setConfig: { theme } } },
-				'https://giscus.app'
-			);
-		}
-	}
-	
-	// 监听站点主题切换事件
-	window.addEventListener('themechange', (e) => {
-		// 稍微延迟执行，确保 iframe 已准备好接收消息
-		setTimeout(updateGiscusTheme, 100);
-	});
-	
-	// 监听 Giscus iframe 加载完成后，确保主题正确
-	window.addEventListener('message', (event) => {
-		if (event.origin !== 'https://giscus.app') return;
-		if (event.data && event.data.giscus && event.data.giscus.resizeHeight) {
-			// Giscus 已加载完成，更新主题以确保同步
-			updateGiscusTheme();
-		}
-	});
-	{% endif %}
-	
-	// Table responsive wrapper
-	document.querySelectorAll('.article-content table').forEach(table => {
-		const wrapper = document.createElement('div');
-		wrapper.className = 'overflow-x-auto table-scroll';
-		table.parentNode.insertBefore(wrapper, table);
-		wrapper.appendChild(table);
-	});
-	
-	// TOC scroll highlight
-	const tocItems = document.querySelectorAll('.toc-item');
-	const headers = document.querySelectorAll('.article-content h2, .article-content h3');
-	
-	if (tocItems.length && headers.length) {
-		const observer = new IntersectionObserver((entries) => {
-			entries.forEach(entry => {
-				if (entry.isIntersecting) {
-					const id = entry.target.id;
-					tocItems.forEach(item => {
-						item.classList.toggle('active', item.getAttribute('href') === '#' + id);
-					});
-				}
-			});
-		}, { rootMargin: '-80px 0px -80% 0px' });
-		
-		headers.forEach(header => observer.observe(header));
-	}
-});
-</script>
 {% endblock %}

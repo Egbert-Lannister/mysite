@@ -1,0 +1,172 @@
+{% extends "unfold/layouts/base.html" %}
+
+{% block bodyclass %}dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-workbench">
+    <section class="dashboard-overview" aria-labelledby="dashboard-overview-title">
+        <div class="dashboard-section-heading">
+            <div>
+                <p class="page-eyebrow">Content operations</p>
+                <h2 id="dashboard-overview-title">内容概览</h2>
+                <p>集中查看发布内容、项目、系列与待处理草稿。</p>
+            </div>
+            <span class="dashboard-data-source">当前数据库统计</span>
+        </div>
+
+        {% if dashboard_metrics %}
+            <div class="dashboard-metrics">
+                {% for metric in dashboard_metrics %}
+                    <article class="dashboard-metric dashboard-metric-{{ metric.key }}">
+                        <div class="dashboard-metric-topline">
+                            <h3>{{ metric.label }}</h3>
+                            {% if metric.url %}
+                                <a href="{{ metric.url }}" class="dashboard-metric-link" aria-label="管理 {{ metric.label }}">
+                                    管理 <span aria-hidden="true">→</span>
+                                </a>
+                            {% endif %}
+                        </div>
+                        <strong class="dashboard-metric-value">{{ metric.count }}</strong>
+                        <p>{{ metric.description }}</p>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="dashboard-empty dashboard-empty-standalone">
+                <span class="material-symbols-outlined" aria-hidden="true">lock</span>
+                <div>
+                    <h3>没有可显示的内容统计</h3>
+                    <p>当前账号没有文章、项目或系列的查看权限。</p>
+                </div>
+            </div>
+        {% endif %}
+    </section>
+
+    {% if dashboard_has_content_access %}
+        <div class="dashboard-content-grid">
+            <section class="dashboard-panel" aria-labelledby="dashboard-latest-title">
+                <header class="dashboard-panel-header">
+                    <div>
+                        <h2 id="dashboard-latest-title">最新内容</h2>
+                        <p>已发布文章与项目，按发布日期排列</p>
+                    </div>
+                </header>
+
+                {% if dashboard_recent_content %}
+                    <ul class="dashboard-record-list">
+                        {% for item in dashboard_recent_content %}
+                            <li class="dashboard-record">
+                                <div class="dashboard-record-main">
+                                    <div class="dashboard-record-heading">
+                                        <a href="{{ item.url }}" class="dashboard-record-title">{{ item.title }}</a>
+                                        <span class="dashboard-status dashboard-status-published">{{ item.status }}</span>
+                                    </div>
+                                    <p class="dashboard-record-meta">
+                                        <span>{{ item.kind }}</span>
+                                        <span aria-hidden="true">·</span>
+                                        {{ item.time_label }}
+                                        <time datetime="{{ item.timestamp|date:'c' }}">{{ item.timestamp|date:"Y-m-d H:i" }}</time>
+                                    </p>
+                                </div>
+                                <a href="{{ item.url }}" class="dashboard-record-action" aria-label="打开 {{ item.title }}">
+                                    <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="dashboard-empty">
+                        <span class="material-symbols-outlined" aria-hidden="true">article</span>
+                        <div>
+                            <h3>暂无已发布内容</h3>
+                            <p>发布文章或项目后，会按发布日期显示在这里。</p>
+                        </div>
+                    </div>
+                {% endif %}
+            </section>
+
+            <section class="dashboard-panel" id="dashboard-drafts" aria-labelledby="dashboard-drafts-title">
+                <header class="dashboard-panel-header">
+                    <div>
+                        <h2 id="dashboard-drafts-title">最近草稿</h2>
+                        <p>未发布内容，按最近更新时间排列</p>
+                    </div>
+                    {% if dashboard_draft_links %}
+                        <div class="dashboard-panel-links">
+                            {% for link in dashboard_draft_links %}
+                                <a href="{{ link.url }}">{{ link.label }}</a>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </header>
+
+                {% if dashboard_recent_drafts %}
+                    <ul class="dashboard-record-list">
+                        {% for item in dashboard_recent_drafts %}
+                            <li class="dashboard-record">
+                                <div class="dashboard-record-main">
+                                    <div class="dashboard-record-heading">
+                                        <a href="{{ item.url }}" class="dashboard-record-title">{{ item.title }}</a>
+                                        <span class="dashboard-status dashboard-status-draft">{{ item.status }}</span>
+                                    </div>
+                                    <p class="dashboard-record-meta">
+                                        <span>{{ item.kind }}</span>
+                                        <span aria-hidden="true">·</span>
+                                        {{ item.time_label }}
+                                        <time datetime="{{ item.timestamp|date:'c' }}">{{ item.timestamp|date:"Y-m-d H:i" }}</time>
+                                    </p>
+                                </div>
+                                <a href="{{ item.url }}" class="dashboard-record-action" aria-label="打开 {{ item.title }}">
+                                    <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="dashboard-empty">
+                        <span class="material-symbols-outlined" aria-hidden="true">draft</span>
+                        <div>
+                            <h3>当前没有未发布草稿</h3>
+                            <p>新的草稿会按最近更新时间显示在这里。</p>
+                        </div>
+                    </div>
+                {% endif %}
+            </section>
+        </div>
+    {% endif %}
+
+    <section class="dashboard-panel dashboard-quick" aria-labelledby="dashboard-quick-title">
+        <header class="dashboard-panel-header">
+            <div>
+                <h2 id="dashboard-quick-title">快捷操作</h2>
+                <p>进入现有的新建、导入与系列管理流程</p>
+            </div>
+        </header>
+
+        {% if dashboard_quick_actions %}
+            <div class="dashboard-quick-grid">
+                {% for action in dashboard_quick_actions %}
+                    <a href="{{ action.url }}" class="dashboard-quick-action">
+                        <span class="dashboard-quick-icon material-symbols-outlined" aria-hidden="true">{{ action.icon }}</span>
+                        <span class="dashboard-quick-copy">
+                            <strong>{{ action.label }}</strong>
+                            <small>{{ action.description }}</small>
+                        </span>
+                        <span class="dashboard-quick-arrow material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="dashboard-empty">
+                <span class="material-symbols-outlined" aria-hidden="true">edit_off</span>
+                <div>
+                    <h3>没有可用的新建或导入操作</h3>
+                    <p>新建与导入入口仅对拥有相应新增权限的账号开放。</p>
+                </div>
+            </div>
+        {% endif %}
+    </section>
+
+    <p class="dashboard-footnote">统计实时查询当前数据库；最新内容与最近草稿各最多显示 6 条。</p>
+</div>
+{% endblock %}

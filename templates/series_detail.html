@@ -1,106 +1,34 @@
 {% extends "base.html" %}
-{% block title %}{{ series.title }} - TechBlog{% endblock %}
-{% block meta_description %}{{ series.description }}{% endblock %}
-
+{% load english_dates %}
+{% block title %}{{ series.title }} · Series{% endblock %}
+{% block meta_description %}{{ series.description|default:series.title|truncatechars:160 }}{% endblock %}
 {% block content %}
-<div class="max-w-[820px] mx-auto">
-
-	<!-- Back link -->
-	<a href="{% url 'posts:series_list' %}"
-	   class="inline-flex items-center gap-1 text-[13px] text-ink-500 dark:text-ink-500 hover:text-accent-600 dark:hover:text-accent-400 transition-colors mb-6 group">
-		<svg class="w-3.5 h-3.5 transform group-hover:-translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-			<path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
-		</svg>
-		All series
-	</a>
-
-	<!-- Series header -->
-	<header class="mb-8 md:mb-12 pb-6 sm:pb-8 border-b border-ink-200/70 dark:border-white/5">
-		<span class="page-eyebrow">Series</span>
-		<h1 class="page-title">{{ series.title }}</h1>
-		<p class="page-desc flex items-center gap-2 flex-wrap">
-			<span class="font-mono text-[12px]">{{ post_count }} article{{ post_count|pluralize }}</span>
-			{% if series.latest_post_date %}
-			<span class="text-ink-300 dark:text-ink-700">·</span>
-			<span class="font-mono text-[12px]">Last updated {{ series.latest_post_date|date:"Y-m-d" }}</span>
-			{% endif %}
-		</p>
-
-		{% if series.cover_image or series.description %}
-		<div class="mt-7 flex flex-col md:flex-row gap-6">
-			{% if series.cover_image %}
-			<div class="md:w-44 flex-shrink-0">
-				<img src="{{ series.cover_image.url }}" alt="{{ series.title }}"
-				     class="w-full aspect-video md:aspect-square object-cover rounded-lg border border-ink-200/80 dark:border-white/[0.07]">
+<header class="page-head shell">
+	<a href="{% url 'posts:series_list' %}" class="back-link">← All series</a>
+	<div class="series-head">
+		<div>
+			<p class="eyebrow">Series · {{ post_count }} article{{ post_count|pluralize }}</p>
+			<h1>{{ series.title }}</h1>
+			{% if series.description %}<p class="lede">{{ series.description }}</p>{% endif %}
+			{% if posts %}<p class="series-start"><a href="{{ posts.0.get_absolute_url }}" class="btn btn-primary">Start reading →</a></p>{% endif %}
+		</div>
+		{% if series.cover_image %}<div class="series-head-cover"><img src="{{ series.cover_image.url }}" alt=""></div>{% endif %}
+	</div>
+</header>
+<div class="shell shell-narrow">
+	{% if posts %}
+	<ol class="timeline">{% for post in posts %}
+		<li data-reveal>
+			<span class="timeline-num">{{ forloop.counter|stringformat:"02d" }}</span>
+			<div class="timeline-card">
+				<time datetime="{{ post.date|date:'c' }}">{{ post.date|english_date:"short" }} · {{ post.get_category_display }}</time>
+				<h2><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></h2>
+				{% if post.description %}<p>{{ post.description }}</p>{% endif %}
 			</div>
-			{% endif %}
-			{% if series.description %}
-			<p class="flex-1 text-[15px] leading-relaxed text-ink-700 dark:text-ink-300">
-				{{ series.description }}
-			</p>
-			{% endif %}
-		</div>
-		{% endif %}
-	</header>
-
-	<!-- Contents -->
-	<section>
-		<h2 class="page-eyebrow mb-5 block">Contents</h2>
-
-		{% if posts %}
-		<ol class="space-y-2">
-			{% for post in posts %}
-			<li>
-				<a href="{% url 'posts:post_detail' post.slug %}"
-				   class="post-card group flex items-start gap-3 sm:gap-4 p-3.5 sm:p-4 md:p-5 bg-white dark:bg-white/[0.03] border border-ink-200/80 dark:border-white/[0.07] rounded-lg">
-					<!-- Index number -->
-					<span class="flex-shrink-0 w-8 h-8 rounded-md bg-ink-100 dark:bg-white/5 text-ink-700 dark:text-ink-300 font-mono text-[13px] font-medium flex items-center justify-center group-hover:bg-accent-50 dark:group-hover:bg-accent-500/10 group-hover:text-accent-600 dark:group-hover:text-accent-400 transition-colors">
-						{% if post.series_order %}{{ post.series_order }}{% else %}{{ forloop.counter }}{% endif %}
-					</span>
-
-					<div class="flex-1 min-w-0">
-						<div class="flex items-center justify-between gap-3 mb-1.5 text-[12px]">
-							<div class="flex items-center gap-2 min-w-0">
-								<span class="cat-pill
-									{% if post.category == 'engineering' %}bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-300
-									{% elif post.category == 'research' %}bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-300
-									{% elif post.category == 'notes' %}bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-300
-									{% elif post.category == 'projects' %}bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-300
-									{% else %}bg-ink-100 dark:bg-white/5 text-ink-700 dark:text-ink-300{% endif %}">
-									{{ post.get_category_display }}
-								</span>
-							</div>
-							<time class="text-ink-500 dark:text-ink-500 font-mono text-[11.5px] flex-shrink-0">
-								{{ post.date|date:"Y-m-d" }}
-							</time>
-						</div>
-
-						<h3 class="text-[15.5px] font-semibold text-ink-900 dark:text-ink-100 leading-snug group-hover:text-accent-600 dark:group-hover:text-accent-400 transition-colors line-clamp-2">
-							{{ post.title }}
-						</h3>
-
-						{% if post.description %}
-						<p class="mt-1 text-[13px] text-ink-500 dark:text-ink-500 line-clamp-1">
-							{{ post.description }}
-						</p>
-						{% endif %}
-					</div>
-
-					<svg class="hidden sm:block w-4 h-4 text-ink-300 dark:text-ink-700 flex-shrink-0 mt-1 transform group-hover:translate-x-0.5 group-hover:text-accent-500 transition-all" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
-					</svg>
-				</a>
-			</li>
-			{% endfor %}
-		</ol>
-
-		{% else %}
-		<div class="text-center py-12 border border-dashed border-ink-200 dark:border-white/10 rounded-lg">
-			<p class="text-sm text-ink-500 dark:text-ink-500">No articles in this series yet.</p>
-			<p class="mt-1 text-[12px] text-ink-500 dark:text-ink-500">Link articles to this series in the post's "Series" settings.</p>
-		</div>
-		{% endif %}
-	</section>
-
+		</li>
+	{% endfor %}</ol>
+	{% else %}
+	{% include "_includes/empty_state.html" with empty_title="No articles in this series yet" empty_message="Published articles in this series will appear here." %}
+	{% endif %}
 </div>
 {% endblock %}

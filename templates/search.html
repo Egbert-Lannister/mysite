@@ -1,57 +1,24 @@
 {% extends "base.html" %}
-{% block title %}Search{% if query %} - {{ query }}{% endif %} - TechBlog{% endblock %}
-
+{% block title %}{% if query %}“{{ query }}” · {% endif %}Search · TechBlog{% endblock %}
 {% block content %}
-<div class="max-w-[820px] mx-auto">
-
-	<header class="mb-8 md:mb-12 pb-6 border-b border-ink-200/70 dark:border-white/5">
-		<span class="page-eyebrow">Search</span>
-		<h1 class="page-title">Search Results</h1>
-		{% if query %}
-		<p class="page-desc">
-			Keyword: <span class="text-ink-900 dark:text-ink-100 font-medium">"{{ query }}"</span>
-			{% if posts %}<span class="text-ink-300 dark:text-ink-700 mx-2">·</span>{{ posts|length }} found{% endif %}
-		</p>
+<header class="page-head shell">
+	<p class="eyebrow">Search</p>
+	<h1>{% if query %}“{{ query }}”{% else %}Search the archive<em>.</em>{% endif %}</h1>
+	<form action="{% url 'posts:search' %}" method="get" role="search" class="search-hero-form">
+		<label for="page-search" class="sr-only">Search articles and projects</label>
+		<input id="page-search" type="search" name="q" value="{{ query }}" placeholder="Try “deployment” or “evaluation”" maxlength="200"{% if not query %} autofocus{% endif %}>
+		<button type="submit" class="btn btn-primary">Search</button>
+	</form>
+	{% if query %}<p class="page-count result-count">{{ posts.paginator.count }} result{{ posts.paginator.count|pluralize }}</p>{% endif %}
+</header>
+<div class="shell">
+	{% if query %}
+		{% if posts %}
+			<div class="index-list flush">{% for post in posts %}{% include "_includes/post_card.html" %}{% endfor %}</div>
+			{% include "_includes/pagination.html" %}
 		{% else %}
-		<p class="page-desc">Type a query in the search bar above.</p>
+			{% include "_includes/empty_state.html" with empty_title="No matches" empty_message="Try a shorter query, a different spelling, or browse a section instead." %}
 		{% endif %}
-	</header>
-
-	{% if query and posts %}
-	<section class="space-y-5">
-		{% for post in posts %}
-			{% include "_includes/post_card.html" %}
-		{% endfor %}
-	</section>
-
-	{% include "_includes/pagination.html" %}
-
-	{% elif query %}
-	<div class="text-center py-20">
-		<div class="w-14 h-14 mx-auto mb-5 rounded-xl bg-ink-100 dark:bg-white/5 flex items-center justify-center">
-			<svg class="w-6 h-6 text-ink-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-				<path stroke-linecap="round" stroke-linejoin="round" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-			</svg>
-		</div>
-		<h3 class="text-base font-semibold text-ink-900 dark:text-ink-100 mb-1.5">No results found</h3>
-		<p class="text-sm text-ink-500 dark:text-ink-500 mb-5">Try a different keyword.</p>
-		<a href="{% url 'posts:index' %}"
-		   class="inline-flex items-center gap-1 text-[13px] text-accent-600 dark:text-accent-400 hover:text-accent-700 dark:hover:text-accent-300 transition-colors">
-			← Back to home
-		</a>
-	</div>
-
-	{% else %}
-	<div class="text-center py-20">
-		<div class="w-14 h-14 mx-auto mb-5 rounded-xl bg-ink-100 dark:bg-white/5 flex items-center justify-center">
-			<svg class="w-6 h-6 text-ink-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-				<path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-			</svg>
-		</div>
-		<h3 class="text-base font-semibold text-ink-900 dark:text-ink-100 mb-1.5">Start searching</h3>
-		<p class="text-sm text-ink-500 dark:text-ink-500">Type a keyword above, e.g. "Django" or "LoRA".</p>
-	</div>
 	{% endif %}
-
 </div>
 {% endblock %}

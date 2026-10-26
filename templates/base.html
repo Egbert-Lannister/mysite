@@ -1,390 +1,132 @@
-<!DOCTYPE html>
-<html lang="zh-CN" class="scroll-smooth">
+{% load static %}<!DOCTYPE html>
+<html lang="en">
 <head>
-	<meta charset="utf-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 	<title>{% block title %}TechBlog{% endblock %}</title>
-	<meta name="description" content="{% block meta_description %}{% endblock %}">
-	<link rel="alternate" type="application/rss+xml" title="RSS" href="/rss.xml" />
-	<style>
-		/* Critical render path — applied immediately to prevent FOUC */
-		html { scroll-behavior: smooth; }
-		body {
-			font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-			margin: 0;
-			min-height: 100vh;
-			background: #fafafa;
-			color: #1f2937;
-			-webkit-font-smoothing: antialiased;
-			-moz-osx-font-smoothing: grayscale;
-		}
-		.dark body {
-			background: #0e1117;
-			color: #e5e7eb;
-		}
-		.page-loading {
-			position: fixed; top: 0; left: 0; right: 0; height: 2px;
-			background: linear-gradient(90deg, transparent, #6366f1, transparent);
-			animation: loading 1.2s ease-in-out infinite;
-			z-index: 9999;
-		}
-		@keyframes loading {
-			0% { transform: translateX(-100%); }
-			100% { transform: translateX(100%); }
-		}
-		.page-loaded .page-loading { display: none; }
-	</style>
-	<link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin>
-	<link rel="dns-prefetch" href="https://cdn.tailwindcss.com">
+	<meta name="description" content="{% block meta_description %}Engineering notes, research, and selected projects.{% endblock %}">
+	<meta name="theme-color" content="#f3f2ee" id="theme-color-meta">
+	<link rel="alternate" type="application/rss+xml" title="RSS" href="/rss.xml">
+	<link rel="icon" type="image/svg+xml" href="{% static 'images/favicon.svg' %}">
+	<link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/favicon-32.png' %}">
+	<link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/apple-touch-icon.png' %}">
+	<script>
+		(function () {
+			var theme = "light";
+			try {
+				var stored = localStorage.getItem("theme");
+				theme = stored || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+			} catch (_) { /* fall back to light */ }
+			document.documentElement.dataset.theme = theme;
+			document.documentElement.classList.add("js");
+		})();
+	</script>
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link rel="preconnect" href="https://cdn.bootcdn.net" crossorigin>
-	<script src="https://cdn.tailwindcss.com"></script>
-	<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+	{# Non-blocking: system fonts render first; web fonts swap in only if reachable. #}
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" media="print" onload="this.media='all'">
+	<link rel="stylesheet" href="{% static 'css/ui.css' %}">
+	<script defer src="{% static 'js/ui.js' %}"></script>
 	{% block extra_head %}{% endblock %}
-	<script>
-		(function() {
-			const stored = localStorage.getItem('theme');
-			const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-			const isDark = stored === 'dark' || (!stored && prefersDark);
-			if (isDark) document.documentElement.classList.add('dark');
-		})();
-
-		tailwind.config = {
-			darkMode: 'class',
-			theme: {
-				extend: {
-					fontFamily: {
-						sans: ['Inter', 'Noto Sans SC', 'system-ui', 'sans-serif'],
-						mono: ['JetBrains Mono', 'monospace'],
-					},
-					colors: {
-						accent: {
-							50:  '#eef2ff',
-							100: '#e0e7ff',
-							200: '#c7d2fe',
-							300: '#a5b4fc',
-							400: '#818cf8',
-							500: '#6366f1',
-							600: '#4f46e5',
-							700: '#4338ca',
-						},
-						ink: {
-							50:  '#fafafa',
-							100: '#f5f5f7',
-							200: '#e5e7eb',
-							300: '#d1d5db',
-							500: '#6b7280',
-							700: '#374151',
-							900: '#111827',
-							950: '#0e1117',
-						},
-					}
-				}
-			}
-		}
-	</script>
-	<style>
-		html, body { max-width: 100%; overflow-x: clip; }
-		body {
-			font-family: 'Inter', 'Noto Sans SC', system-ui, sans-serif;
-			padding-left: env(safe-area-inset-left);
-			padding-right: env(safe-area-inset-right);
-		}
-
-		/* Custom scrollbar — minimal */
-		::-webkit-scrollbar { width: 10px; height: 10px; }
-		::-webkit-scrollbar-track { background: transparent; }
-		::-webkit-scrollbar-thumb { background: #d4d4d8; border-radius: 999px; border: 2px solid transparent; background-clip: content-box; }
-		::-webkit-scrollbar-thumb:hover { background: #a1a1aa; background-clip: content-box; }
-		.dark ::-webkit-scrollbar-thumb { background: #3f3f46; background-clip: content-box; }
-		.dark ::-webkit-scrollbar-thumb:hover { background: #52525b; background-clip: content-box; }
-
-		/* Toast notification */
-		.toast {
-			position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-			padding: 10px 18px; border-radius: 8px; z-index: 9999;
-			background: #18181b; color: #fafafa; font-size: 13px; font-weight: 500;
-			box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-			animation: toast-in 0.25s ease, toast-out 0.25s ease 2.5s forwards;
-		}
-		@keyframes toast-in  { from { opacity: 0; transform: translateX(-50%) translateY(8px); } }
-		@keyframes toast-out {   to { opacity: 0; transform: translateX(-50%) translateY(8px); } }
-
-		/* Nav hover micro-animation */
-		.nav-link {
-			position: relative;
-			color: rgb(75 85 99);
-			transition: color 0.15s ease;
-		}
-		.nav-link:hover { color: rgb(17 24 39); }
-		.dark .nav-link { color: rgb(156 163 175); }
-		.dark .nav-link:hover { color: rgb(243 244 246); }
-
-		/* Post card — shared across all list pages */
-		.line-clamp-2 {
-			display: -webkit-box;
-			-webkit-line-clamp: 2;
-			-webkit-box-orient: vertical;
-			overflow: hidden;
-		}
-		.post-card {
-			transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
-		}
-		.post-card:hover {
-			border-color: rgb(99 102 241 / 0.35);
-			transform: translateY(-1px);
-			box-shadow: 0 4px 16px -4px rgba(15, 23, 42, 0.06);
-		}
-		.dark .post-card:hover {
-			border-color: rgb(129 140 248 / 0.4);
-			box-shadow: 0 4px 16px -4px rgba(0, 0, 0, 0.4);
-		}
-		.cat-pill {
-			display: inline-flex; align-items: center;
-			padding: 2px 8px;
-			font-size: 11px; font-weight: 500;
-			border-radius: 4px;
-			letter-spacing: 0.01em;
-		}
-
-		/* Generic page header (used by sub-pages, smaller than the Hero) */
-		.page-eyebrow {
-			display: inline-block;
-			font-size: 11px;
-			font-weight: 600;
-			letter-spacing: 0.12em;
-			text-transform: uppercase;
-			color: rgb(99 102 241);
-		}
-		.dark .page-eyebrow { color: rgb(129 140 248); }
-		.page-title {
-			font-size: 28px;
-			font-weight: 600;
-			letter-spacing: -0.02em;
-			color: rgb(17 24 39);
-			margin-top: 8px;
-		}
-		.dark .page-title { color: rgb(243 244 246); }
-		@media (min-width: 768px) {
-			.page-title { font-size: 32px; }
-		}
-		.page-desc {
-			font-size: 14px;
-			color: rgb(107 114 128);
-			margin-top: 8px;
-		}
-
-		/* --- Mobile layout --- */
-		.site-header { padding-top: env(safe-area-inset-top); }
-		.tap-target {
-			min-width: 44px;
-			min-height: 44px;
-			display: inline-flex;
-			align-items: center;
-			justify-content: center;
-		}
-
-		@media (max-width: 639px) {
-			.page-title { font-size: 24px; line-height: 1.25; word-break: break-word; }
-			.toast { max-width: calc(100vw - 32px); left: 16px; right: 16px; transform: none; }
-			@keyframes toast-in  { from { opacity: 0; transform: translateY(8px); } }
-			@keyframes toast-out {   to { opacity: 0; transform: translateY(8px); } }
-		}
-
-		@media (hover: none) {
-			.post-card:hover {
-				transform: none;
-				box-shadow: none;
-				border-color: rgb(229 231 235 / 0.8);
-			}
-			.dark .post-card:hover { border-color: rgb(255 255 255 / 0.07); }
-		}
-
-		@media (max-width: 767px) {
-			.post-card { padding: 1.05rem 1.1rem; }
-		}
-	</style>
 </head>
-<body class="min-h-screen text-ink-900 dark:text-ink-100 dark:bg-ink-950 antialiased">
-	<div class="page-loading" id="page-loading"></div>
+<body class="{% block body_class %}{% endblock %}">
+	<a href="#main" class="skip-link">Skip to content</a>
+	{% url 'posts:index' as index_url %}
+	{% url 'posts:engineering_list' as engineering_url %}
+	{% url 'posts:research_list' as research_url %}
+	{% url 'posts:notes_list' as notes_url %}
+	{% url 'posts:projects_list' as projects_url %}
+	{% url 'posts:series_list' as series_url %}
 
-	<!-- Top navigation — light, stable, restrained -->
-	<header class="site-header sticky top-0 z-50 backdrop-blur-md bg-white/80 dark:bg-ink-950/80 border-b border-ink-200/70 dark:border-white/5">
-		<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-			<div class="flex items-center justify-between h-14">
-				{% load static %}
-				<!-- Logo -->
-				<a href="{% url 'posts:index' %}" class="flex items-center gap-2 min-w-0 group flex-shrink-0">
-					<img src="{% static 'images/logo.jpg' %}" alt="Logo" class="w-7 h-7 rounded-md object-cover ring-1 ring-black/5 dark:ring-white/10">
-					<span class="text-[15px] font-semibold tracking-tight text-ink-900 dark:text-ink-100 truncate">TechBlog</span>
-				</a>
+	<header class="topbar" data-topbar>
+		<div class="shell topbar-inner">
+			<a href="{{ index_url }}" class="site-brand" {% if request.path == index_url %}aria-current="page"{% endif %} aria-label="TechBlog home">
+				<img src="{% static 'images/avatar-96.webp' %}" srcset="{% static 'images/avatar-192.webp' %} 2x" width="34" height="34" class="site-brand-avatar" alt="">
+				<span class="brand-copy">
+					<span class="brand-name">TechBlog</span>
+					<span class="brand-byline">by Egbert Lannister</span>
+				</span>
+			</a>
 
-				<!-- Primary nav -->
-				<nav class="hidden lg:flex items-center gap-7 text-[13.5px] font-medium">
-					<a href="{% url 'posts:engineering_list' %}" class="nav-link">Engineering</a>
-					<a href="{% url 'posts:research_list' %}"    class="nav-link">Research</a>
-					<a href="{% url 'posts:notes_list' %}"       class="nav-link">Notes</a>
-					<a href="{% url 'posts:projects_list' %}"    class="nav-link">Projects</a>
-					<a href="{% url 'posts:series_list' %}"      class="nav-link">Series</a>
-				</nav>
+			<nav class="primary-nav" aria-label="Primary navigation">
+				<a href="{{ engineering_url }}" {% if request.path == engineering_url or post.category == 'engineering' %}aria-current="page"{% endif %}><i>01</i>Engineering</a>
+				<a href="{{ research_url }}" {% if request.path == research_url or post.category == 'research' %}aria-current="page"{% endif %}><i>02</i>Research</a>
+				<a href="{{ notes_url }}" {% if request.path == notes_url or post.category == 'notes' %}aria-current="page"{% endif %}><i>03</i>Notes</a>
+				<a href="{{ projects_url }}" {% if request.path == projects_url or category == 'projects' or project %}aria-current="page"{% endif %}><i>04</i>Projects</a>
+				<a href="{{ series_url }}" {% if request.path == series_url or series %}aria-current="page"{% endif %}><i>05</i>Series</a>
+			</nav>
 
-				<!-- Right-side tools -->
-				<div class="flex items-center gap-0.5 sm:gap-2">
-					<form action="{% url 'posts:search' %}" method="get" class="hidden sm:block">
-						<div class="relative">
-							<input type="search" name="q" placeholder="Search..." value="{{ request.GET.q }}"
-								class="w-44 lg:w-56 h-9 pl-9 pr-3 text-[13px] rounded-full bg-ink-100 dark:bg-white/5 border border-transparent text-ink-900 dark:text-ink-100 placeholder-ink-500 focus:outline-none focus:bg-white dark:focus:bg-ink-950 focus:border-ink-200 dark:focus:border-white/10 focus:w-56 lg:focus:w-72 transition-all">
-							<svg class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-ink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-							</svg>
-						</div>
-					</form>
-
-					<!-- Theme toggle -->
-					<button id="theme-toggle" class="tap-target p-2 rounded-full text-ink-500 dark:text-ink-300 hover:bg-ink-100 dark:hover:bg-white/5 hover:text-ink-900 dark:hover:text-ink-100 transition-colors" aria-label="Toggle theme">
-						<svg class="w-4 h-4 hidden dark:block" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
-						</svg>
-						<svg class="w-4 h-4 block dark:hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
-						</svg>
-					</button>
-
-					<!-- Mobile menu toggle -->
-					<button id="mobile-menu-toggle" class="lg:hidden tap-target p-2 text-ink-500 hover:bg-ink-100 dark:hover:bg-white/5 rounded-full transition-colors" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">
-						<svg id="icon-menu" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
-						</svg>
-						<svg id="icon-close" class="w-5 h-5 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-						</svg>
-					</button>
-				</div>
-			</div>
-
-			<!-- Mobile menu -->
-			<div id="mobile-menu" class="hidden lg:hidden pb-4 pt-2 border-t border-ink-200/70 dark:border-white/5">
-				<nav class="flex flex-col gap-0.5 mb-3">
-					<a href="{% url 'posts:engineering_list' %}" class="px-3 py-2.5 text-[15px] text-ink-700 dark:text-ink-300 hover:bg-ink-100 dark:hover:bg-white/5 rounded-md">Engineering</a>
-					<a href="{% url 'posts:research_list' %}"    class="px-3 py-2.5 text-[15px] text-ink-700 dark:text-ink-300 hover:bg-ink-100 dark:hover:bg-white/5 rounded-md">Research</a>
-					<a href="{% url 'posts:notes_list' %}"       class="px-3 py-2.5 text-[15px] text-ink-700 dark:text-ink-300 hover:bg-ink-100 dark:hover:bg-white/5 rounded-md">Notes</a>
-					<a href="{% url 'posts:projects_list' %}"    class="px-3 py-2.5 text-[15px] text-ink-700 dark:text-ink-300 hover:bg-ink-100 dark:hover:bg-white/5 rounded-md">Projects</a>
-					<a href="{% url 'posts:series_list' %}"      class="px-3 py-2.5 text-[15px] text-ink-700 dark:text-ink-300 hover:bg-ink-100 dark:hover:bg-white/5 rounded-md">Series</a>
-				</nav>
-				<form action="{% url 'posts:search' %}" method="get" class="flex gap-2 sm:hidden">
-					<input type="search" name="q" placeholder="Search..." value="{{ request.GET.q }}" class="flex-1 min-w-0 px-3 py-2.5 bg-ink-100 dark:bg-white/5 rounded-md text-base">
-					<button type="submit" class="px-4 py-2.5 bg-ink-900 dark:bg-white text-white dark:text-ink-900 text-sm rounded-md font-medium flex-shrink-0">Search</button>
-				</form>
+			<div class="topbar-actions">
+				<button type="button" class="search-trigger" data-search-open aria-haspopup="dialog" aria-controls="search-dialog">
+					<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>
+					<span class="search-trigger-label">Search</span>
+					<kbd>/</kbd>
+				</button>
+				<button type="button" class="icon-btn" data-theme-toggle aria-label="Switch color theme">
+					<svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6 6 6M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/></svg>
+					<svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></svg>
+				</button>
+				<button type="button" class="icon-btn menu-btn" data-menu-toggle aria-label="Open navigation menu" aria-expanded="false" aria-controls="mobile-menu">
+					<svg viewBox="0 0 24 24" aria-hidden="true"><path class="menu-line-a" d="M4 8h16"/><path class="menu-line-b" d="M4 16h16"/></svg>
+				</button>
 			</div>
 		</div>
+
+		<div id="mobile-menu" class="mobile-menu" hidden>
+			<nav class="shell" aria-label="Mobile navigation">
+				<a href="{{ engineering_url }}"><i>01</i>Engineering</a>
+				<a href="{{ research_url }}"><i>02</i>Research</a>
+				<a href="{{ notes_url }}"><i>03</i>Notes</a>
+				<a href="{{ projects_url }}"><i>04</i>Projects</a>
+				<a href="{{ series_url }}"><i>05</i>Series</a>
+			</nav>
+		</div>
+		<div class="read-progress" data-read-progress hidden><span></span></div>
 	</header>
 
-	<!-- Main content -->
-	<main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 md:py-14">
+	<main id="main" tabindex="-1">
 		{% block content %}{% endblock %}
 	</main>
 
-	<!-- Footer — single-row, tagline centered with side elements equidistant -->
-	<footer class="border-t border-ink-200/70 dark:border-white/5 mt-8 sm:mt-12 pb-[env(safe-area-inset-bottom)]">
-		<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-7">
-			<!--
-				Grid is 1fr | auto | 1fr so the centered tagline column auto-sizes
-				and the two outer columns are *equal width*, then we right-align
-				the left content and left-align the right content. Result: the
-				visible gap from each side element to the centered tagline is
-				identical regardless of side-element length.
-			-->
-			<div class="hidden sm:grid items-center gap-x-16 lg:gap-x-28 text-[12.5px] text-ink-500 dark:text-ink-500"
-				 style="grid-template-columns: 1fr auto 1fr;">
-				<div class="flex items-center justify-end gap-2 min-w-0">
-					<img src="{% static 'images/logo.jpg' %}" alt="" class="w-4 h-4 rounded object-cover opacity-80 flex-shrink-0">
-					<span class="truncate">© {% now "Y" %} Egbert Lannister · TechBlog</span>
+	<footer class="site-footer">
+		<div class="shell">
+			<div class="footer-grid">
+				<div class="footer-mark">
+					<a href="{{ index_url }}">TechBlog<span>.</span></a>
+					<p>Notes on engineering, research, and building — written down so they can be found again.</p>
 				</div>
-				<p class="text-[13.5px] text-ink-700 dark:text-ink-300 tracking-tight whitespace-nowrap">
-					A space for ideas, words, and wonder.
-				</p>
-				<div class="flex items-center justify-start">
-					<a href="/rss.xml" class="inline-flex items-center gap-1 hover:text-accent-500 dark:hover:text-accent-400 transition-colors" aria-label="Subscribe to RSS feed">
-						<svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19 7.38 20 6.18 20C5 20 4 19 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1Z"/></svg>
-						RSS
-					</a>
+				<nav class="footer-col" aria-label="Footer sections">
+					<p>Sections</p>
+					<a href="{{ engineering_url }}">Engineering</a>
+					<a href="{{ research_url }}">Research</a>
+					<a href="{{ notes_url }}">Notes</a>
+					<a href="{{ projects_url }}">Projects</a>
+					<a href="{{ series_url }}">Series</a>
+				</nav>
+				<div class="footer-col">
+					<p>Follow</p>
+					<a href="/rss.xml" aria-label="Subscribe to RSS feed">RSS feed ↗</a>
+					<a href="{% url 'posts:search' %}">Search the archive</a>
 				</div>
 			</div>
-			<!-- Mobile fallback: stack centered to avoid cramping on narrow screens -->
-			<div class="flex sm:hidden flex-col items-center gap-3 text-center">
-				<p class="text-[13.5px] text-ink-700 dark:text-ink-300 tracking-tight">A space for ideas, words, and wonder.</p>
-				<div class="flex items-center justify-center gap-x-3 gap-y-1 flex-wrap text-[12.5px] text-ink-500 dark:text-ink-500">
-					<img src="{% static 'images/logo.jpg' %}" alt="" class="w-4 h-4 rounded object-cover opacity-80">
-					<span>© {% now "Y" %} Egbert Lannister</span>
-					<a href="/rss.xml" class="inline-flex items-center gap-1 hover:text-accent-500 dark:hover:text-accent-400 transition-colors" aria-label="Subscribe to RSS feed">
-						<svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19 7.38 20 6.18 20C5 20 4 19 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1Z"/></svg>
-						RSS
-					</a>
-				</div>
+			<div class="footer-base">
+				<span>© {% now "Y" %} Egbert Lannister</span>
+				<a href="#main" class="to-top">Back to top ↑</a>
 			</div>
 		</div>
 	</footer>
 
-	<div id="toast-container"></div>
+	<div id="search-dialog" class="search-dialog" role="dialog" aria-modal="true" aria-label="Search" hidden>
+		<button type="button" class="scrim" data-search-close tabindex="-1" aria-label="Close search"></button>
+		<form action="{% url 'posts:search' %}" method="get" role="search" class="search-panel">
+			<label for="site-search" class="sr-only">Search articles and projects</label>
+			<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>
+			<input id="site-search" type="search" name="q" placeholder="Search articles and projects…" value="{{ request.GET.q }}" maxlength="200" autocomplete="off">
+			<kbd data-search-close>Esc</kbd>
+		</form>
+	</div>
 
-	<script>
-		const themeToggle = document.getElementById('theme-toggle');
-		const mobileMenu = document.getElementById('mobile-menu');
-		const mobileToggle = document.getElementById('mobile-menu-toggle');
-		const iconMenu = document.getElementById('icon-menu');
-		const iconClose = document.getElementById('icon-close');
-
-		function setMobileMenuOpen(open) {
-			if (!mobileMenu || !mobileToggle) return;
-			mobileMenu.classList.toggle('hidden', !open);
-			iconMenu?.classList.toggle('hidden', open);
-			iconClose?.classList.toggle('hidden', !open);
-			mobileToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-			mobileToggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
-		}
-
-		mobileToggle?.addEventListener('click', () => {
-			setMobileMenuOpen(mobileMenu.classList.contains('hidden'));
-		});
-
-		function setTheme(isDark) {
-			if (isDark) {
-				document.documentElement.classList.add('dark');
-				localStorage.setItem('theme', 'dark');
-			} else {
-				document.documentElement.classList.remove('dark');
-				localStorage.setItem('theme', 'light');
-			}
-			window.dispatchEvent(new CustomEvent('themechange', { detail: { isDark } }));
-		}
-
-		themeToggle.addEventListener('click', () => {
-			const isDark = !document.documentElement.classList.contains('dark');
-			setTheme(isDark);
-		});
-
-		window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-			if (!localStorage.getItem('theme')) setTheme(e.matches);
-		});
-
-		window.showToast = function(message, type = 'success') {
-			const toast = document.createElement('div');
-			toast.className = 'toast';
-			toast.textContent = message;
-			if (type === 'error') toast.style.background = '#dc2626';
-			document.getElementById('toast-container').appendChild(toast);
-			setTimeout(() => toast.remove(), 3000);
-		};
-	</script>
-
+	<div id="toast-container" class="toasts" role="status" aria-live="polite" aria-atomic="true"></div>
 	{% block extra_js %}{% endblock %}
-
-	<script>
-		window.addEventListener('load', function() {
-			document.body.classList.add('page-loaded');
-			document.getElementById('page-loading')?.remove();
-		});
-	</script>
 </body>
 </html>

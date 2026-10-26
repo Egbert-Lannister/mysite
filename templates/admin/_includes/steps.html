@@ -1,0 +1,7 @@
+<ol class="workflow-steps" aria-label="内容发布步骤">
+	<li class="workflow-step{% if current_step == 1 %} workflow-step-active{% endif %}" {% if current_step == 1 %}aria-current="step"{% endif %}><span class="workflow-step-number">1</span><span>选择 / 创建</span></li>
+	<li class="workflow-step-line" aria-hidden="true"></li>
+	<li class="workflow-step{% if current_step == 2 %} workflow-step-active{% endif %}" {% if current_step == 2 %}aria-current="step"{% endif %}><span class="workflow-step-number">2</span><span>预览与编辑</span></li>
+	<li class="workflow-step-line" aria-hidden="true"></li>
+	<li class="workflow-step"><span class="workflow-step-number">3</span><span>保存 / 发布</span></li>
+</ol>

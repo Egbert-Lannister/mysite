@@ -11,6 +11,7 @@ urlpatterns = [
     path("research/", views.category_list, {"category": "research"}, name="research_list"),
     path("notes/", views.category_list, {"category": "notes"}, name="notes_list"),
     path("projects/", views.category_list, {"category": "projects"}, name="projects_list"),
+    path("projects/<slug:slug>/", views.project_detail, name="project_detail"),
     # 301 redirects for legacy URLs (SEO-safe)
     path("tech/", RedirectView.as_view(url="/techblog/engineering/", permanent=True), name="tech_list"),
     path("paper/", RedirectView.as_view(url="/techblog/research/", permanent=True), name="paper_list"),

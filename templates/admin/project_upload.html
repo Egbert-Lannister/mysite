@@ -1,0 +1,41 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+{% block title %}上传项目{% endblock %}
+{% block content_title %}{% endblock %}
+{% block extrahead %}{{ block.super }}<link rel="stylesheet" href="{% static 'admin/workflow.css' %}"><script defer src="{% static 'admin/workflow.js' %}"></script>{% endblock %}
+{% block content %}
+<div class="workflow-shell !max-w-5xl">
+	<header class="workflow-header"><div><p class="page-eyebrow">Project publishing</p><h1 class="workflow-title">创建项目</h1><p class="workflow-subtitle">选择安全 HTML ZIP，或使用结构化编辑器。两种方式都会先预览，再保存草稿或发布。</p></div><a href="{% url 'admin:posts_project_changelist' %}" class="workflow-button">返回项目管理</a></header>
+	{% include "admin/_includes/steps.html" with current_step=1 %}
+	{% if has_draft %}<div class="workflow-warning">有一份尚未完成的项目预览。<a href="{% url 'admin_project_upload_preview' %}" class="font-medium underline">继续编辑</a>；成功导入新项目后才会替换它。</div>{% endif %}
+	{% if error %}<div class="workflow-alert" role="alert">{{ error }}</div>{% endif %}
+
+	<div class="grid lg:grid-cols-2 gap-4 items-start">
+		<form method="post" enctype="multipart/form-data" data-workflow-form class="workflow-panel">
+			{% csrf_token %}<input type="hidden" name="import_mode" value="html">
+			<header class="workflow-panel-header"><p class="page-eyebrow">Option A</p><h2 class="workflow-panel-title">安全 HTML ZIP</h2><p class="workflow-panel-description">导入完整页面和本地媒体，公开展示前自动清理并接管网站样式。</p></header>
+			<div class="workflow-panel-body">
+				<label for="file-input" class="workflow-label">项目 HTML ZIP <span class="workflow-required">*</span></label>
+				<div class="workflow-dropzone" id="drop-zone"><input id="file-input" name="upload_file" type="file" accept=".zip" required class="admin-input !border-0 !px-0 !bg-transparent"><p id="file-name" class="mt-2 text-sm text-base-600 dark:text-base-300">选择包含 index.html 的 ZIP，或拖拽到此处</p></div>
+				<p class="workflow-help">ZIP 最大 50MB；仅保留白名单 HTML、HTTP/HTTPS 链接和包内图片/视频。脚本、iframe、外部媒体与内联样式会被移除。</p>
+				<div class="flex flex-wrap gap-x-4 gap-y-2 my-4 text-sm"><a href="{% static 'examples/project-page-template.html' %}" download class="font-medium text-primary-700 dark:text-primary-300 underline">下载英文页面模板</a><a href="{% static 'examples/project-html-README.md' %}" download class="font-medium text-primary-700 dark:text-primary-300 underline">查看打包说明</a></div>
+				<button type="submit" class="workflow-button workflow-button-primary w-full" data-pending-label="正在安全解析…">上传并预览 HTML →</button>
+			</div>
+		</form>
+
+		<a href="{% url 'admin_project_upload_blank' %}" class="workflow-panel block hover:border-primary-500">
+			<header class="workflow-panel-header"><p class="page-eyebrow">Option B</p><h2 class="workflow-panel-title">手动结构化创建</h2><p class="workflow-panel-description">从空白项目开始，按论文逻辑填写内容并整理实验媒体。</p></header>
+			<div class="workflow-panel-body">
+				<ol class="space-y-3 text-sm leading-6 text-base-700 dark:text-base-300"><li><strong class="text-base-900 dark:text-base-100">01–04</strong>　基本信息、LLM 摘要、技术标签、资源与封面</li><li><strong class="text-base-900 dark:text-base-100">05</strong>　按尺寸、数量和实验组自动整理图片与视频</li><li><strong class="text-base-900 dark:text-base-100">06–08</strong>　Overview、Method、Experiments 与 Conclusion</li></ol>
+				<span class="workflow-button workflow-button-primary w-full mt-5">打开结构化编辑器 →</span>
+			</div>
+		</a>
+	</div>
+
+	<details class="workflow-panel mt-4 p-5"><summary class="cursor-pointer min-h-9 flex items-center font-medium">兼容旧 Markdown / ZIP 导入</summary><div class="pt-4"><p class="workflow-panel-description mb-4">继续支持单个 Markdown，或 Markdown + 图片 + MP4/WebM 的 ZIP；导入后进入同一结构化编辑器。</p><form method="post" enctype="multipart/form-data" data-workflow-form>{% csrf_token %}<input type="hidden" name="import_mode" value="markdown"><div class="grid md:grid-cols-[minmax(0,1fr)_auto] gap-3 items-end"><div><label for="markdown-file-input" class="workflow-label">项目 Markdown / ZIP</label><input id="markdown-file-input" name="upload_file" type="file" accept=".md,.zip" required class="admin-input"></div><button type="submit" class="workflow-button" data-pending-label="正在解析…">导入旧格式 →</button></div></form><pre class="whitespace-pre-wrap font-mono text-xs mt-4 p-3 rounded bg-base-50 dark:bg-base-950">project.zip
+├── project.md          # 必需，含 YAML front matter
+├── method.png
+├── framework.png
+└── videos/rt1-seen.mp4</pre></div></details>
+</div>
+{% endblock %}

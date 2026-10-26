@@ -1,0 +1,6 @@
+<div class="workflow-field{% if field.errors %} field-has-error{% endif %}">
+	<label class="workflow-label" for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} <span class="workflow-required" aria-hidden="true">*</span>{% endif %}</label>
+	{{ field }}
+	{% if field.help_text %}<p class="workflow-help" id="{{ field.id_for_label }}-help">{{ field.help_text }}</p>{% endif %}
+	{% for error in field.errors %}<p class="workflow-error" role="alert">{{ error }}</p>{% endfor %}
+</div>

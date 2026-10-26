@@ -19,3 +19,4 @@ markdown>=3.6                 # Markdown to HTML conversion
 Pygments>=2.17.0              # Code syntax highlighting for markdown
 PyYAML>=6.0.2                 # YAML front matter parsing
 Pillow>=10.0.0                # Image processing (ImageField)
+bleach>=4.1,<7               # Allow-list sanitizing for rendered Markdown HTML

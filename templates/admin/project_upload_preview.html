@@ -1,0 +1,55 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+{% block title %}{% if is_blank_mode %}新建项目{% else %}项目预览与编辑{% endif %}{% endblock %}
+{% block content_title %}{% endblock %}
+{% block extrahead %}{{ block.super }}
+<link rel="stylesheet" href="{% static 'vendor/katex/katex.min.css' %}"><link rel="stylesheet" href="{% static 'vendor/flatpickr/flatpickr.min.css' %}"><link rel="stylesheet" href="{% static 'admin/workflow.css' %}">
+<script defer src="{% static 'vendor/katex/katex.min.js' %}"></script><script defer src="{% static 'vendor/katex/contrib/auto-render.min.js' %}"></script><script defer src="{% static 'vendor/flatpickr/flatpickr.min.js' %}"></script><script defer src="{% static 'admin/workflow.js' %}"></script>
+{% endblock %}
+{% block content %}
+<div class="workflow-shell">
+	<header class="workflow-header"><div><p class="page-eyebrow">Structured project editor</p><h1 class="workflow-title">{% if is_blank_mode %}新建项目{% else %}项目预览与编辑{% endif %}</h1><p class="workflow-subtitle">先讲清问题与方法，再安排实验和结论。保存失败时保留当前填写内容与暂存素材。</p></div><a href="{% url 'admin_project_upload' %}" class="workflow-button">返回创建方式</a></header>
+	{% include "admin/_includes/steps.html" with current_step=2 %}
+	{% for warning in data.warnings %}<div class="workflow-warning">{{ warning }}</div>{% endfor %}
+	<form method="post" enctype="multipart/form-data" data-workflow-form>
+		{% csrf_token %}
+		{% if form.non_field_errors %}<div class="workflow-alert" role="alert">{% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
+		<div class="grid xl:grid-cols-2 gap-4 items-start">
+			<section class="workflow-panel"><header class="workflow-panel-header"><h2 class="workflow-panel-title">01 · 基本信息</h2><p class="workflow-panel-description">标题、摘要与状态构成项目卡片和 Overview 的入口。</p></header><div class="workflow-panel-body">
+				{% include "admin/_includes/field.html" with field=form.title %}{% include "admin/_includes/field.html" with field=form.slug %}{% include "admin/_includes/field.html" with field=form.description %}
+				<div class="workflow-ai-actions"><button id="generate-summary" type="button" class="workflow-button">由 Overview 生成摘要</button><span id="summary-status" class="workflow-help" aria-live="polite">需先填写 06 · Overview</span></div>
+				<div class="grid sm:grid-cols-2 gap-3">{% include "admin/_includes/field.html" with field=form.project_status %}{% include "admin/_includes/field.html" with field=form.date %}</div>
+			</div></section>
+			<section class="workflow-panel"><header class="workflow-panel-header"><h2 class="workflow-panel-title">02 · 技术栈与标签</h2><p class="workflow-panel-description">技术栈用于项目信息，标签用于全站检索与分类。</p></header><div class="workflow-panel-body">{% include "admin/_includes/field.html" with field=form.project_tech_stack %}{% include "admin/_includes/field.html" with field=form.tags %}
+				<div class="workflow-ai-actions"><button id="generate-tags" type="button" class="workflow-button">由 Overview 建议标签</button><span id="tags-status" class="workflow-help" aria-live="polite"></span></div>
+				<label class="flex items-start gap-2 text-sm text-base-800 dark:text-base-200 cursor-pointer"><input type="checkbox" name="project_featured" value="1" {% if form.project_featured.value %}checked{% endif %} class="mt-1 rounded border-base-300 dark:border-base-600 bg-white dark:bg-base-800"><span><span class="block font-medium">设为项目精选</span><span class="workflow-help">在首页项目区与 Projects 列表优先展示。</span></span></label>{% for error in form.project_featured.errors %}<p class="workflow-error">{{ error }}</p>{% endfor %}
+			</div></section>
+		</div>
+
+		<div class="grid xl:grid-cols-2 gap-4 items-start">
+			<section class="workflow-panel"><header class="workflow-panel-header"><h2 class="workflow-panel-title">03 · 资源链接</h2><p class="workflow-panel-description">只填写真实 GitHub / Paper / Demo 地址；留空则前台不显示按钮。</p></header><div class="workflow-panel-body">{% include "admin/_includes/field.html" with field=form.github_url %}{% include "admin/_includes/field.html" with field=form.paper_url %}{% include "admin/_includes/field.html" with field=form.demo_url %}</div></section>
+			<section class="workflow-panel"><header class="workflow-panel-header"><h2 class="workflow-panel-title">04 · 封面</h2><p class="workflow-panel-description">封面可留空，前台会使用第一张框架图或方法图，不重复展示同一张图。</p></header><div class="workflow-panel-body">
+				{% if data.project_cover %}<div class="workflow-warning flex flex-col sm:flex-row sm:items-center justify-between gap-2"><span>当前暂存封面：{{ data.project_cover.filename }}</span><button type="submit" name="action" value="clear_cover" data-action="clear_cover" formnovalidate class="workflow-button !min-h-8">移除封面</button></div>{% endif %}
+				{% include "admin/_includes/field.html" with field=form.project_cover %}
+			</div></section>
+		</div>
+
+		<section class="workflow-panel"><header class="workflow-panel-header"><h2 class="workflow-panel-title">05 · 媒体与自动布局</h2><p class="workflow-panel-description">先填写实验组，再排序。系统按数量、宽高比和文件大小自动排版：单个居中、两个并排、四个 2×2，宽图通栏，小图不强行放大。</p></header><div class="workflow-panel-body">
+			{% if media_items %}{% for item in media_items %}<div class="media-row" id="media-{{ item.id }}">
+				<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3"><div class="min-w-0"><span class="cat-pill">{{ item.kind }}</span><span class="ml-2 text-sm text-base-500 dark:text-base-400 break-all">{{ item.filename }}</span><span class="media-metadata">{% if item.width and item.height %}{{ item.width }}×{{ item.height }} · {% endif %}{% if item.file_size %}{{ item.file_size|filesizeformat }}{% endif %}</span></div><div class="flex flex-wrap gap-2"><label class="inline-flex items-center gap-1.5 min-h-8 text-sm"><input type="checkbox" name="media_{{ item.id }}_include" value="1" {% if item.include %}checked{% endif %}>展示</label>{% if item.kind == 'image' %}<button type="submit" name="action" value="cover_media:{{ item.id }}" data-action="cover_media:{{ item.id }}" formnovalidate class="workflow-button !min-h-8 !text-xs">设为封面</button>{% endif %}<button type="submit" name="action" value="remove_media:{{ item.id }}" data-action="remove_media:{{ item.id }}" formnovalidate class="workflow-button workflow-button-danger !min-h-8 !text-xs">移除暂存</button></div></div>
+				<div class="grid md:grid-cols-2 gap-3"><div><label for="media-{{ item.id }}-title" class="workflow-label">标题 / 说明</label><input id="media-{{ item.id }}-title" name="media_{{ item.id }}_title" value="{{ item.title }}" maxlength="200" class="admin-input"></div><div><label for="media-{{ item.id }}-section" class="workflow-label">研究章节</label><select id="media-{{ item.id }}-section" name="media_{{ item.id }}_section" class="admin-input"><option value="method" {% if item.section == 'method' %}selected{% endif %}>Method · 方法流程图</option><option value="framework" {% if item.section == 'framework' %}selected{% endif %}>Method · 模型框架图</option><option value="results" {% if item.section == 'results' %}selected{% endif %}>Experiments · 实验结果</option><option value="comparison" {% if item.section == 'comparison' %}selected{% endif %}>Experiments · 对比实验</option><option value="gallery" {% if item.section == 'gallery' %}selected{% endif %}>Additional evidence</option></select></div><div><label for="media-{{ item.id }}-group" class="workflow-label">数据集 / 实验组</label><input id="media-{{ item.id }}-group" name="media_{{ item.id }}_group_name" value="{{ item.group_name }}" maxlength="120" placeholder="例如 Bridge · Seen tasks" class="admin-input"></div><div><label for="media-{{ item.id }}-order" class="workflow-label">组内排序</label><input id="media-{{ item.id }}-order" type="number" min="0" max="999999" name="media_{{ item.id }}_order" value="{{ item.order }}" class="admin-input"></div></div>
+				<div class="mt-3"><label for="media-{{ item.id }}-description" class="workflow-label">补充说明</label><textarea id="media-{{ item.id }}-description" name="media_{{ item.id }}_description" rows="2" maxlength="2000" class="admin-input">{{ item.description }}</textarea></div>
+				{% for error in item.errors %}<p class="media-error mt-2" role="alert">{{ error }}</p>{% endfor %}
+			</div>{% endfor %}{% else %}<p class="workflow-help mb-4">暂无媒体。可直接在下方添加；没有媒体的项目页会自然省略对应区域。</p>{% endif %}
+			<div class="mt-5 pt-4 border-t border-base-200 dark:border-base-700"><h3 class="workflow-panel-title mb-3">添加新素材</h3><div class="grid lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)] gap-3 items-start">{% include "admin/_includes/field.html" with field=form.new_media_files %}{% include "admin/_includes/field.html" with field=form.new_media_section %}{% include "admin/_includes/field.html" with field=form.new_media_group %}</div><button type="submit" name="action" value="add_media" data-action="add_media" formnovalidate class="workflow-button" data-pending-label="上传中…">上传并加入暂存列表</button><p class="workflow-help inline ml-2">此操作不会发布项目。</p></div>
+		</div></section>
+
+		{% include "admin/_includes/research_field.html" with field=form.content preview_html=preview_html preview_field="content" section_number="06" section_title="Overview" section_description="回答研究或工程问题是什么、为什么重要、范围在哪里。LLM 摘要与标签只读取这一节。" %}
+		{% include "admin/_includes/research_field.html" with field=form.project_method preview_html=method_preview_html preview_field="project_method" section_number="07" section_title="Method" section_description="说明方法、模型和实现路径。05 中的方法图与框架图会紧邻这一节。" %}
+		{% include "admin/_includes/research_field.html" with field=form.project_experiments preview_html=experiments_preview_html preview_field="project_experiments" section_number="08" section_title="Experiments" section_description="说明实验设计与评估方式；下面的媒体按实验组紧随其后，不再混成统一画廊。" %}
+		{% include "admin/_includes/research_field.html" with field=form.project_conclusion preview_html=conclusion_preview_html preview_field="project_conclusion" section_number="08" section_title="Conclusion" section_description="总结结论、局限和后续工作；不要从图片或文件名推断未经验证的指标。" %}
+
+		<div class="workflow-actions"><a href="{% url 'admin:posts_project_changelist' %}" class="workflow-button">稍后继续（保留暂存）</a><div class="flex gap-2"><button type="submit" name="action" value="draft" data-action="draft" class="workflow-button" data-pending-label="保存中…">保存项目草稿</button><button type="submit" name="action" value="publish" data-action="publish" class="workflow-button workflow-button-primary" data-pending-label="发布中…">发布项目</button></div></div>
+	</form>
+</div>
+{% endblock %}

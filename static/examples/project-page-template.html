@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Robust Spatial Learning for Everyday Robotics</title>
+  <meta name="description" content="A project study of spatial representations, controlled experiments, and real-world robot rollouts.">
+</head>
+<body>
+  <main>
+    <section class="project-html-section">
+      <h1>Robust Spatial Learning for Everyday Robotics</h1>
+      <p>
+        This project investigates whether explicit spatial memory can help a robot
+        generalize across rearranged kitchens, changing lighting, and unfamiliar objects.
+        The approach combines calibrated observations with a compact scene representation
+        that can be updated as the robot moves.
+      </p>
+      <p>
+        The study asks two questions: does the representation improve task completion,
+        and which components contribute most to reliable recovery after a failed action?
+      </p>
+    </section>
+
+    <section class="project-html-section">
+      <h2>Method</h2>
+      <p>
+        Observations pass through a geometry-aware encoder and are written into a local
+        scene map. A policy then reasons over the map to select the next manipulation step.
+        Training uses simulated rearrangements, while evaluation includes held-out real scenes.
+      </p>
+      <figure
+        class="project-html-media project-html-wide"
+        data-section="method"
+        data-group="Pipeline"
+        data-title="Geometry-aware scene mapping pipeline"
+        data-description="Calibrated observations update a local scene map used by the manipulation policy."
+      >
+        <img src="assets/method-overview.png" alt="Diagram of observations, the scene map, and the manipulation policy" loading="lazy">
+        <figcaption class="project-html-caption">
+          The scene map preserves spatial relationships while the policy chooses each action.
+        </figcaption>
+      </figure>
+      <pre><code>scene_map = encoder.update(observation, camera_pose)
+action = policy.next_action(scene_map, task_goal)</code></pre>
+    </section>
+
+    <section class="project-html-section">
+      <h2>Experiments</h2>
+      <p>
+        We compare against a frame-only policy and an ablation without map updates.
+        Each configuration is evaluated on the same object placements with three random seeds.
+      </p>
+      <table>
+        <thead>
+          <tr><th>Configuration</th><th>Seen scenes</th><th>Unseen scenes</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Frame-only policy</td><td>62%</td><td>41%</td></tr>
+          <tr><td>Spatial memory</td><td>78%</td><td>66%</td></tr>
+        </tbody>
+      </table>
+      <div class="project-html-grid">
+        <figure
+          class="project-html-media"
+          data-section="results"
+          data-group="Held-out kitchens"
+          data-title="Success across evaluation episodes"
+          data-description="Task-completion results for the proposed representation and the frame-only baseline."
+        >
+          <img src="assets/experiment-results.png" alt="Task-completion results for seen and unseen kitchen scenes" loading="lazy">
+          <figcaption class="project-html-caption">Spatial memory improves generalization to held-out scenes.</figcaption>
+        </figure>
+        <figure
+          class="project-html-media"
+          data-section="comparison"
+          data-group="Ablation study"
+          data-title="Contribution of online map updates"
+          data-description="Removing online updates reduces recovery after objects move during an episode."
+        >
+          <img src="assets/ablation-results.webp" alt="Ablation comparison with and without online map updates" loading="lazy">
+          <figcaption class="project-html-caption">Online updates are important when the scene changes mid-task.</figcaption>
+        </figure>
+      </div>
+      <figure
+        class="project-html-media project-html-wide"
+        data-section="results"
+        data-group="Real robot rollout"
+        data-title="Recovering from a displaced target"
+        data-description="The robot updates its scene estimate and completes the task after the target object moves."
+      >
+        <video controls playsinline preload="metadata">
+          <source src="assets/rollout-demo.mp4" type="video/mp4">
+          Your browser can download the rollout video from the project media gallery.
+        </video>
+        <figcaption class="project-html-caption">A representative rollout with one recovery sequence.</figcaption>
+      </figure>
+    </section>
+
+    <section class="project-html-section">
+      <h2>Conclusion</h2>
+      <p>
+        Explicit spatial memory improved robustness in both simulated and real evaluations.
+        The largest gains appeared when objects moved after the initial observation, suggesting
+        that online updates—not additional visual features alone—drive most of the improvement.
+      </p>
+      <blockquote>
+        Reliable embodied behavior requires a representation that can change when the world changes.
+      </blockquote>
+      <ul>
+        <li>Evaluate broader object categories and longer task horizons.</li>
+        <li>Measure uncertainty explicitly before committing to an irreversible action.</li>
+        <li>Release evaluation layouts and episode definitions with the final artifacts.</li>
+      </ul>
+    </section>
+  </main>
+</body>
+</html>

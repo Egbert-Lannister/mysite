@@ -1,38 +1,28 @@
 {% extends "base.html" %}
-{% block title %}{{ category_label }} - TechBlog{% endblock %}
-
+{% block title %}{{ category_label }} · TechBlog{% endblock %}
+{% block meta_description %}{{ category_desc }}{% endblock %}
 {% block content %}
-<div class="max-w-[820px] mx-auto">
-
-	<!-- Page header — restrained editorial style, no large gradient icon -->
-	<header class="mb-8 md:mb-12 pb-6 border-b border-ink-200/70 dark:border-white/5">
-		<span class="page-eyebrow">Category</span>
-		<h1 class="page-title">{{ category_label }}</h1>
-		{% if category_desc %}
-		<p class="page-desc">{{ category_desc }}</p>
-		{% endif %}
-	</header>
-
-	{% if posts %}
-	<section class="space-y-5">
-		{% for post in posts %}
-			{% include "_includes/post_card.html" %}
-		{% endfor %}
-	</section>
-
-	{% include "_includes/pagination.html" %}
-
-	{% else %}
-	<div class="text-center py-20">
-		<div class="w-14 h-14 mx-auto mb-5 rounded-xl bg-ink-100 dark:bg-white/5 flex items-center justify-center">
-			<svg class="w-6 h-6 text-ink-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-				<path stroke-linecap="round" stroke-linejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
-			</svg>
+<header class="page-head shell">
+	<div class="page-head-grid">
+		<div>
+			<p class="eyebrow">Section</p>
+			<h1>{{ category_label }}<em>.</em></h1>
+			{% if category_desc %}<p class="lede">{{ category_desc }}</p>{% endif %}
 		</div>
-		<h3 class="text-base font-semibold text-ink-900 dark:text-ink-100 mb-1.5">No posts yet</h3>
-		<p class="text-sm text-ink-500 dark:text-ink-500">No posts in this category.</p>
+		<p class="page-count"><strong>{{ posts.paginator.count|stringformat:"02d" }}</strong>{% if category == 'projects' %}project{{ posts.paginator.count|pluralize }}{% else %}entr{{ posts.paginator.count|pluralize:"y,ies" }}{% endif %}</p>
 	</div>
+</header>
+<div class="shell">
+	{% if posts %}
+		{% if category == 'projects' %}
+		<div class="project-grid list-grid">{% for post in posts %}{% include "_includes/project_card.html" with index=forloop.counter %}{% endfor %}</div>
+		{% else %}
+		<div class="index-list flush">{% for post in posts %}{% include "_includes/post_card.html" %}{% endfor %}</div>
+		{% endif %}
+		{% include "_includes/pagination.html" %}
+	{% else %}
+		{% url 'posts:index' as home_url %}
+		{% include "_includes/empty_state.html" with empty_title="Nothing published here yet" empty_message="New entries in this section will appear here." empty_url=home_url empty_link_label="Back to home" %}
 	{% endif %}
-
 </div>
 {% endblock %}

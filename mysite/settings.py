@@ -4,6 +4,7 @@ Django settings for mysite project.
 from pathlib import Path
 import os
 import dj_database_url
+from django.templatetags.static import static
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -127,6 +128,7 @@ STORAGES = {
 
 SITE_ID = 1
 INTERNAL_IPS = ['127.0.0.1', 'localhost']
+LOGIN_REDIRECT_URL = '/admin/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -136,9 +138,14 @@ TAGGIT_TAGS_FROM_STRING = 'posts.taggit_helpers.parse_tags_allow_spaces'
 # =============================================================================
 # Upload Settings
 # =============================================================================
-UPLOAD_MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB per file
-UPLOAD_MAX_ZIP_SIZE = 50 * 1024 * 1024   # 50MB for zip
-UPLOAD_ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'}
+UPLOAD_MAX_FILE_SIZE = 10 * 1024 * 1024  # Markdown / image, 10MB per file
+UPLOAD_MAX_VIDEO_SIZE = 50 * 1024 * 1024  # Video, 50MB per file
+UPLOAD_MAX_ZIP_SIZE = 50 * 1024 * 1024   # Compressed upload, 50MB
+UPLOAD_MAX_ZIP_UNCOMPRESSED_SIZE = 150 * 1024 * 1024
+UPLOAD_MAX_ZIP_ENTRIES = 200
+UPLOAD_MAX_NESTED_ARCHIVES = 8
+UPLOAD_ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+UPLOAD_ALLOWED_VIDEO_EXTENSIONS = {'mp4', 'webm'}
 MARKDOWN_PREVIEW_MAX_CHARS = 100_000
 
 # =============================================================================
@@ -168,16 +175,31 @@ UNFOLD = {
         {"icon": "public", "title": "访问网站", "link": "/techblog/"},
     ],
     "SITE_LOGO": None,
+    "SITE_FAVICONS": [
+        {"rel": "icon", "type": "image/svg+xml", "href": lambda request: static("images/favicon.svg")},
+        {"rel": "icon", "type": "image/png", "sizes": "32x32", "href": lambda request: static("images/favicon-32.png")},
+        {"rel": "apple-touch-icon", "type": "image/png", "sizes": "180x180", "href": lambda request: static("images/apple-touch-icon.png")},
+    ],
     "SITE_SYMBOL": "article",
+    "STYLES": [lambda request: static("admin/theme.css")],
+    "DASHBOARD_CALLBACK": "mysite.admin_config.dashboard_callback",
+    "BORDER_RADIUS": "8px",
     "SHOW_HISTORY": True,
     "SHOW_VIEW_ON_SITE": True,
     "ENVIRONMENT": "mysite.admin_config.environment_callback",
     "COLORS": {
+        # Django admin's classic blue-grey palette, adapted to Unfold shades.
+        "base": {
+            "50": "248 248 248", "100": "242 242 242", "200": "232 232 232",
+            "300": "204 204 204", "400": "153 153 153", "500": "102 102 102",
+            "600": "85 85 85", "700": "51 51 51", "800": "38 38 38",
+            "900": "24 24 24", "950": "18 18 18",
+        },
         "primary": {
-            "50": "250 245 255", "100": "243 232 255", "200": "233 213 255",
-            "300": "216 180 254", "400": "192 132 252", "500": "168 85 247",
-            "600": "147 51 234", "700": "126 34 206", "800": "107 33 168",
-            "900": "88 28 135", "950": "59 7 100",
+            "50": "245 250 252", "100": "230 242 247", "200": "196 220 232",
+            "300": "155 197 214", "400": "121 174 200", "500": "68 126 155",
+            "600": "65 118 144", "700": "32 80 103", "800": "38 75 93",
+            "900": "0 60 82", "950": "0 44 61",
         },
     },
     "SIDEBAR": {
@@ -191,6 +213,7 @@ UNFOLD = {
                 "items": [
                     {"title": "文章管理", "icon": "article", "link": "/admin/posts/post/",
                      "badge": "mysite.admin_config.post_count_callback"},
+                    {"title": "项目管理", "icon": "collections_bookmark", "link": "/admin/posts/project/"},
                     {"title": "系列管理", "icon": "collections_bookmark", "link": "/admin/posts/series/"},
                     {"title": "标签管理", "icon": "label", "link": "/admin/taggit/tag/"},
                 ],
@@ -202,6 +225,8 @@ UNFOLD = {
                 "items": [
                     {"title": "上传文章", "icon": "upload_file", "link": "/admin/upload/"},
                     {"title": "新建文章", "icon": "edit_note", "link": "/admin/upload/blank/"},
+                    {"title": "上传项目", "icon": "upload_file", "link": "/admin/project-upload/"},
+                    {"title": "新建项目", "icon": "edit_note", "link": "/admin/project-upload/blank/"},
                     {"title": "访问站点", "icon": "open_in_new", "link": "/techblog/"},
                 ],
             },

@@ -1,0 +1,26 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+{% block title %}HTML 项目预览{% endblock %}
+{% block content_title %}{% endblock %}
+{% block extrahead %}{{ block.super }}<link rel="stylesheet" href="{% static 'vendor/flatpickr/flatpickr.min.css' %}"><link rel="stylesheet" href="{% static 'admin/workflow.css' %}"><script defer src="{% static 'vendor/flatpickr/flatpickr.min.js' %}"></script><script defer src="{% static 'admin/workflow.js' %}"></script>{% endblock %}
+{% block content %}
+<div class="workflow-shell !max-w-6xl">
+	<header class="workflow-header"><div><p class="page-eyebrow">Safe HTML project</p><h1 class="workflow-title">HTML 项目预览</h1><p class="workflow-subtitle">以下为清理后的页面，不会执行包内脚本或加载外部媒体。资源链接与发布信息可在保存前调整。</p></div><a href="{% url 'admin_project_upload' %}" class="workflow-button">返回创建方式</a></header>
+	{% include "admin/_includes/steps.html" with current_step=2 %}
+	{% for warning in data.warnings %}<div class="workflow-warning">{{ warning }}</div>{% endfor %}
+	<form method="post" data-workflow-form>
+		{% csrf_token %}
+		{% if form.non_field_errors %}<div class="workflow-alert" role="alert">{% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
+		<div class="grid xl:grid-cols-2 gap-4 items-start">
+			<section class="workflow-panel"><header class="workflow-panel-header"><h2 class="workflow-panel-title">01 · 基本信息</h2><p class="workflow-panel-description">标题与摘要来自 HTML 元数据，可在这里修正。</p></header><div class="workflow-panel-body">{% include "admin/_includes/field.html" with field=form.title %}{% include "admin/_includes/field.html" with field=form.slug %}{% include "admin/_includes/field.html" with field=form.description %}<div class="grid sm:grid-cols-2 gap-3">{% include "admin/_includes/field.html" with field=form.project_status %}{% include "admin/_includes/field.html" with field=form.date %}</div></div></section>
+			<section class="workflow-panel"><header class="workflow-panel-header"><h2 class="workflow-panel-title">02 · 技术栈、标签与发布</h2></header><div class="workflow-panel-body">{% include "admin/_includes/field.html" with field=form.project_tech_stack %}{% include "admin/_includes/field.html" with field=form.tags %}<label class="flex items-start gap-2 text-sm text-base-800 dark:text-base-200 cursor-pointer"><input type="checkbox" name="project_featured" value="1" {% if form.project_featured.value %}checked{% endif %} class="mt-1 rounded border-base-300 dark:border-base-600 bg-white dark:bg-base-800"><span><span class="block font-medium">设为项目精选</span><span class="workflow-help">在首页项目区与 Projects 列表优先展示。</span></span></label>{% for error in form.project_featured.errors %}<p class="workflow-error">{{ error }}</p>{% endfor %}</div></section>
+		</div>
+		<section class="workflow-panel"><header class="workflow-panel-header"><h2 class="workflow-panel-title">03 · 资源链接</h2><p class="workflow-panel-description">仅允许真实 HTTP/HTTPS 地址。正文中的资源链接也受同一协议白名单约束。</p></header><div class="workflow-panel-body"><div class="grid lg:grid-cols-3 gap-3">{% include "admin/_includes/field.html" with field=form.github_url %}{% include "admin/_includes/field.html" with field=form.paper_url %}{% include "admin/_includes/field.html" with field=form.demo_url %}</div></div></section>
+
+		<section class="workflow-panel"><header class="workflow-panel-header"><h2 class="workflow-panel-title">04 · 已清理的页面</h2><p class="workflow-panel-description">包内媒体会在保存后改写到当前项目的受控媒体 URL；公开页使用同一套网站排版。</p></header><div class="workflow-panel-body"><div class="markdown-preview project-html-preview">{{ html_preview|safe }}</div></div></section>
+
+		<section class="workflow-panel"><header class="workflow-panel-header"><h2 class="workflow-panel-title">05 · 将导入的媒体</h2><p class="workflow-panel-description">共 {{ media_items|length }} 个已引用文件；未被 HTML 引用的媒体不会导入。</p></header><div class="workflow-panel-body">{% if media_items %}<div class="grid md:grid-cols-2 gap-3">{% for item in media_items %}<div class="media-row !mb-0"><div class="flex items-start justify-between gap-3"><div class="min-w-0"><strong class="block text-sm break-all">{{ item.filename }}</strong><span class="media-metadata">{{ item.kind }}{% if item.width and item.height %} · {{ item.width }}×{{ item.height }}{% endif %}{% if item.file_size %} · {{ item.file_size|filesizeformat }}{% endif %}</span></div><span class="cat-pill">{{ item.section }}</span></div></div>{% endfor %}</div>{% else %}<p class="workflow-help">此 HTML 页面没有本地媒体引用。</p>{% endif %}</div></section>
+		<div class="workflow-actions"><a href="{% url 'admin:posts_project_changelist' %}" class="workflow-button">稍后继续（保留暂存）</a><div class="flex gap-2"><button type="submit" name="action" value="draft" data-action="draft" class="workflow-button" data-pending-label="保存中…">保存项目草稿</button><button type="submit" name="action" value="publish" data-action="publish" class="workflow-button workflow-button-primary" data-pending-label="发布中…">发布 HTML 项目</button></div></div>
+	</form>
+</div>
+{% endblock %}

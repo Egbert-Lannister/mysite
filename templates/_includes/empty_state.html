@@ -1,0 +1,6 @@
+{% comment %}Context: empty_title, empty_message, optional empty_url / empty_link_label.{% endcomment %}
+<div class="empty-state" role="status">
+	<h2>{{ empty_title|default:"Nothing here yet" }}</h2>
+	<p>{{ empty_message|default:"Published content will appear here." }}</p>
+	{% if empty_url and empty_link_label %}<a href="{{ empty_url }}" class="btn">{{ empty_link_label }}</a>{% endif %}
+</div>

@@ -1,0 +1,1363 @@
+/*
+ * Content-first technical workbench for every Unfold admin view.
+ * STYLES loads before Unfold's core CSS, so body-scoped selectors provide
+ * the specificity increase without broad !important overrides.
+ */
+
+body {
+  color-scheme: light;
+  --admin-bg: #f8f8f8;
+  --admin-surface: #ffffff;
+  --admin-surface-subtle: #f2f2f2;
+  --admin-sidebar: #417690;
+  --admin-sidebar-raised: #4a7d93;
+  --admin-sidebar-hover: #4b8198;
+  --admin-sidebar-active: #205067;
+  --admin-sidebar-heading: #ffffff;
+  --admin-sidebar-brand: #f5dd5d;
+  --admin-sidebar-text: #ffffff;
+  --admin-sidebar-muted: #eef7fa;
+  --admin-sidebar-border: #6390a5;
+  --admin-sidebar-accent: #f5dd5d;
+  --admin-header-bg: #c4dce8;
+  --admin-header-text: #264b5d;
+  --admin-heading: #333333;
+  --admin-text: #333333;
+  --admin-text-secondary: #555555;
+  --admin-text-muted: #666666;
+  --admin-border: #e8e8e8;
+  --admin-border-strong: #cccccc;
+  --admin-accent: #447e9b;
+  --admin-accent-hover: #003366;
+  --admin-accent-soft: #e8f1f5;
+  --admin-danger: #ba2121;
+  --admin-font: Inter, "SF Pro Text", "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
+  --admin-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  background: var(--admin-bg);
+  color: var(--admin-text);
+  font-family: var(--admin-font);
+  line-height: 1.5;
+  text-rendering: optimizeLegibility;
+}
+
+.dark body {
+  color-scheme: dark;
+  --admin-bg: #121212;
+  --admin-surface: #1b1b1b;
+  --admin-surface-subtle: #212121;
+  --admin-sidebar: #003c52;
+  --admin-sidebar-raised: #0b4a61;
+  --admin-sidebar-hover: #004c66;
+  --admin-sidebar-active: #264b5d;
+  --admin-sidebar-heading: #ffffff;
+  --admin-sidebar-brand: #f5dd5d;
+  --admin-sidebar-text: #f7f7f7;
+  --admin-sidebar-muted: #c4dce8;
+  --admin-sidebar-border: #35667a;
+  --admin-sidebar-accent: #f5dd5d;
+  --admin-header-bg: #003c52;
+  --admin-header-text: #c4dce8;
+  --admin-heading: #ffffff;
+  --admin-text: #eeeeee;
+  --admin-text-secondary: #e0e0e0;
+  --admin-text-muted: #bdbdbd;
+  --admin-border: #353535;
+  --admin-border-strong: #4a4a4a;
+  --admin-accent: #81d4fa;
+  --admin-accent-hover: #4ac1f7;
+  --admin-accent-soft: #003c52;
+  --admin-danger: #e35f5f;
+  /* Unfold uses primary-500 for most dark-mode text links. */
+  --color-primary-400: 129 212 250;
+  --color-primary-500: 129 212 250;
+}
+
+body #page,
+body #main,
+body.login #page {
+  background: var(--admin-bg);
+}
+
+body ::selection {
+  background: rgb(var(--color-primary-200));
+  color: rgb(var(--color-primary-950));
+}
+
+.dark body ::selection {
+  background: rgb(var(--color-primary-900));
+  color: rgb(var(--color-primary-100));
+}
+
+body :focus-visible {
+  outline-color: var(--admin-accent);
+}
+
+body a {
+  text-underline-offset: .16em;
+}
+
+body #content,
+body #content-main,
+body #changelist,
+body .result-list-wrapper {
+  min-width: 0;
+}
+
+/* Header and long-title behavior */
+body:not(.popup) #main > div:first-child {
+  border-color: var(--admin-border);
+  background: var(--admin-header-bg);
+  color: var(--admin-header-text);
+}
+body:not(.popup) #main > div:first-child #header-inner h1 {
+  color: var(--admin-header-text);
+}
+
+body #header-inner {
+  min-width: 0;
+}
+
+/* The title may shrink and ellipsize; the action group must not collapse
+   around its fixed-width buttons on narrow screens. */
+body #header-inner > div > div.ml-auto {
+  flex-shrink: 0;
+}
+
+body #header-inner h1,
+body.popup #content-main h1 {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--admin-heading);
+  font-size: 1.1rem;
+  font-weight: 650;
+  letter-spacing: -.018em;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body #header-inner h1 > span,
+body.popup #content-main h1 > span {
+  min-width: 0;
+}
+
+body .page-eyebrow {
+  color: var(--admin-accent);
+  font-size: .68rem;
+  font-weight: 650;
+  letter-spacing: .13em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+/* Django's classic blue-grey sidebar with the familiar yellow brand accent. */
+body #nav-sidebar,
+body #nav-sidebar-inner,
+body #nav-sidebar-inner > div:first-child,
+body #nav-sidebar-inner > div:first-child > div {
+  border-color: var(--admin-sidebar-border);
+  background: var(--admin-sidebar);
+}
+
+body #nav-sidebar {
+  box-shadow: none;
+}
+
+body #nav-sidebar-inner {
+  color: var(--admin-sidebar-text);
+}
+
+body #nav-sidebar-inner > div:first-child {
+  margin-bottom: 1rem;
+}
+
+body #nav-sidebar-inner > div:first-child > div:hover,
+body #nav-sidebar-inner > div:first-child > div[x-bind\:class] {
+  background: var(--admin-sidebar);
+}
+
+body #nav-sidebar-inner > div:first-child > div:hover {
+  background: var(--admin-sidebar-hover);
+}
+
+body #nav-sidebar-inner > div:first-child .bg-primary-600 {
+  border: 1px solid var(--admin-sidebar-brand);
+  border-radius: 8px;
+  background: var(--admin-sidebar-brand);
+  box-shadow: none;
+}
+
+body #site-name,
+body #site-name a {
+  color: var(--admin-sidebar-brand);
+  font-weight: 650;
+  letter-spacing: -.015em;
+}
+
+body #site-name a:hover {
+  color: #ffffff;
+}
+
+body #nav-sidebar-inner .text-subtle,
+body #nav-sidebar-inner .text-base-400 {
+  color: var(--admin-sidebar-muted);
+  letter-spacing: .015em;
+}
+
+body #nav-sidebar-inner .text-font-default-light,
+body #nav-sidebar-inner > div:last-child .text-important {
+  color: var(--admin-sidebar-text);
+}
+
+body #nav-sidebar-inner .material-symbols-outlined:not(.text-red-500) {
+  color: var(--admin-sidebar-muted);
+}
+
+body #nav-sidebar-inner .bg-primary-600 .material-symbols-outlined {
+  color: #264b5d;
+}
+
+body #nav-sidebar-apps h2 {
+  color: var(--admin-sidebar-muted);
+  font-size: .6875rem;
+  font-weight: 650;
+  letter-spacing: .075em;
+}
+
+body #nav-sidebar-apps ol {
+  gap: .2rem;
+}
+
+body #nav-sidebar-apps li a {
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--admin-sidebar-text);
+  font-size: .8125rem;
+}
+
+body #nav-sidebar-apps li a:hover {
+  background: var(--admin-sidebar-hover);
+  color: var(--admin-sidebar-heading);
+}
+
+body #nav-sidebar-apps li a.active,
+body #nav-sidebar-apps li a.active:hover {
+  border-color: #609ab6;
+  background: var(--admin-sidebar-active);
+  color: #ffffff;
+  box-shadow: inset 3px 0 0 var(--admin-sidebar-accent);
+}
+
+body #nav-sidebar-apps li a.active .material-symbols-outlined {
+  color: #c4dce8;
+}
+
+body #nav-sidebar-apps li a .bg-red-500 {
+  background: #205067;
+  color: #ffffff;
+  text-shadow: none;
+}
+
+body #nav-sidebar-apps hr {
+  border-color: var(--admin-sidebar-border);
+}
+
+body #nav-sidebar-inner > div.relative > div {
+  border-color: var(--admin-sidebar-border);
+  background: var(--admin-sidebar-raised);
+  box-shadow: none;
+}
+
+body #toolbar #changelist-search > div {
+  border-color: var(--admin-border);
+  background: var(--admin-surface);
+  box-shadow: none;
+}
+
+body #nav-filter {
+  background: transparent;
+  color: var(--admin-sidebar-text);
+}
+
+body #searchbar {
+  background: transparent;
+  color: var(--admin-text);
+}
+
+body #nav-filter::placeholder {
+  color: var(--admin-sidebar-muted);
+  opacity: 1;
+}
+
+body #nav-sidebar-inner > div:last-child {
+  border-color: var(--admin-sidebar-border);
+  background: var(--admin-sidebar);
+}
+
+body #nav-sidebar-inner > div:last-child > div:hover {
+  background: var(--admin-sidebar-hover);
+}
+
+body #nav-sidebar-inner > div:last-child > div > .bg-white {
+  background: var(--admin-sidebar-raised);
+  box-shadow: none;
+}
+
+body #nav-sidebar-inner > div:last-child > div .text-important {
+  color: var(--admin-sidebar-heading);
+}
+
+body #nav-sidebar-inner > div:last-child > div .text-subtle {
+  color: var(--admin-sidebar-muted);
+}
+
+body #nav-sidebar-inner nav,
+body #nav-sidebar-inner .absolute.bg-white,
+body .select2-container .select2-dropdown,
+body .calendarbox,
+body .clockbox {
+  border-color: var(--admin-border);
+  background: var(--admin-surface);
+  box-shadow: 0 8px 22px rgb(18 21 20 / .09);
+  color: var(--admin-text);
+}
+
+body #nav-sidebar-inner nav .text-font-default-light,
+body #nav-sidebar-inner .absolute.bg-white .text-font-default-light {
+  color: var(--admin-text);
+}
+
+.dark body #nav-sidebar-inner nav,
+.dark body #nav-sidebar-inner .absolute.bg-white,
+.dark body .select2-container .select2-dropdown,
+.dark body .calendarbox,
+.dark body .clockbox {
+  box-shadow: 0 8px 22px rgb(0 0 0 / .22);
+}
+
+/* Custom content dashboard */
+body.dashboard .dashboard-workbench {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  padding-bottom: 2rem;
+  box-sizing: border-box;
+}
+
+body.dashboard .dashboard-overview {
+  margin-bottom: 1rem;
+}
+
+body.dashboard .dashboard-section-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: .85rem;
+}
+
+body.dashboard .dashboard-section-heading > div {
+  min-width: 0;
+}
+
+body.dashboard .dashboard-section-heading .page-eyebrow {
+  margin: 0 0 .2rem;
+}
+
+body.dashboard .dashboard-section-heading h2 {
+  margin: 0;
+  color: var(--admin-heading);
+  font-size: 1rem;
+  font-weight: 650;
+  letter-spacing: -.01em;
+  line-height: 1.4;
+}
+
+body.dashboard .dashboard-section-heading p:not(.page-eyebrow) {
+  margin: .2rem 0 0;
+  color: var(--admin-text-muted);
+  font-size: .75rem;
+  line-height: 1.5;
+}
+
+body.dashboard .dashboard-data-source {
+  flex-shrink: 0;
+  color: var(--admin-text-muted);
+  font-family: var(--admin-mono);
+  font-size: .65625rem;
+  letter-spacing: .01em;
+  white-space: nowrap;
+}
+
+body.dashboard .dashboard-metrics {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: .75rem;
+}
+
+body.dashboard .dashboard-metric {
+  min-width: 0;
+  max-width: 100%;
+  padding: 1rem;
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  background: var(--admin-surface);
+  box-shadow: none;
+  box-sizing: border-box;
+}
+
+body.dashboard .dashboard-metric-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+}
+
+body.dashboard .dashboard-metric h3 {
+  margin: 0;
+  color: var(--admin-text-secondary);
+  font-size: .72rem;
+  font-weight: 650;
+  letter-spacing: .055em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+body.dashboard .dashboard-metric-link {
+  flex-shrink: 0;
+  color: var(--admin-accent);
+  font-size: .6875rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+body.dashboard .dashboard-metric-link:hover {
+  color: var(--admin-accent-hover);
+}
+
+body.dashboard .dashboard-metric-value {
+  display: block;
+  margin: .65rem 0 .3rem;
+  color: var(--admin-heading);
+  font-size: 1.75rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 650;
+  letter-spacing: -.035em;
+  line-height: 1;
+}
+
+body.dashboard .dashboard-metric > p {
+  margin: 0;
+  color: var(--admin-text-muted);
+  font-size: .7rem;
+  line-height: 1.45;
+}
+
+body.dashboard .dashboard-content-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+  min-width: 0;
+}
+
+body.dashboard .dashboard-panel {
+  min-width: 0;
+  max-width: 100%;
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  background: var(--admin-surface);
+  box-shadow: none;
+  box-sizing: border-box;
+}
+
+body.dashboard .dashboard-panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: .75rem;
+  padding: .9rem 1rem;
+  border-bottom: 1px solid var(--admin-border);
+}
+
+body.dashboard .dashboard-panel-header > div:first-child {
+  min-width: 0;
+}
+
+body.dashboard .dashboard-panel-header h2 {
+  margin: 0;
+  color: var(--admin-heading);
+  font-size: .875rem;
+  font-weight: 650;
+  letter-spacing: -.005em;
+  line-height: 1.4;
+}
+
+body.dashboard .dashboard-panel-header p {
+  margin: .2rem 0 0;
+  color: var(--admin-text-muted);
+  font-size: .7rem;
+  line-height: 1.45;
+}
+
+body.dashboard .dashboard-panel-links {
+  display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: .35rem;
+}
+
+body.dashboard .dashboard-panel-links a {
+  padding: .25rem .45rem;
+  border-radius: 5px;
+  background: var(--admin-accent-soft);
+  color: var(--admin-accent);
+  font-size: .65625rem;
+  font-weight: 600;
+  line-height: 1.4;
+  text-decoration: none;
+}
+
+body.dashboard .dashboard-panel-links a:hover {
+  color: var(--admin-accent-hover);
+  text-decoration: underline;
+  text-underline-offset: .16em;
+}
+
+body.dashboard .dashboard-record-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+body.dashboard .dashboard-record {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  min-width: 0;
+  padding: .8rem 1rem;
+  border-bottom: 1px solid var(--admin-border);
+  box-sizing: border-box;
+}
+
+body.dashboard .dashboard-record:last-child {
+  border-bottom: 0;
+}
+
+body.dashboard .dashboard-record-main {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+body.dashboard .dashboard-record-heading {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  min-width: 0;
+}
+
+body.dashboard .dashboard-record-title {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--admin-heading);
+  font-size: .8rem;
+  font-weight: 600;
+  line-height: 1.45;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.dashboard .dashboard-record-title:hover {
+  color: var(--admin-accent);
+}
+
+body.dashboard .dashboard-status {
+  flex-shrink: 0;
+  padding: .1rem .38rem;
+  border-radius: 5px;
+  font-size: .625rem;
+  font-weight: 600;
+  line-height: 1.45;
+  white-space: nowrap;
+}
+
+body.dashboard .dashboard-status-published {
+  background: var(--admin-accent-soft);
+  color: var(--admin-accent);
+}
+
+body.dashboard .dashboard-status-draft {
+  border: 1px solid var(--admin-border);
+  background: var(--admin-surface-subtle);
+  color: var(--admin-text-secondary);
+}
+
+body.dashboard .dashboard-record-meta {
+  margin: .25rem 0 0;
+  color: var(--admin-text-muted);
+  font-size: .68rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+body.dashboard .dashboard-record-action {
+  display: inline-flex;
+  flex: 0 0 2rem;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 6px;
+  color: var(--admin-text-muted);
+  text-decoration: none;
+}
+
+body.dashboard .dashboard-record-action .material-symbols-outlined {
+  font-size: 1.125rem;
+}
+
+body.dashboard .dashboard-record-action:hover {
+  background: var(--admin-accent-soft);
+  color: var(--admin-accent);
+}
+
+body.dashboard .dashboard-empty {
+  display: flex;
+  align-items: flex-start;
+  gap: .7rem;
+  min-width: 0;
+  padding: 1.25rem 1rem;
+  color: var(--admin-text-muted);
+  box-sizing: border-box;
+}
+
+body.dashboard .dashboard-empty-standalone {
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  background: var(--admin-surface);
+}
+
+body.dashboard .dashboard-empty > .material-symbols-outlined {
+  flex-shrink: 0;
+  margin-top: .05rem;
+  color: var(--admin-text-muted);
+  font-size: 1.2rem;
+}
+
+body.dashboard .dashboard-empty h3 {
+  margin: 0;
+  color: var(--admin-text-secondary);
+  font-size: .78rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+body.dashboard .dashboard-empty p {
+  margin: .2rem 0 0;
+  color: var(--admin-text-muted);
+  font-size: .7rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+body.dashboard .dashboard-quick {
+  margin-top: 1rem;
+}
+
+body.dashboard .dashboard-quick-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: .6rem;
+  min-width: 0;
+  padding: .75rem;
+  box-sizing: border-box;
+}
+
+body.dashboard .dashboard-quick-action {
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  min-width: 0;
+  max-width: 100%;
+  padding: .7rem;
+  border: 1px solid var(--admin-border);
+  border-radius: 6px;
+  background: var(--admin-surface);
+  box-shadow: none;
+  color: var(--admin-text);
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+body.dashboard .dashboard-quick-action:hover {
+  border-color: var(--admin-accent);
+  background: var(--admin-surface-subtle);
+}
+
+body.dashboard .dashboard-quick-icon {
+  display: inline-flex;
+  flex: 0 0 2.125rem;
+  align-items: center;
+  justify-content: center;
+  width: 2.125rem;
+  height: 2.125rem;
+  border-radius: 6px;
+  background: var(--admin-accent-soft);
+  color: var(--admin-accent);
+  font-size: 1.15rem;
+}
+
+body.dashboard .dashboard-quick-copy {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+body.dashboard .dashboard-quick-copy strong,
+body.dashboard .dashboard-quick-copy small {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+body.dashboard .dashboard-quick-copy strong {
+  color: var(--admin-heading);
+  font-size: .78rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+body.dashboard .dashboard-quick-copy small {
+  margin-top: .15rem;
+  color: var(--admin-text-muted);
+  font-size: .68rem;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+body.dashboard .dashboard-quick-arrow {
+  flex-shrink: 0;
+  color: var(--admin-text-muted);
+  font-size: 1.05rem;
+}
+
+body.dashboard .dashboard-quick-action:hover .dashboard-quick-arrow {
+  color: var(--admin-accent);
+}
+
+body.dashboard .dashboard-footnote {
+  margin: .75rem 0 0;
+  color: var(--admin-text-muted);
+  font-size: .65625rem;
+  line-height: 1.5;
+}
+
+@media (min-width: 640px) {
+  body.dashboard .dashboard-metrics,
+  body.dashboard .dashboard-quick-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  body.dashboard .dashboard-metrics {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  body.dashboard .dashboard-content-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  body.dashboard .dashboard-quick-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* Login, logout, and password forms */
+body.login #page > div:first-child > div:first-child {
+  margin: 5rem auto 2rem;
+  padding: 2rem;
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  background: var(--admin-surface);
+  box-shadow: none;
+}
+
+body.login #page h1 {
+  color: var(--admin-heading);
+  letter-spacing: -.02em;
+}
+
+body.login #page h1 > span:first-child {
+  margin-bottom: .55rem;
+  color: var(--admin-accent);
+  font-size: .68rem;
+  font-weight: 650;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+body.login #page h1 > span:last-child {
+  color: var(--admin-heading);
+  font-size: 1.4rem;
+  font-weight: 650;
+  line-height: 1.25;
+}
+
+body.login #page h1 > div,
+body.login #page form + div {
+  border-color: var(--admin-border);
+}
+
+body.login #page div:has(> h1) {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.25rem;
+  border-color: var(--admin-border);
+}
+
+body.login label,
+body.change-form label,
+body.popup label {
+  color: var(--admin-heading);
+  font-size: .8125rem;
+  font-weight: 600;
+}
+
+/* Inputs and form controls */
+body :is(input, textarea, select):where(:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="color"]):not(#nav-filter):not(#searchbar)),
+body input[type="color"],
+body .select2.select2-container {
+  max-width: 100%;
+  border-color: var(--admin-border-strong);
+  background-color: var(--admin-surface);
+  box-shadow: none;
+  color: var(--admin-text);
+}
+
+body input[type="checkbox"],
+body input[type="radio"] {
+  border-color: var(--admin-border-strong);
+  box-shadow: none;
+}
+
+body input::placeholder,
+body textarea::placeholder {
+  color: var(--admin-text-muted);
+  opacity: 1;
+}
+
+body input:focus,
+body textarea:focus,
+body select:focus,
+body .select2-container--focus,
+body .select2-container--open {
+  outline-color: var(--admin-accent);
+}
+
+body select option {
+  background: var(--admin-surface);
+  color: var(--admin-text);
+}
+
+body input:disabled,
+body textarea:disabled,
+body select:disabled {
+  border-color: var(--admin-border);
+  background: var(--admin-surface-subtle);
+  color: var(--admin-text-muted);
+}
+
+body .errors input,
+body .errors textarea,
+body .errors select,
+body .errors .select2.select2-container {
+  border-color: var(--admin-danger);
+}
+
+body .errorlist,
+body .errornote,
+body .help_text,
+body .helptext {
+  line-height: 1.55;
+}
+
+body .helptext,
+body .help_text,
+body .change-form .leading-relaxed.text-xs {
+  color: var(--admin-text-muted);
+}
+
+body .select2-container .select2-selection__rendered,
+body .select2-container .select2-results__option,
+body .select2-container .select2-search__field {
+  color: var(--admin-text);
+}
+
+body .select2-container .select2-results__option--highlighted[aria-selected],
+body .select2-container .select2-results__option:hover {
+  background: var(--admin-surface-subtle);
+  color: var(--admin-heading);
+}
+
+body .select2-container .select2-results__option[aria-selected="true"] {
+  color: var(--admin-accent);
+}
+
+/* Fieldsets and inlines */
+body.change-form #content-main > form > div > fieldset.module,
+body.change-form .inline-group > fieldset.module,
+body.change-form .inline-group > .inline-related > fieldset.module {
+  min-width: 0;
+  max-width: 100%;
+  padding: 1rem;
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  background: var(--admin-surface);
+  box-shadow: none;
+}
+
+body.change-form #content-main > form > div > fieldset.module > h2,
+body.change-form #content-main > form > div > fieldset.module > details > summary > h2,
+body.change-form .inline-group > fieldset.module > h2,
+body.change-form .inline-group > fieldset.module > details > summary > h2,
+body.change-form .inline-group > .inline-related > fieldset.module > h2,
+body.change-form .inline-group > .inline-related > fieldset.module > details > summary > h2 {
+  height: auto;
+  min-height: 2.75rem;
+  margin: -1rem -1rem 1rem;
+  padding: .75rem 1rem;
+  border: 0;
+  border-bottom: 1px solid var(--admin-border);
+  border-radius: .5rem .5rem 0 0;
+  background: var(--admin-surface-subtle);
+  color: var(--admin-heading);
+  font-size: .82rem;
+  font-weight: 650;
+  letter-spacing: .01em;
+}
+
+.dark body.change-form #content-main > form > div > fieldset.module > h2,
+.dark body.change-form #content-main > form > div > fieldset.module > details > summary > h2,
+.dark body.change-form .inline-group > fieldset.module > h2,
+.dark body.change-form .inline-group > fieldset.module > details > summary > h2,
+.dark body.change-form .inline-group > .inline-related > fieldset.module > h2,
+.dark body.change-form .inline-group > .inline-related > fieldset.module > details > summary > h2 {
+  background: var(--admin-bg);
+}
+
+body.change-form .inline-related,
+body.change-form .inline-related > div,
+body.change-form .form-row,
+body.change-form .form-row > div,
+body.change-form .grow.relative {
+  min-width: 0;
+  max-width: 100%;
+}
+
+body.change-form .inline-group > fieldset.module > div,
+body.change-form .inline-group > .inline-related > fieldset.module > div,
+body.change-form .inline-related h3,
+body.change-form .add-row,
+body.change-form .add-row a {
+  border-color: var(--admin-border);
+}
+
+body.change-form .inline-related h3 {
+  background: var(--admin-surface-subtle);
+  color: var(--admin-heading);
+}
+
+body.change-form .inline-related h3 a,
+body.change-form .add-row a {
+  color: var(--admin-accent);
+}
+
+body.change-form .add-row,
+body.change-form .add-row a {
+  background: var(--admin-surface);
+  box-shadow: none;
+}
+
+body.change-form .tabular-table,
+body.change-form .tabular-table tbody,
+body.change-form .tabular-table td,
+body.change-form .tabular-table th {
+  border-color: var(--admin-border);
+}
+
+body.change-form .tabular-table tbody {
+  background: var(--admin-surface);
+}
+
+body.change-form .tabular-table thead,
+body.change-form .tabular-table thead th {
+  background: var(--admin-surface-subtle);
+  color: var(--admin-heading);
+}
+
+/* Buttons and object tools */
+body button.bg-primary-600,
+body a.bg-primary-600,
+body input[type="submit"],
+body .submit-row,
+body #submit-row button[name="_save"] {
+  border-color: rgb(var(--color-primary-600));
+  background: rgb(var(--color-primary-600));
+  box-shadow: none;
+  color: #ffffff;
+}
+
+body button.bg-primary-600:hover,
+body a.bg-primary-600:hover,
+body input[type="submit"]:hover,
+body .submit-row:hover,
+body #submit-row button[name="_save"]:hover {
+  border-color: rgb(var(--color-primary-700));
+  background: rgb(var(--color-primary-700));
+  color: #ffffff;
+}
+
+body .password-reset-link,
+body #submit-row button:not([name="_save"]),
+body #submit-row a:not(.bg-red-600),
+body .object-tools a:not(.bg-primary-600),
+body .add-row a {
+  border-color: var(--admin-border-strong);
+  background: var(--admin-surface);
+  box-shadow: none;
+  color: var(--admin-text-secondary);
+}
+
+body .password-reset-link:hover,
+body #submit-row button:not([name="_save"]):hover,
+body #submit-row a:not(.bg-red-600):hover,
+body .object-tools a:not(.bg-primary-600):hover,
+body .add-row a:hover {
+  border-color: var(--admin-accent);
+  background: var(--admin-surface-subtle);
+  color: var(--admin-accent);
+}
+
+body #submit-row > div,
+body.change-list #main > div:last-child {
+  border-color: var(--admin-border);
+  background: var(--admin-bg);
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+body #submit-row > div::after,
+body.change-list #main > div:last-child::after {
+  display: none;
+}
+
+body #modal-overlay,
+body #changelist-filter {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* Change lists, filters, and tables */
+body #changelist .module,
+body #changelist-form > div.overflow-x-auto,
+body #changelist-filter > div:last-child {
+  border-color: var(--admin-border);
+  background: var(--admin-surface);
+  box-shadow: none;
+}
+
+body #changelist-filter > div:last-child {
+  border-radius: .5rem;
+}
+
+body #changelist-filter h2,
+body #changelist-filter h3,
+body #changelist-filter summary {
+  color: var(--admin-heading);
+}
+
+body #changelist-filter a:hover {
+  color: var(--admin-accent);
+}
+
+body #result_list,
+body #result_list tr,
+body #result_list th,
+body #result_list td {
+  border-color: var(--admin-border);
+}
+
+body #result_list tr {
+  background: var(--admin-surface);
+  box-shadow: none;
+}
+
+body #result_list th a {
+  color: var(--admin-heading);
+  font-weight: 600;
+}
+
+body #result_list a:hover {
+  color: var(--admin-accent);
+}
+
+body #result_list .action-checkbox,
+body #result_list .action-checkbox-column {
+  color: var(--admin-text-muted);
+}
+
+@media (min-width: 1024px) {
+  body #changelist-form > div.overflow-x-auto {
+    border-radius: .5rem;
+  }
+
+  body #result_list thead,
+  body #result_list thead tr,
+  body #result_list thead th {
+    background: var(--admin-surface-subtle);
+  }
+
+  body #result_list thead th {
+    padding-top: .7rem;
+    padding-bottom: .7rem;
+    border-bottom: 1px solid var(--admin-border);
+    color: var(--admin-text-secondary);
+    font-size: .72rem;
+    font-weight: 650;
+    letter-spacing: .035em;
+  }
+
+  body #result_list tbody,
+  body #result_list tbody:nth-child(even) {
+    background: var(--admin-surface);
+    box-shadow: none;
+  }
+
+  body #result_list tbody:hover,
+  body #result_list tbody:hover tr {
+    background: var(--admin-bg);
+    box-shadow: none;
+  }
+
+  body #result_list tbody td,
+  body #result_list tbody th {
+    padding-top: .7rem;
+    padding-bottom: .7rem;
+  }
+}
+
+/* Pagination */
+body.change-list #main > div:last-child a,
+body.change-list #main > div:last-child span.text-primary-600 {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  min-height: 2rem;
+  padding: .25rem .45rem;
+  border: 1px solid transparent;
+  border-radius: .4rem;
+  color: var(--admin-text-secondary);
+  text-decoration: none;
+}
+
+body.change-list #main > div:last-child a:hover {
+  border-color: var(--admin-border);
+  background: var(--admin-surface-subtle);
+  color: var(--admin-accent);
+}
+
+body.change-list #main > div:last-child span.text-primary-600 {
+  border-color: rgb(var(--color-primary-200));
+  background: var(--admin-accent-soft);
+  color: var(--admin-accent);
+  font-weight: 650;
+}
+
+.dark body.change-list #main > div:last-child span.text-primary-600 {
+  border-color: rgb(var(--color-primary-800));
+}
+
+/* Markdown editor/preview injected by the existing post/project form. */
+body.change-form textarea#id_content {
+  background: var(--admin-surface);
+  color: var(--admin-text);
+  font-family: var(--admin-mono);
+  font-size: .8125rem;
+  line-height: 1.6;
+}
+
+body.change-form .post-md-preview-toolbar {
+  color: var(--admin-text-muted);
+}
+
+body.change-form .post-md-preview-toolbar strong {
+  color: var(--admin-heading);
+  font-weight: 600;
+}
+
+body.change-form .post-md-preview-pane {
+  border-color: var(--admin-border);
+  border-radius: .45rem;
+  background: var(--admin-bg);
+  color: var(--admin-text);
+  line-height: 1.75;
+}
+
+body.change-form .post-md-preview-pane h1,
+body.change-form .post-md-preview-pane h2,
+body.change-form .post-md-preview-pane h3,
+body.change-form .post-md-preview-pane h4 {
+  color: var(--admin-heading);
+  font-weight: 650;
+  letter-spacing: -.015em;
+}
+
+body.change-form .post-md-preview-pane a {
+  color: var(--admin-accent);
+}
+
+body.change-form .post-md-preview-pane pre {
+  border: 1px solid var(--admin-border);
+  border-radius: .4rem;
+  background: var(--admin-surface-subtle);
+  color: var(--admin-text);
+}
+
+body.change-form .post-md-preview-pane code {
+  font-family: var(--admin-mono);
+}
+
+body.change-form .post-md-preview-pane th,
+body.change-form .post-md-preview-pane td {
+  border-color: var(--admin-border-strong);
+}
+
+body.change-form .post-md-preview-pane th {
+  background: var(--admin-surface-subtle);
+  color: var(--admin-heading);
+}
+
+body.change-form .post-md-preview-pane blockquote {
+  border-color: var(--admin-border-strong);
+  color: var(--admin-text-secondary);
+}
+
+/* Keep existing mobile layout fixes; never mask overflow on the whole page. */
+@media (max-width: 1023px) {
+  body #result_list tr {
+    border-radius: .45rem;
+  }
+}
+
+@media (max-width: 767px) {
+  body #header-inner h1,
+  body.popup #content-main h1 {
+    font-size: .9375rem;
+    letter-spacing: -.01em;
+  }
+
+  body.login #page > div:first-child > div:first-child {
+    margin-top: 4.5rem;
+    padding: 1.25rem;
+  }
+
+  body.dashboard .dashboard-section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: .3rem;
+  }
+
+  body.dashboard .dashboard-data-source {
+    white-space: normal;
+  }
+}
+
+@media (max-width: 639px) {
+  body.dashboard .dashboard-panel-header {
+    gap: .55rem;
+    padding: .8rem .75rem;
+  }
+
+  body.dashboard .dashboard-panel-links {
+    flex-shrink: 1;
+    justify-content: flex-start;
+  }
+
+  body.dashboard .dashboard-record {
+    gap: .5rem;
+    padding: .75rem;
+  }
+
+  body.dashboard .dashboard-record-action {
+    flex-basis: 1.75rem;
+    width: 1.75rem;
+  }
+
+  body.dashboard .dashboard-quick-grid {
+    padding: .625rem;
+  }
+
+  body.change-form fieldset.module,
+  body.change-form .inline-group,
+  body.change-form .inline-related,
+  body.change-form .form-row,
+  body.change-form .form-row > div,
+  body.change-form .field-box,
+  body.change-form .grow.relative,
+  body.change-form .related-widget-wrapper,
+  body.change-form input,
+  body.change-form textarea,
+  body.change-form select {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  body.change-form input[type="file"] {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  body.change-form #content-main > form > div > fieldset.module,
+  body.change-form .inline-group > fieldset.module,
+  body.change-form .inline-group > .inline-related > fieldset.module {
+    padding: .75rem;
+  }
+
+  body.change-form #content-main > form > div > fieldset.module > h2,
+  body.change-form #content-main > form > div > fieldset.module > details > summary > h2,
+  body.change-form .inline-group > fieldset.module > h2,
+  body.change-form .inline-group > fieldset.module > details > summary > h2,
+  body.change-form .inline-group > .inline-related > fieldset.module > h2,
+  body.change-form .inline-group > .inline-related > fieldset.module > details > summary > h2 {
+    margin: -.75rem -.75rem .85rem;
+    padding: .7rem .75rem;
+  }
+}
+/* Legible navigation, records, and actions on every screen size. */
+body #nav-sidebar-apps li a {
+  min-height: 44px;
+  align-items: center;
+  font-size: .95rem;
+  line-height: 1.45;
+}
+body #nav-sidebar-apps h2 { font-size: .78rem; }
+body.dashboard .dashboard-section-heading h2 { font-size: 1.5rem; }
+body.dashboard .dashboard-section-heading p { font-size: .88rem; }
+body.dashboard .dashboard-metric-topline h3 { font-size: .85rem; }
+body.dashboard .dashboard-metric > p { font-size: .8rem; line-height: 1.55; }
+body.dashboard .dashboard-metric-link { font-size: .78rem; }
+body.dashboard .dashboard-panel-header h2 { font-size: 1.05rem; }
+body.dashboard .dashboard-panel-header p { font-size: .8rem; }
+body.dashboard .dashboard-record-title { font-size: .9rem; line-height: 1.55; }
+body.dashboard .dashboard-record-meta { font-size: .76rem; line-height: 1.55; }
+body.dashboard .dashboard-status { font-size: .72rem; }
+body.dashboard .dashboard-quick-copy strong { font-size: .9rem; line-height: 1.5; }
+body.dashboard .dashboard-quick-copy small { font-size: .78rem; line-height: 1.5; }
+body.dashboard .dashboard-footnote { font-size: .76rem; }
+body.change-list #changelist-form table th,
+body.change-list #changelist-form table td { font-size: .85rem; line-height: 1.55; }
+body.change-form label { font-size: .85rem; }
+body.change-form .help { font-size: .78rem; line-height: 1.55; }

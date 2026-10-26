@@ -1,133 +1,28 @@
 {% extends "admin/base_site.html" %}
-{% load i18n %}
-
+{% load static %}
 {% block title %}上传文章{% endblock %}
 {% block content_title %}{% endblock %}
-
+{% block extrahead %}{{ block.super }}<link rel="stylesheet" href="{% static 'admin/workflow.css' %}"><script defer src="{% static 'admin/workflow.js' %}"></script>{% endblock %}
 {% block content %}
-<div class="container mx-auto max-w-3xl">
-	<!-- Header -->
-	<div class="flex items-center justify-between mb-6">
-		<div>
-			<h1 class="text-xl font-semibold text-base-900 dark:text-base-100">上传文章</h1>
-			<p class="text-sm text-base-500 dark:text-base-400 mt-1">上传 Markdown / Notion 导出 ZIP，或直接在线新建一篇空白文章</p>
-		</div>
-		<a href="{% url 'admin:posts_post_changelist' %}" class="text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline">
-			← 返回文章列表
-		</a>
-	</div>
-
-	{% if messages %}
-	<div class="mb-6 space-y-2">
-		{% for message in messages %}
-		<div class="rounded-md border px-4 py-3 text-sm
-			{% if message.tags == 'error' %}border-red-300 bg-red-50 text-red-800 dark:border-red-500/30 dark:bg-red-900/20 dark:text-red-300
-			{% elif message.tags == 'warning' %}border-yellow-300 bg-yellow-50 text-yellow-800 dark:border-yellow-500/30 dark:bg-yellow-900/20 dark:text-yellow-300
-			{% else %}border-green-300 bg-green-50 text-green-800 dark:border-green-500/30 dark:bg-green-900/20 dark:text-green-300{% endif %}">
-			{{ message }}
-		</div>
-		{% endfor %}
-	</div>
-	{% endif %}
-
-	<!-- Steps -->
-	<div class="flex items-center gap-2 mb-8 text-xs font-medium">
-		<span class="flex items-center gap-1.5 text-primary-600 dark:text-primary-400">
-			<span class="w-6 h-6 rounded-full bg-primary-600 text-white flex items-center justify-center text-xs font-bold">1</span>
-			上传文件
-		</span>
-		<span class="flex-1 h-px bg-base-200 dark:bg-base-700"></span>
-		<span class="flex items-center gap-1.5 text-base-400">
-			<span class="w-6 h-6 rounded-full bg-base-200 dark:bg-base-700 text-base-400 flex items-center justify-center text-xs">2</span>
-			预览编辑
-		</span>
-		<span class="flex-1 h-px bg-base-200 dark:bg-base-700"></span>
-		<span class="flex items-center gap-1.5 text-base-400">
-			<span class="w-6 h-6 rounded-full bg-base-200 dark:bg-base-700 text-base-400 flex items-center justify-center text-xs">3</span>
-			发布
-		</span>
-	</div>
-
-	<!-- Upload form -->
-	<form method="post" enctype="multipart/form-data">
+<div class="workflow-shell !max-w-3xl">
+	<header class="workflow-header"><div><h1 class="workflow-title">上传文章</h1><p class="workflow-subtitle">导入 Markdown / Notion ZIP，或从空白文章开始。项目请使用独立的项目流程。</p></div><a href="{% url 'admin:posts_post_changelist' %}" class="workflow-button">返回文章管理</a></header>
+	{% include "admin/_includes/steps.html" with current_step=1 %}
+	{% if has_draft %}<div class="workflow-warning">有一份尚未完成的文章预览。<a href="{% url 'admin_upload_preview' %}" class="font-medium underline">继续编辑</a>；成功导入新文件后才会替换它。</div>{% endif %}
+	{% if error %}<div class="workflow-alert" role="alert">{{ error }}</div>{% endif %}
+	<form method="post" enctype="multipart/form-data" data-workflow-form>
 		{% csrf_token %}
-		<div class="rounded-md border border-base-200 dark:border-base-700 bg-white dark:bg-base-900 shadow-sm">
-			<div class="border-b border-base-200 dark:border-base-700 px-4 py-3">
-				<h2 class="text-sm font-semibold text-base-900 dark:text-base-100">选择文件</h2>
+		<section class="workflow-panel"><header class="workflow-panel-header"><h2 class="workflow-panel-title">选择文章文件</h2><p class="workflow-panel-description">上传后先进入预览，不会直接发布或覆盖同 slug 内容。</p></header><div class="workflow-panel-body">
+			<label for="file-input" class="workflow-label">Markdown / ZIP <span class="workflow-required">*</span></label>
+			<div class="workflow-dropzone" id="drop-zone">
+				<input id="file-input" name="upload_file" type="file" accept=".md,.zip" required class="admin-input !border-0 !px-0 !bg-transparent">
+				<p id="file-name" class="mt-2 text-xs text-base-600 dark:text-base-300">点击选择文件或拖拽到此处</p>
 			</div>
-			<div class="p-6">
-				<div class="border-2 border-dashed border-base-300 dark:border-base-600 rounded-lg py-10 px-6 text-center hover:border-primary-400 dark:hover:border-primary-500 transition-colors" id="drop-zone">
-					<input type="file" name="upload_file" accept=".md,.zip" required class="hidden" id="file-input" onchange="updateFileName(this)">
-					<label for="file-input" class="cursor-pointer">
-						<div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
-							<svg width="40" height="40" style="width:40px;height:40px;color:#9ca3af;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
-							</svg>
-							<div>
-								<p style="font-size:14px;font-weight:500;" id="file-name">点击选择文件或拖拽到此处</p>
-								<p style="font-size:12px;color:#9ca3af;margin-top:4px;">.md 文件 / Notion 导出 .zip 包（含图片）</p>
-							</div>
-						</div>
-					</label>
-				</div>
-			</div>
-		</div>
-
-		<div class="mt-4 flex justify-end">
-			<button type="submit" class="inline-flex items-center gap-2 rounded-md bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 transition-colors">
-				下一步：预览与编辑
-				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-			</button>
-		</div>
+			<p class="workflow-help">Markdown 最大 10MB；ZIP 最大 50MB，嵌套解压总计 150MB / 200 个条目。</p>
+		</div></section>
+		<div class="flex justify-end"><button type="submit" class="workflow-button workflow-button-primary" data-pending-label="正在解析…">下一步：预览与编辑 →</button></div>
 	</form>
-
-	<!-- OR divider -->
-	<div class="flex items-center gap-3 my-6">
-		<span class="flex-1 h-px bg-base-200 dark:bg-base-700"></span>
-		<span class="text-xs uppercase tracking-wider text-base-400 dark:text-base-500">或者</span>
-		<span class="flex-1 h-px bg-base-200 dark:bg-base-700"></span>
-	</div>
-
-	<!-- Compose blank post -->
-	<a href="{% url 'admin_upload_blank' %}" class="block rounded-md border border-dashed border-base-300 dark:border-base-600 bg-white dark:bg-base-900 px-6 py-5 text-center hover:border-primary-400 dark:hover:border-primary-500 hover:bg-primary-50/30 dark:hover:bg-primary-900/10 transition-colors group">
-		<div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
-			<svg width="36" height="36" style="width:36px;height:36px;color:rgb(var(--color-primary-500));" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v16m8-8H4"/>
-			</svg>
-			<div>
-				<p class="text-sm font-semibold text-base-900 dark:text-base-100 group-hover:text-primary-600 dark:group-hover:text-primary-400">不上传文件，直接在线编辑</p>
-				<p class="text-xs text-base-500 dark:text-base-400 mt-1">进入编辑器，手动填写元数据并撰写正文</p>
-			</div>
-		</div>
-	</a>
-
-	<!-- Help text -->
-	<div class="mt-6 rounded-md border border-base-200 dark:border-base-700 bg-white dark:bg-base-900 shadow-sm">
-		<div class="border-b border-base-200 dark:border-base-700 px-4 py-3">
-			<h2 class="text-sm font-semibold text-base-900 dark:text-base-100">格式说明</h2>
-		</div>
-		<div class="px-4 py-3 text-sm text-base-600 dark:text-base-400 space-y-2">
-			<p>• <strong>带 YAML front matter 的 .md 文件</strong> — 元数据（标题、分类、标签等）自动解析</p>
-			<p>• <strong>Notion 导出 .zip 包</strong> — 标题从 # 标题提取，图片自动处理；自动识别 Notion 双层嵌套 ZIP</p>
-			<p>• <strong>在线新建</strong> — 不上传文件直接进入编辑器</p>
-			<p>• 单文件限制 10MB，ZIP 限制 50MB</p>
-		</div>
-	</div>
+	<div class="my-5 flex items-center gap-3"><span class="flex-1 h-px bg-base-200 dark:bg-base-700"></span><span class="text-xs text-base-500">或者</span><span class="flex-1 h-px bg-base-200 dark:bg-base-700"></span></div>
+	<a href="{% url 'admin_upload_blank' %}" class="workflow-panel block p-5 hover:border-primary-500"><h2 class="workflow-panel-title">从空白文章开始</h2><p class="workflow-panel-description">手动填写元数据和正文；默认先保存草稿，也可以直接发布。</p></a>
+	<details class="mt-5 text-xs text-base-500 dark:text-base-400"><summary class="cursor-pointer min-h-9 flex items-center">文件格式与安全说明</summary><div class="pl-1 pb-3 leading-6"><p>ZIP 中需包含一个 .md，可带 PNG/JPEG/GIF/WebP 图片。支持 Notion 嵌套 ZIP（最多 3 层 / 8 个内包）。</p><p>不支持脚本、可执行 HTML 或任意网页包；Markdown 原始 HTML 在预览和前台均经允许列表清理。</p></div></details>
 </div>
-
-<script>
-function updateFileName(input) {
-	const name = input.files[0]?.name;
-	if (name) {
-		document.getElementById('file-name').textContent = name;
-		document.getElementById('drop-zone').classList.add('border-primary-400','dark:border-primary-500');
-		document.getElementById('drop-zone').classList.remove('border-base-300','dark:border-base-600');
-	}
-}
-const dz = document.getElementById('drop-zone');
-['dragenter','dragover','dragleave','drop'].forEach(e => dz.addEventListener(e, ev => { ev.preventDefault(); ev.stopPropagation(); }));
-['dragenter','dragover'].forEach(e => dz.addEventListener(e, () => { dz.classList.add('border-primary-400','bg-primary-50','dark:bg-primary-900/20'); }));
-['dragleave','drop'].forEach(e => dz.addEventListener(e, () => { dz.classList.remove('border-primary-400','bg-primary-50','dark:bg-primary-900/20'); }));
-dz.addEventListener('drop', e => { const fi = document.getElementById('file-input'); fi.files = e.dataTransfer.files; updateFileName(fi); });
-</script>
 {% endblock %}

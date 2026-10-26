@@ -1,0 +1,8 @@
+{% if toc_items %}
+<aside class="article-aside" aria-label="Table of contents">
+	<div class="toc">
+		<p class="eyebrow">On this page</p>
+		<nav>{% for item in toc_items %}<a href="#{{ item.anchor }}" data-toc-link class="toc-item toc-l{{ item.level }}">{{ item.title }}</a>{% endfor %}</nav>
+	</div>
+</aside>
+{% endif %}

@@ -3,14 +3,39 @@
 
 {% block extrahead %}{{ block.super }}
 <link rel="stylesheet" href="{% static 'vendor/katex/katex.min.css' %}">
+<script defer src="{% static 'admin/workflow.js' %}"></script>
 <style>
 /* 编辑页内容区加宽（Unfold 在 change_form 下往往仍用 container 限制宽度） */
-body.app-posts.model-post.change-form #content {
+body.app-posts.model-post.change-form #content,
+body.app-posts.model-project.change-form #content {
 	max-width: min(96rem, 100%) !important;
 	width: 100%;
 }
+/* 长媒体路径与原生文件控件不能撑破移动端字段集。 */
+.change-form fieldset.module,
+.change-form .inline-group,
+.change-form .inline-related {
+	min-width: 0;
+	max-width: 100%;
+}
+.change-form input[type="file"] {
+	display: block;
+	width: 100%;
+	max-width: 100%;
+	min-width: 0;
+	box-sizing: border-box;
+}
+.change-form .grow.relative > a,
+.change-form .field-project_cover a,
+.change-form .field-file a {
+	min-width: 0;
+	max-width: 100%;
+	white-space: normal;
+	overflow-wrap: anywhere;
+	word-break: break-word;
+}
 /* 摘要：全宽，可纵向拉伸 */
-.change-form.model-post textarea#id_description {
+.change-form textarea#id_description {
 	width: 100% !important;
 	max-width: none !important;
 	min-width: 0 !important;
@@ -22,7 +47,7 @@ body.app-posts.model-post.change-form #content {
 	line-height: 1.5;
 }
 /* 正文编辑区：与预览同高、底边对齐（由脚本包在 .post-md-editor-col 内） */
-.change-form.model-post textarea#id_content {
+.change-form textarea#id_content {
 	width: 100% !important;
 	max-width: none !important;
 	min-width: 0 !important;
@@ -48,7 +73,7 @@ body.app-posts.model-post.change-form #content {
 }
 @media (max-width: 1100px) {
 	.post-md-preview-wrap {
-		grid-template-columns: 1fr;
+		grid-template-columns: minmax(0, 1fr);
 		height: auto;
 		min-height: min(70vh, 44rem);
 	}
@@ -56,6 +81,7 @@ body.app-posts.model-post.change-form #content {
 .post-md-editor-col {
 	display: flex;
 	flex-direction: column;
+	min-width: 0;
 	min-height: 0;
 	min-height: min(70vh, 44rem);
 }

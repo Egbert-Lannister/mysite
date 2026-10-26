@@ -1,0 +1,17 @@
+<figure class="project-media-figure{% if item.width and item.width < 640 %} project-media-low-res{% endif %}">
+	<div class="project-media-frame">
+		{% if item.is_video %}
+		<video controls playsinline preload="metadata" aria-label="{{ item.title }}">
+			<source src="{{ item.file.url }}">
+			Your browser cannot play this video. <a href="{{ item.file.url }}">Download {{ item.title }}</a>.
+		</video>
+		{% else %}
+		<a href="{{ item.file.url }}" target="_blank" rel="noopener" aria-label="Open full image: {{ item.title }}"><img src="{{ item.file.url }}" alt="{{ item.title }}" loading="lazy"{% if item.width and item.height %} width="{{ item.width }}" height="{{ item.height }}"{% endif %}></a>
+		{% endif %}
+	</div>
+	<figcaption class="project-media-caption">
+		{% if group_title %}<span class="project-media-group-label">{{ group_title }}</span>{% endif %}
+		<strong>{{ item.title }}</strong>
+		{% if item.description %}<span class="project-media-description">{{ item.description }}</span>{% endif %}
+	</figcaption>
+</figure>

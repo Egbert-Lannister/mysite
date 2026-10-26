@@ -5,13 +5,15 @@ from pathlib import Path
 
 from django.conf import settings
 from django.contrib import messages
+from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import Prefetch, Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
-from .models import Post, Series
+from .models import Post, ProjectMedia, Series
+from .project_layout import build_media_sections, layout_media_group
 from .services import (
     ALLOWED_IMAGE_EXTENSIONS,
     generate_summary,
@@ -25,12 +27,43 @@ from .utils import render_markdown_with_toc
 # ---------------------------------------------------------------------------
 # Public views
 # ---------------------------------------------------------------------------
+def _require_any_permission(request, *permissions):
+    if not any(request.user.has_perm(permission) for permission in permissions):
+        raise PermissionDenied
+
+
+PROJECT_CARD_MEDIA_PRIORITY = {"framework": 0, "method": 1, "results": 2, "comparison": 3, "gallery": 4}
+
+
+def _project_card_prefetch():
+    return Prefetch(
+        "project_media",
+        queryset=ProjectMedia.objects.filter(kind="image").order_by("order", "id"),
+        to_attr="card_images",
+    )
+
+
+def _assign_project_card_images(projects):
+    for project in projects:
+        images = sorted(project.card_images, key=lambda item: (PROJECT_CARD_MEDIA_PRIORITY.get(item.section, 5), item.order, item.pk))
+        project.card_image = images[0] if images else None
+
+
 def index(request):
-    posts = Post.objects.filter(published=True).order_by("-date")[:6]
+    published = Post.objects.filter(published=True).select_related("series").prefetch_related("tags")
+    post_list = list(published.exclude(category="projects").order_by("-date")[:7])
+    projects = list(
+        published.filter(category="projects")
+        .prefetch_related(_project_card_prefetch())
+        .order_by("-project_featured", "-date")[:3]
+    )
+    _assign_project_card_images(projects)
     featured_series = Series.objects.filter(is_featured=True).order_by("order")[:3]
 
     return render(request, "index.html", {
-        "posts": posts,
+        "lead_post": post_list[0] if post_list else None,
+        "posts": post_list[1:],
+        "projects": projects,
         "featured_series": featured_series,
     })
 
@@ -44,9 +77,15 @@ CATEGORY_META = {
 
 
 def category_list(request, category: str):
-    qs = Post.objects.filter(published=True, category=category).order_by("-date")
+    qs = Post.objects.filter(published=True, category=category).select_related("series").prefetch_related("tags")
+    if category == "projects":
+        qs = qs.prefetch_related(_project_card_prefetch())
+    ordering = ("-project_featured", "-date") if category == "projects" else ("-date",)
+    qs = qs.order_by(*ordering)
     paginator = Paginator(qs, 10)
     posts = paginator.get_page(request.GET.get("page"))
+    if category == "projects":
+        _assign_project_card_images(posts.object_list)
     meta = CATEGORY_META.get(category, {"label": category.title(), "desc": ""})
     return render(request, "category.html", {
         "posts": posts,
@@ -57,7 +96,7 @@ def category_list(request, category: str):
 
 
 def tag_list(request, tag: str):
-    qs = Post.objects.filter(published=True, tags__name__in=[tag]).order_by("-date")
+    qs = Post.objects.filter(published=True, tags__name__in=[tag]).select_related("series").prefetch_related("tags").order_by("-date").distinct()
     paginator = Paginator(qs, 10)
     posts = paginator.get_page(request.GET.get("page"))
     return render(request, "tag.html", {"posts": posts, "tag": tag})
@@ -84,6 +123,9 @@ def search(request):
                 Q(title__icontains=query) | Q(description__icontains=query) | Q(content__icontains=query),
                 published=True,
             ).order_by("-date")
+    if query:
+        posts = posts.select_related("series").prefetch_related("tags")
+    posts = Paginator(posts, 10).get_page(request.GET.get("page"))
     return render(request, "search.html", {"posts": posts, "query": query})
 
 
@@ -104,6 +146,8 @@ def series_detail(request, slug: str):
 
 def post_detail(request, slug: str):
     post = get_object_or_404(Post, slug=slug, published=True)
+    if post.category == "projects":
+        return redirect("posts:project_detail", slug=post.slug)
     html, toc_items = render_markdown_with_toc(post.content)
 
     giscus_config = {
@@ -147,6 +191,60 @@ def post_detail(request, slug: str):
         "giscus": giscus_config,
         "giscus_enabled": giscus_enabled,
         "series_context": series_context,
+    })
+
+
+def project_detail(request, slug: str):
+    project = get_object_or_404(Post, slug=slug, category="projects", published=True)
+    is_html_project = project.project_content_mode == "html"
+    media = list(project.project_media.all())
+    method_media = []
+    framework_media = []
+    sections = []
+    method_html = experiments_html = conclusion_html = ""
+    toc_items = []
+
+    if is_html_project:
+        from .html_import import sanitize_project_html
+        html = sanitize_project_html(project.content)
+        hero_media = None
+        if project.project_cover:
+            hero_media = {"url": project.project_cover.url, "title": f"{project.title} cover", "description": project.description}
+    else:
+        html, toc_items = render_markdown_with_toc(project.content)
+        method_html = render_markdown_with_toc(project.project_method)[0] if project.project_method.strip() else ""
+        experiments_html = render_markdown_with_toc(project.project_experiments)[0] if project.project_experiments.strip() else ""
+        conclusion_html = render_markdown_with_toc(project.project_conclusion)[0] if project.project_conclusion.strip() else ""
+        method_media = [item for item in media if item.section == "method"]
+        framework_media = [item for item in media if item.section == "framework"]
+        sections = build_media_sections(media)
+        hero_media = None
+        if project.project_cover:
+            hero_media = {"url": project.project_cover.url, "title": f"{project.title} cover", "description": project.description}
+        else:
+            candidates = framework_media or method_media
+            if candidates:
+                item = candidates.pop(0)
+                hero_media = {"url": item.file.url, "title": item.title, "description": item.description}
+
+    citation_url = project.paper_url or project.demo_url or project.github_url
+    citation = None
+    if citation_url:
+        safe_title = project.title.replace("{", "").replace("}", "")
+        citation = f"@misc{{{project.slug},\n  title = {{{safe_title}}},\n  year = {{{project.date.year}}},\n  url = {{{citation_url}}}\n}}"
+    return render(request, "project_detail.html", {
+        "project": project,
+        "html": html,
+        "toc_items": toc_items,
+        "is_html_project": is_html_project,
+        "hero_media": hero_media,
+        "method_html": method_html,
+        "experiments_html": experiments_html,
+        "conclusion_html": conclusion_html,
+        "method_media_rows": layout_media_group(method_media),
+        "framework_media_rows": layout_media_group(framework_media),
+        "media_sections": sections,
+        "citation": citation,
     })
 
 
@@ -199,6 +297,100 @@ def admin_upload(request):
         "content_title": "上传文章",
     })
     return render(request, "admin/upload.html", context)
+
+
+def admin_project_upload(request):
+    """Project-specific upload entry point."""
+    if request.method == "POST":
+        uploaded_file = request.FILES.get("upload_file")
+        if not uploaded_file:
+            messages.error(request, "请选择项目 Markdown 或 ZIP 文件")
+            return redirect("admin_project_upload")
+        try:
+            parsed = parse_upload_file(uploaded_file)
+        except Exception as exc:
+            messages.error(request, f"处理项目文件失败：{exc}")
+            return redirect("admin_project_upload")
+        parsed["category"] = "projects"
+        parsed["mode"] = "project_upload"
+        parsed["project_status"] = parsed.get("project_status", "active")
+        request.session["project_upload_preview"] = parsed
+        return redirect("admin_project_upload_preview")
+
+    from django.contrib import admin as django_admin
+    context = django_admin.site.each_context(request)
+    context.update({"title": "上传项目", "content_title": "上传项目"})
+    return render(request, "admin/project_upload.html", context)
+
+
+def admin_project_upload_blank(request):
+    """Start an empty project editor without an upload file."""
+    request.session["project_upload_preview"] = {
+        "title": "", "slug": "", "description": "", "category": "projects",
+        "tags": "", "date": "", "content": "", "image_count": 0,
+        "staging_dir": "", "md_filename": "", "has_frontmatter": False,
+        "warnings": [], "mode": "project_blank", "project_status": "active",
+        "project_tech_stack": "", "github_url": "", "demo_url": "",
+        "paper_url": "", "project_featured": False,
+    }
+    return redirect("admin_project_upload_preview")
+
+
+def admin_project_upload_preview(request):
+    """Preview and publish a project with project-specific metadata."""
+    preview_data = request.session.get("project_upload_preview")
+    if not preview_data:
+        messages.error(request, "没有待预览的项目，请先上传项目文件")
+        return redirect("admin_project_upload")
+
+    if request.method == "POST":
+        overrides = {
+            "title": request.POST.get("title", "").strip(),
+            "slug": request.POST.get("slug", "").strip(),
+            "description": request.POST.get("description", "").strip(),
+            "tags": request.POST.get("tags", "").strip(),
+            "date": request.POST.get("date", "").strip(),
+            "category": "projects",
+            "project_status": request.POST.get("project_status", "active").strip(),
+            "project_tech_stack": request.POST.get("project_tech_stack", "").strip(),
+            "github_url": request.POST.get("github_url", "").strip(),
+            "demo_url": request.POST.get("demo_url", "").strip(),
+            "paper_url": request.POST.get("paper_url", "").strip(),
+            "project_featured": request.POST.get("project_featured", ""),
+        }
+        text = request.POST.get("content", "").strip() or preview_data.get("content", "")
+        if not text:
+            messages.error(request, "项目正文不能为空")
+            return redirect("admin_project_upload_preview")
+
+        staging_dir = preview_data.get("staging_dir", "")
+        temp_dir = Path(staging_dir) if staging_dir and Path(staging_dir).exists() else None
+        images = [f for f in temp_dir.rglob("*") if f.is_file() and f.suffix.lower().lstrip(".") in ALLOWED_IMAGE_EXTENSIONS] if temp_dir else []
+        try:
+            post, created, warnings = process_markdown_content(
+                text, images, temp_dir, md_filename=preview_data.get("md_filename", ""), overrides=overrides,
+            )
+            messages.success(request, f"成功{'创建' if created else '更新'}项目：{post.title}")
+            for warning in warnings:
+                messages.warning(request, warning)
+        except Exception as exc:
+            messages.error(request, f"发布项目失败：{exc}")
+            return redirect("admin_project_upload_preview")
+        finally:
+            if staging_dir and Path(staging_dir).exists():
+                shutil.rmtree(staging_dir, ignore_errors=True)
+            request.session.pop("project_upload_preview", None)
+        return redirect("admin:posts_post_changelist")
+
+    preview_html, _ = render_markdown_with_toc(preview_data.get("content", "")[:3000])
+    from django.contrib import admin as django_admin
+    context = django_admin.site.each_context(request)
+    context.update({
+        "data": preview_data, "preview_html": preview_html,
+        "is_blank_mode": preview_data.get("mode") == "project_blank",
+        "title": "项目预览与编辑", "content_title": "项目预览与编辑",
+    })
+    return render(request, "admin/project_upload_preview.html", context)
 
 
 def admin_upload_blank(request):
@@ -298,7 +490,8 @@ def admin_upload_preview(request):
 
 @require_POST
 def admin_preview_markdown(request):
-    """Staff-only: render Markdown + math placeholders the same way as the public site."""
+    """Render sanitized Markdown only for users with content add/change permission."""
+    _require_any_permission(request, "posts.add_post", "posts.change_post", "posts.add_project", "posts.change_project")
     content = request.POST.get("content", "")
     max_chars = int(getattr(settings, "MARKDOWN_PREVIEW_MAX_CHARS", 100_000))
     if len(content) > max_chars:
@@ -320,6 +513,7 @@ def admin_preview_markdown(request):
 @require_POST
 def admin_generate_tags(request):
     """Staff-only: ask DeepSeek for 3 topical tags based on title + content."""
+    _require_any_permission(request, "posts.add_post", "posts.change_post", "posts.add_project", "posts.change_project")
     title = request.POST.get("title", "").strip()
     content = request.POST.get("content", "").strip()
     try:
@@ -358,6 +552,7 @@ def admin_generate_tags(request):
 @require_POST
 def admin_generate_summary(request):
     """Staff-only: generate an optional summary without blocking publication."""
+    _require_any_permission(request, "posts.add_post", "posts.change_post", "posts.add_project", "posts.change_project")
     title = request.POST.get("title", "").strip()
     content = request.POST.get("content", "").strip()
 
@@ -386,10 +581,8 @@ def admin_generate_summary(request):
 # ---------------------------------------------------------------------------
 @require_POST
 def upload_cover_image(request):
-    """Accept an image upload (file or pasted blob) and return its URL.
-
-    Used by the Series admin form JS to handle clipboard paste uploads.
-    """
+    """Accept a verified image only with series add/change permission."""
+    _require_any_permission(request, "posts.add_series", "posts.change_series")
     image = request.FILES.get("image")
     if not image:
         return JsonResponse({"ok": False, "error": "No image provided"}, status=400)
@@ -401,7 +594,17 @@ def upload_cover_image(request):
     if image.size > int(getattr(settings, "UPLOAD_MAX_FILE_SIZE", 10 * 1024 * 1024)):
         return JsonResponse({"ok": False, "error": "图片文件过大"}, status=400)
 
+    try:
+        from PIL import Image
+        image.seek(0)
+        with Image.open(image) as uploaded_image:
+            uploaded_image.verify()
+        image.seek(0)
+    except Exception:
+        return JsonResponse({"ok": False, "error": "不是有效的图片文件"}, status=400)
+
     from django.core.files.storage import default_storage
-    path = default_storage.save(f"series_covers/uploads/{image.name}", image)
+    safe_name = Path(image.name).name
+    path = default_storage.save(f"series_covers/uploads/{safe_name}", image)
     url = default_storage.url(path)
     return JsonResponse({"ok": True, "url": url})

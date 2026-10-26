@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% load static english_dates %}
+{% block title %}{{ project.title }} · Projects{% endblock %}
+{% block meta_description %}{{ project.description|default:project.title }}{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'vendor/katex/katex.min.css' %}">
+<script defer src="{% static 'vendor/katex/katex.min.js' %}"></script>
+<script defer src="{% static 'vendor/katex/contrib/auto-render.min.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<header class="project-hero shell">
+	<a href="{% url 'posts:projects_list' %}" class="back-link">← All projects</a>
+	<div class="project-hero-grid">
+		<div>
+			<p class="eyebrow">Project report{% if project.project_featured %} · Featured{% endif %}</p>
+			<h1>{{ project.title }}</h1>
+			{% if project.description %}<p class="project-dek">{{ project.description }}</p>{% endif %}
+			{% if project.project_tech_stack_list %}<div class="project-stack" aria-label="Technology stack">{% for tech in project.project_tech_stack_list %}<span class="chip">{{ tech }}</span>{% endfor %}</div>{% endif %}
+			{% if project.github_url or project.paper_url or project.demo_url %}
+			<div class="project-links" aria-label="Project resources">
+				{% if project.github_url %}<a href="{{ project.github_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary">GitHub ↗</a>{% endif %}
+				{% if project.paper_url %}<a href="{{ project.paper_url }}" target="_blank" rel="noopener noreferrer" class="btn">Paper ↗</a>{% endif %}
+				{% if project.demo_url %}<a href="{{ project.demo_url }}" target="_blank" rel="noopener noreferrer" class="btn">Live demo ↗</a>{% endif %}
+			</div>
+			{% endif %}
+		</div>
+		<aside class="project-facts" aria-label="Project facts">
+			<dl>
+				<div><dt>Status</dt><dd><span class="status status-{{ project.project_status }}">{{ project.get_project_status_display }}</span></dd></div>
+				<div><dt>Updated</dt><dd><time datetime="{{ project.date|date:'c' }}">{{ project.date|english_date:"short" }}</time></dd></div>
+				<div><dt>Format</dt><dd>{% if is_html_project %}HTML package{% else %}Research report{% endif %}</dd></div>
+				{% with tags=project.tags.all %}{% if tags %}<div><dt>Tags</dt><dd>{% for tag in tags %}<a href="{% url 'posts:tag_list' tag.name %}">#{{ tag.name }}</a>{% if not forloop.last %} {% endif %}{% endfor %}</dd></div>{% endif %}{% endwith %}
+			</dl>
+		</aside>
+	</div>
+</header>
+
+{% if hero_media %}
+<div class="shell">
+	<figure class="project-cover">
+		<div class="project-cover-frame"><a href="{{ hero_media.url }}" target="_blank" rel="noopener"><img src="{{ hero_media.url }}" alt="{{ hero_media.title }}"></a></div>
+		<figcaption><strong>{{ hero_media.title }}</strong>{% if hero_media.description %}<span>{{ hero_media.description }}</span>{% endif %}</figcaption>
+	</figure>
+</div>
+{% endif %}
+
+{% if is_html_project %}
+<div class="shell"><div class="project-html prose">{{ html|safe }}</div></div>
+{% else %}
+<div class="section-tabs">
+	<nav class="shell" aria-label="Project report sections">
+		<a href="#project-overview" data-section-tab><span>01</span>Overview</a>
+		{% if method_html or method_media_rows or framework_media_rows %}<a href="#project-method" data-section-tab><span>02</span>Method</a>{% endif %}
+		{% if experiments_html or media_sections %}<a href="#project-experiments" data-section-tab><span>03</span>Experiments</a>{% endif %}
+		{% if conclusion_html %}<a href="#project-conclusion" data-section-tab><span>04</span>Conclusion</a>{% endif %}
+		{% if citation %}<a href="#project-citation" data-section-tab><span>↗</span>Resources</a>{% endif %}
+	</nav>
+</div>
+
+<div class="shell">
+	<section id="project-overview" class="paper-section" aria-labelledby="project-overview-heading">
+		<div class="paper-label"><p class="eyebrow plain">01 / Overview</p><h2 id="project-overview-heading">Overview</h2></div>
+		<div class="paper-body"><div class="prose">{{ html|safe }}</div></div>
+	</section>
+
+	{% if method_html or method_media_rows or framework_media_rows %}
+	<section id="project-method" class="paper-section" aria-labelledby="project-method-heading">
+		<div class="paper-label"><p class="eyebrow plain">02 / Approach</p><h2 id="project-method-heading">Method</h2></div>
+		<div class="paper-body">
+			{% if method_html %}<div class="prose">{{ method_html|safe }}</div>{% endif %}
+			{% if framework_media_rows %}<div class="figure-block"><h3>Model framework</h3>{% include "_includes/project_media_rows.html" with rows=framework_media_rows %}</div>{% endif %}
+			{% if method_media_rows %}<div class="figure-block"><h3>Working principle</h3>{% include "_includes/project_media_rows.html" with rows=method_media_rows %}</div>{% endif %}
+		</div>
+	</section>
+	{% endif %}
+
+	{% if experiments_html or media_sections %}
+	<section id="project-experiments" class="paper-section" aria-labelledby="project-experiments-heading">
+		<div class="paper-label"><p class="eyebrow plain">03 / Evidence</p><h2 id="project-experiments-heading">Experiments</h2></div>
+		<div class="paper-body">
+			{% if experiments_html %}<div class="prose">{{ experiments_html|safe }}</div>{% endif %}
+			{% for section in media_sections %}<div>
+				{% if section.key != "results" %}<div class="evidence-subhead"><p class="eyebrow">Additional evidence</p><h3>{{ section.label }}</h3></div>{% endif %}
+				{% for group in section.groups %}<article class="experiment-group">
+					<header class="experiment-group-header">
+						<div><p>{% if section.key == "results" %}Experiment{% elif section.key == "comparison" %}Comparison{% else %}Supplement{% endif %} {{ group.number|stringformat:"02d" }}</p><h3>{{ group.title }}</h3></div>
+						<span>{{ group.items|length }} asset{{ group.items|length|pluralize }}</span>
+					</header>
+					{% include "_includes/project_media_rows.html" with rows=group.rows %}
+				</article>{% endfor %}
+			</div>{% endfor %}
+		</div>
+	</section>
+	{% endif %}
+
+	{% if conclusion_html %}
+	<section id="project-conclusion" class="paper-section" aria-labelledby="project-conclusion-heading">
+		<div class="paper-label"><p class="eyebrow plain">04 / Conclusion</p><h2 id="project-conclusion-heading">Conclusion</h2></div>
+		<div class="paper-body"><div class="prose">{{ conclusion_html|safe }}</div></div>
+	</section>
+	{% endif %}
+</div>
+{% endif %}
+
+{% if citation %}
+<div class="shell">
+	<section id="project-citation" class="citation" aria-labelledby="citation-heading">
+		<div class="citation-head">
+			<div>
+				<h2 id="citation-heading">Resources &amp; citation</h2>
+				<p>Generated from the project title, year, and verified resource URL. No author or venue information is inferred.</p>
+			</div>
+			<button type="button" class="btn btn-sm" data-copy-target="citation-text">Copy BibTeX</button>
+		</div>
+		<pre><code id="citation-text">{{ citation }}</code></pre>
+	</section>
+</div>
+{% endif %}
+{% endblock %}

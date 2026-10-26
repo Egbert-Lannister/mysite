@@ -146,7 +146,8 @@ def _restore_math(html: str, placeholders: list[tuple[str, str]]) -> str:
     wrapping them in elements that KaTeX auto-render can pick up.
     """
     for tag, original in placeholders:
-        escaped = original.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+        escaped = (original.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+                   .replace('"', '&quot;').replace("'", '&#x27;'))
         html = html.replace(tag, escaped)
     return html
 
@@ -186,7 +187,43 @@ def render_markdown_with_toc(content: str) -> tuple[str, list[dict]]:
     md = markdown.Markdown(extensions=extensions)
     html = md.convert(content)
 
-    # Restore LaTeX math
+    # Markdown deliberately accepts raw HTML for authoring flexibility, so the
+    # resulting HTML must pass through a strict allow-list before any template
+    # marks it safe. Scripts, embeds, event handlers and javascript: URLs are
+    # never part of the public or admin preview rendering contract.
+    import bleach
+
+    allowed_tags = {
+        "p", "br", "hr", "h1", "h2", "h3", "h4", "h5", "h6",
+        "ul", "ol", "li", "strong", "b", "em", "i", "del", "blockquote",
+        "pre", "code", "table", "thead", "tbody", "tfoot", "tr", "th", "td",
+        "a", "img", "div", "span", "sup", "sub",
+    }
+
+    def allowed_attribute(tag, name, value):
+        if name == "class" and tag in {"div", "span", "code"}:
+            return True
+        if name == "id" and tag in {"h1", "h2", "h3", "h4", "h5", "h6"}:
+            return True
+        if tag == "a" and name in {"href", "title"}:
+            return True
+        if tag == "img" and name in {"src", "alt", "title", "width", "height", "loading"}:
+            return True
+        if tag in {"th", "td"} and name in {"colspan", "rowspan"}:
+            return True
+        return False
+
+    html = bleach.clean(
+        html,
+        tags=allowed_tags,
+        attributes=allowed_attribute,
+        protocols={"http", "https", "mailto"},
+        strip=True,
+        strip_comments=True,
+    )
+
+    # Restore LaTeX math only after sanitizing; _restore_math escapes HTML
+    # metacharacters in the original TeX source.
     html = _restore_math(html, math_placeholders)
 
     # <code>$...$</code> from backtick-wrapped math KaTeX would skip
