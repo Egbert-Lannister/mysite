@@ -259,7 +259,7 @@ kbd { font: 500 11px/1 var(--font-mono); padding: 4px 6px; border: 1px solid var
 .post-row-tags { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 6px; position: relative; z-index: 2; }
 .post-row-side { display: flex; align-items: flex-start; gap: 16px; }
 .post-row-thumb { width: 168px; aspect-ratio: 16 / 10; border-radius: var(--radius-sm); overflow: hidden; background: var(--surface-2); border: 1px solid var(--line); }
-.post-row-thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s; }
+.post-row-thumb img { width: 100%; height: 100%; object-fit: contain; transition: transform .4s; }
 .post-row:hover .post-row-thumb img { transform: scale(1.04); }
 .post-row-arrow { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--line); color: var(--ink-3); transition: all .2s; flex-shrink: 0; }
 .post-row:hover .post-row-arrow { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); transform: rotate(-45deg); }
@@ -283,7 +283,7 @@ kbd { font: 500 11px/1 var(--font-mono); padding: 4px 6px; border: 1px solid var
 }
 .project-card:hover { border-color: var(--line-strong); transform: translateY(-3px); box-shadow: var(--shadow); }
 .project-card-media { position: relative; aspect-ratio: 16 / 10; background: var(--surface-2); overflow: hidden; border-bottom: 1px solid var(--line); }
-.project-card-media img { width: 100%; height: 100%; object-fit: cover; transition: transform .6s cubic-bezier(.2, .7, .2, 1); }
+.project-card-media img { width: 100%; height: 100%; object-fit: contain; transition: transform .6s cubic-bezier(.2, .7, .2, 1); }
 .project-card:hover .project-card-media img { transform: scale(1.035); }
 .project-card-placeholder {
   position: absolute; inset: 0; display: grid; place-items: center;
@@ -713,5 +713,7 @@ mark { background: var(--accent-soft); color: var(--accent); padding: 0 2px; bor
 .result-count { margin-top: 18px; text-align: left; }
 
 /* Research figures (diagrams, plots) are shown whole, never cropped. */
-img.is-figure { object-fit: contain !important; padding: 6%; background: #fff; }
+img.is-figure { padding: 5%; background: #fff; }
 :root[data-theme="dark"] img.is-figure { background: #f4f3ef; }
+/* Figures with transparent backgrounds stay legible in dark mode. */
+:root[data-theme="dark"] .project-media-frame:has(img), :root[data-theme="dark"] .project-cover-frame { background: #f4f3ef; }

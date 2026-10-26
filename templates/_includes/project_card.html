@@ -7,7 +7,7 @@
 		{% if post.project_featured %}<span class="project-card-flag">Featured</span>{% endif %}
 	</div>
 	<div class="project-card-body">
-		<div class="project-card-top"><span class="status status-{{ post.project_status }}">{{ post.get_project_status_display }}</span><time datetime="{{ post.date|date:'c' }}">{{ post.date|date:"Y.m" }}</time></div>
+		<div class="project-card-top">{% include "_includes/status.html" with item=post %}<time datetime="{{ post.date|date:'c' }}">{{ post.date|date:"Y.m" }}</time></div>
 		<h3><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></h3>
 		{% if post.description %}<p class="project-card-desc">{{ post.description }}</p>{% endif %}
 		{% if post.project_tech_stack_list %}<div class="project-card-stack">{% for tech in post.project_tech_stack_list|slice:":5" %}<span class="chip">{{ tech }}</span>{% endfor %}</div>{% endif %}

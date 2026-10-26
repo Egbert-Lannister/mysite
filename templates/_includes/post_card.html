@@ -4,7 +4,7 @@
 	<div class="post-row-main">
 		<div class="post-row-meta">
 			<span>{{ post.get_category_display }}</span>
-			{% if post.category == 'projects' %}<span class="sep">/</span><span class="status status-{{ post.project_status }}">{{ post.get_project_status_display }}</span>{% if post.project_featured %}<span class="sep">/</span><span>Featured</span>{% endif %}
+			{% if post.category == 'projects' %}<span class="sep">/</span>{% include "_includes/status.html" with item=post %}{% if post.project_featured %}<span class="sep">/</span><span>Featured</span>{% endif %}
 			{% elif post.series %}<span class="sep">/</span><a href="{% url 'posts:series_detail' post.series.slug %}" title="{{ post.series.title }}">{{ post.series.title }}</a>{% endif %}
 		</div>
 		<h2><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></h2>
