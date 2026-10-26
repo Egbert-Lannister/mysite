@@ -2,27 +2,20 @@
 {% block title %}{{ category_label }} · TechBlog{% endblock %}
 {% block meta_description %}{{ category_desc }}{% endblock %}
 {% block content %}
-<header class="page-head shell">
-	<div class="page-head-grid">
+<div class="category-page">
+	<header class="category-hero">
 		<div>
-			<p class="eyebrow">Section</p>
-			<h1>{{ category_label }}<em>.</em></h1>
-			{% if category_desc %}<p class="lede">{{ category_desc }}</p>{% endif %}
+			<p class="page-eyebrow">Section</p>
+			<h1>{{ category_label }}</h1>
+			{% if category_desc %}<p class="category-description">{{ category_desc }}</p>{% endif %}
 		</div>
-		<p class="page-count"><strong>{{ posts.paginator.count|stringformat:"02d" }}</strong>{% if category == 'projects' %}project{{ posts.paginator.count|pluralize }}{% else %}entr{{ posts.paginator.count|pluralize:"y,ies" }}{% endif %}</p>
-	</div>
-</header>
-<div class="shell">
+		<p class="category-count"><strong>{{ posts.paginator.count }}</strong><span>{% if category == 'projects' %}project{{ posts.paginator.count|pluralize }}{% else %}entr{{ posts.paginator.count|pluralize:"y,ies" }}{% endif %}</span></p>
+	</header>
 	{% if posts %}
-		{% if category == 'projects' %}
-		<div class="project-grid list-grid">{% for post in posts %}{% include "_includes/project_card.html" with index=forloop.counter %}{% endfor %}</div>
-		{% else %}
-		<div class="index-list flush">{% for post in posts %}{% include "_includes/post_card.html" %}{% endfor %}</div>
-		{% endif %}
+		<div>{% for post in posts %}{% include "_includes/post_card.html" %}{% endfor %}</div>
 		{% include "_includes/pagination.html" %}
 	{% else %}
-		{% url 'posts:index' as home_url %}
-		{% include "_includes/empty_state.html" with empty_title="Nothing published here yet" empty_message="New entries in this section will appear here." empty_url=home_url empty_link_label="Back to home" %}
+		<div class="mt-8">{% url 'posts:index' as home_url %}{% include "_includes/empty_state.html" with empty_title="Nothing published here yet" empty_message="New entries in this section will appear here." empty_url=home_url empty_link_label="Back to home" %}</div>
 	{% endif %}
 </div>
 {% endblock %}

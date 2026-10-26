@@ -2,77 +2,66 @@
 {% load english_dates %}
 {% block title %}TechBlog · Engineering, research & notes{% endblock %}
 {% block content %}
-<section class="home-hero shell" aria-labelledby="home-title">
-	<div class="home-hero-grid">
-		<div>
-			<p class="eyebrow">A working notebook</p>
-			<h1 id="home-title">Engineering, <span class="soft">research</span> &amp; the things <span class="hl">I build.</span></h1>
-			<p class="home-hero-lede">Field notes on software, experiments and papers worth re-reading — kept in the open so they can be found again.</p>
-		</div>
-		{% if lead_post %}
-		<article class="lead-card" aria-labelledby="latest-story-heading">
-			<div class="lead-card-top"><span class="pulse">Latest article</span><time datetime="{{ lead_post.date|date:'c' }}">{{ lead_post.date|english_date:"short" }}</time></div>
-			<h2 id="latest-story-heading"><a href="{{ lead_post.get_absolute_url }}">{{ lead_post.title }}</a></h2>
-			{% if lead_post.description %}<p>{{ lead_post.description }}</p>{% endif %}
-			<div class="lead-card-foot">
-				<span>{{ lead_post.get_category_display }}{% if lead_post.series %} · <a class="lead-card-series" href="{% url 'posts:series_detail' lead_post.series.slug %}">{{ lead_post.series.title }}</a>{% endif %}</span>
-				<span class="go" aria-hidden="true">→</span>
+<div class="home-page">
+	{% if lead_post %}
+	<section class="home-intro" aria-labelledby="latest-story-heading">
+		<div class="home-intro-story">
+			<div class="home-story-meta"><span>Latest article</span><time datetime="{{ lead_post.date|date:'c' }}">{{ lead_post.date|english_date }}</time></div>
+			<h1 id="latest-story-heading"><a href="{{ lead_post.get_absolute_url }}">{{ lead_post.title }}</a></h1>
+			{% if lead_post.description %}<p class="home-story-description">{{ lead_post.description }}</p>{% endif %}
+			<div class="home-story-footer">
+				<div class="home-story-taxonomy"><span>{{ lead_post.get_category_display }}</span>{% if lead_post.series %}<span aria-hidden="true">/</span><a href="{% url 'posts:series_detail' lead_post.series.slug %}">{{ lead_post.series.title }}</a>{% endif %}</div>
+				<a href="{{ lead_post.get_absolute_url }}" class="text-link">Read article <span aria-hidden="true">→</span></a>
 			</div>
-		</article>
-		{% endif %}
-	</div>
-</section>
-
-<div class="shell">
-	<nav class="section-index" aria-label="Explore the notebook">
-		<a href="{% url 'posts:engineering_list' %}"><span><b>01</b>↗</span><div><strong>Engineering</strong><small>Build better software</small></div></a>
-		<a href="{% url 'posts:research_list' %}"><span><b>02</b>↗</span><div><strong>Research</strong><small>Papers and experiments</small></div></a>
-		<a href="{% url 'posts:notes_list' %}"><span><b>03</b>↗</span><div><strong>Notes</strong><small>Ideas worth keeping</small></div></a>
-		<a href="{% url 'posts:projects_list' %}"><span><b>04</b>↗</span><div><strong>Projects</strong><small>Methods and results</small></div></a>
-		<a href="{% url 'posts:series_list' %}"><span><b>05</b>↗</span><div><strong>Series</strong><small>Guided reading paths</small></div></a>
-	</nav>
-
-	{% if not lead_post %}
-	{% include "_includes/empty_state.html" with empty_title="No articles yet" empty_message="Published engineering, research, and notes will appear here." %}
+		</div>
+		<nav class="home-browse" aria-label="Explore the notebook">
+			<p>Explore the notebook</p>
+			<a href="{% url 'posts:engineering_list' %}"><span><strong>Engineering</strong><small>Build better software</small></span><span aria-hidden="true">↗</span></a>
+			<a href="{% url 'posts:research_list' %}"><span><strong>Research</strong><small>Papers and experiments</small></span><span aria-hidden="true">↗</span></a>
+			<a href="{% url 'posts:notes_list' %}"><span><strong>Notes</strong><small>Ideas worth keeping</small></span><span aria-hidden="true">↗</span></a>
+			<a href="{% url 'posts:projects_list' %}"><span><strong>Projects</strong><small>Methods and results</small></span><span aria-hidden="true">↗</span></a>
+			<a href="{% url 'posts:series_list' %}"><span><strong>Series</strong><small>Guided reading paths</small></span><span aria-hidden="true">↗</span></a>
+		</nav>
+	</section>
+	{% else %}
+	<header class="home-empty"><p class="page-eyebrow">TechBlog</p><h1>Engineering, research, and notes.</h1>{% include "_includes/empty_state.html" with empty_title="No articles yet" empty_message="Published engineering, research, and notes will appear here." %}</header>
 	{% endif %}
 
 	{% if projects %}
-	<section class="home-block" aria-labelledby="selected-projects-heading">
-		<header class="block-head">
-			<div><p class="eyebrow">Selected work</p><h2 id="selected-projects-heading">Projects &amp; experiments</h2></div>
-			<a href="{% url 'posts:projects_list' %}" class="link-arrow">All projects <span aria-hidden="true">→</span></a>
-		</header>
-		<div class="project-grid">
-			{% for post in projects %}
-			{% if forloop.first %}{% include "_includes/project_card.html" with variant="lead" index=forloop.counter %}
-			{% else %}{% include "_includes/project_card.html" with variant="side" index=forloop.counter %}{% endif %}
-			{% endfor %}
-		</div>
+	<section class="home-selected" aria-labelledby="selected-projects-heading">
+		<header class="home-section-header"><div><p class="page-eyebrow">Selected work</p><h2 id="selected-projects-heading">Projects & experiments</h2></div><a href="{% url 'posts:projects_list' %}" class="text-link">View all projects <span aria-hidden="true">→</span></a></header>
+		<div class="home-selected-grid">{% for post in projects %}
+			<article class="home-project-card{% if forloop.first %} home-project-card-featured{% endif %}">
+				<a href="{{ post.get_absolute_url }}" class="home-project-media" tabindex="-1" aria-hidden="true">
+					{% if post.project_cover %}<img src="{{ post.project_cover.url }}" alt="" loading="lazy">{% elif post.card_image %}<img src="{{ post.card_image.file.url }}" alt="" loading="lazy">{% else %}<span class="home-project-placeholder">Project / {{ forloop.counter|stringformat:"02d" }}</span>{% endif %}
+				</a>
+				<div class="home-project-copy">
+					<p class="home-project-kicker">Project {{ forloop.counter|stringformat:"02d" }} <span>/</span> {% if post.project_status == "active" %}In progress{% elif post.project_status == "completed" %}Completed{% else %}Archived{% endif %}</p>
+					<h3><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></h3>
+					{% if post.description %}<p class="home-project-description">{{ post.description }}</p>{% endif %}
+					<div class="home-project-footer">{% if post.project_tech_stack_list %}<p>{% for tech in post.project_tech_stack_list %}{{ tech }}{% if not forloop.last %} · {% endif %}{% endfor %}</p>{% else %}<span></span>{% endif %}<a href="{{ post.get_absolute_url }}" aria-label="View {{ post.title }}">↗</a></div>
+				</div>
+			</article>
+		{% endfor %}</div>
 	</section>
 	{% endif %}
 
-	{% if posts or featured_series %}
-	<div class="home-block home-lower{% if not posts %} home-lower-series-only{% endif %}">
+	{% if posts or featured_series %}<div class="home-lower{% if not posts %} home-lower-series-only{% endif %}">
 		{% if posts %}
 		<section class="home-writing" aria-labelledby="latest-writing-heading">
-			<header class="block-head">
-				<div><p class="eyebrow">Index</p><h2 id="latest-writing-heading">Latest writing</h2></div>
-				<a href="{% url 'posts:engineering_list' %}" class="link-arrow">Browse <span aria-hidden="true">→</span></a>
-			</header>
-			<div class="index-list">{% for post in posts %}{% include "_includes/post_card.html" %}{% endfor %}</div>
+			<header class="home-subsection-header"><h2 id="latest-writing-heading">Latest writing</h2><a href="{% url 'posts:engineering_list' %}" class="text-link">Browse articles <span aria-hidden="true">→</span></a></header>
+			<div>{% for post in posts %}{% include "_includes/post_card.html" %}{% endfor %}</div>
 		</section>
 		{% endif %}
 		{% if featured_series %}
-		<aside class="series-rail" aria-labelledby="featured-series-heading">
-			<p class="eyebrow">Reading paths</p>
-			<h2 id="featured-series-heading">Featured series</h2>
-			<div class="series-rail-list">{% for series in featured_series %}
-				<a href="{% url 'posts:series_detail' series.slug %}"><b>{{ forloop.counter|stringformat:"02d" }}</b><span><strong>{{ series.title }}</strong><small>{{ series.post_count }} article{{ series.post_count|pluralize }}</small></span><span aria-hidden="true">→</span></a>
+		<aside class="home-series-panel" aria-labelledby="featured-series-heading">
+			<header><p class="page-eyebrow">Reading paths</p><h2 id="featured-series-heading">Featured series</h2></header>
+			<div class="home-series-list">{% for series in featured_series %}
+				<a href="{% url 'posts:series_detail' series.slug %}"><span class="home-series-index">{{ forloop.counter|stringformat:"02d" }}</span><span><strong>{{ series.title }}</strong><small>{{ series.post_count }} article{{ series.post_count|pluralize }}</small></span><span aria-hidden="true">↗</span></a>
 			{% endfor %}</div>
-			<a href="{% url 'posts:series_list' %}" class="series-rail-more">View all series →</a>
+			<a href="{% url 'posts:series_list' %}" class="home-series-more">View all series <span aria-hidden="true">→</span></a>
 		</aside>
 		{% endif %}
-	</div>
-	{% endif %}
+	</div>{% endif %}
 </div>
 {% endblock %}

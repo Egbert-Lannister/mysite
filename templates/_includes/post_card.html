@@ -1,21 +1,26 @@
-{% comment %}Index row for an article or project. Context: post, optional highlight_tag.{% endcomment %}
-{% load english_dates %}<article class="post-row" data-reveal>
-	<div class="post-row-date"><time datetime="{{ post.date|date:'c' }}"><strong>{{ post.date|date:"Y.m.d" }}</strong></time></div>
-	<div class="post-row-main">
-		<div class="post-row-meta">
+{% comment %}Shared article/project row. Context: post, optional highlight_tag.{% endcomment %}
+{% load english_dates %}<article class="post-card post-card-standard">
+	<div class="post-card-date">
+		<time datetime="{{ post.date|date:'c' }}"><strong>{{ post.date|date:"d" }}</strong><span>{{ post.date|english_date:"month_year" }}</span></time>
+	</div>
+	<div class="post-card-main">
+		<div class="post-card-meta">
 			<span>{{ post.get_category_display }}</span>
-			{% if post.category == 'projects' %}<span class="sep">/</span>{% include "_includes/status.html" with item=post %}{% if post.project_featured %}<span class="sep">/</span><span>Featured</span>{% endif %}
-			{% elif post.series %}<span class="sep">/</span><a href="{% url 'posts:series_detail' post.series.slug %}" title="{{ post.series.title }}">{{ post.series.title }}</a>{% endif %}
+			{% if post.category == 'projects' %}{% include "_includes/status.html" with item=post %}{% if post.project_featured %}<span class="post-card-featured">Featured</span>{% endif %}{% elif post.series %}<span aria-hidden="true">/</span><a href="{% url 'posts:series_detail' post.series.slug %}" title="{{ post.series.title }}">{{ post.series.title }}</a>{% endif %}
 		</div>
 		<h2><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></h2>
-		{% if post.description %}<p class="post-row-desc">{{ post.description }}</p>{% endif %}
-		{% if post.category == 'projects' and post.project_tech_stack_list %}<p class="post-row-stack">{{ post.project_tech_stack_list|join:" · " }}</p>{% endif %}
-		{% with tags=post.tags.all %}{% if tags %}<div class="post-row-tags" aria-label="Tags">{% for tag in tags %}<a href="{% url 'posts:tag_list' tag.name %}" class="chip{% if highlight_tag and tag.name == highlight_tag %} is-on{% endif %}">#{{ tag.name }}</a>{% endfor %}</div>{% endif %}{% endwith %}
+		{% if post.description %}<p class="post-card-description">{{ post.description }}</p>{% endif %}
+		{% if post.category == 'projects' and post.project_tech_stack_list %}<p class="post-card-stack">{% for tech in post.project_tech_stack_list %}{{ tech }}{% if not forloop.last %} / {% endif %}{% endfor %}</p>{% endif %}
+		<div class="post-card-footer">
+			{% if post.tags.all %}<div class="post-card-tags" aria-label="Tags">{% for tag in post.tags.all %}<a href="{% url 'posts:tag_list' tag.name %}" class="{% if highlight_tag and tag.name == highlight_tag %}is-highlighted{% endif %}">#{{ tag.name }}</a>{% endfor %}</div>{% else %}<span></span>{% endif %}
+			<a href="{{ post.get_absolute_url }}" class="post-card-link">{% if post.category == 'projects' %}View project{% else %}Read article{% endif %} <span aria-hidden="true">→</span></a>
+		</div>
 	</div>
-	<div class="post-row-side">
-		{% if post.category == 'projects' and post.project_cover or post.category == 'projects' and post.card_image %}
-		<div class="post-row-thumb" aria-hidden="true">{% if post.project_cover %}<img src="{{ post.project_cover.url }}" alt="" loading="lazy">{% else %}<img src="{{ post.card_image.file.url }}" alt="" loading="lazy" class="is-figure">{% endif %}</div>
+	{% if post.category == 'projects' %}
+		{% if post.project_cover or post.card_image %}
+		<a href="{{ post.get_absolute_url }}" tabindex="-1" aria-hidden="true" class="post-card-media">
+			{% if post.project_cover %}<img src="{{ post.project_cover.url }}" alt="" loading="lazy">{% else %}<img src="{{ post.card_image.file.url }}" alt="" loading="lazy">{% endif %}
+		</a>
 		{% endif %}
-		<span class="post-row-arrow" aria-hidden="true">→</span>
-	</div>
+	{% endif %}
 </article>

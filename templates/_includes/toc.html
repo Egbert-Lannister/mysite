@@ -1,8 +1,23 @@
 {% if toc_items %}
-<aside class="article-aside" aria-label="Table of contents">
-	<div class="toc">
-		<p class="eyebrow">On this page</p>
-		<nav>{% for item in toc_items %}<a href="#{{ item.anchor }}" data-toc-link class="toc-item toc-l{{ item.level }}">{{ item.title }}</a>{% endfor %}</nav>
+<aside class="hidden lg:block w-56 flex-shrink-0" aria-label="Table of contents">
+	<div class="sticky top-24">
+		<p class="page-eyebrow mb-3">On this page</p>
+		<nav class="toc-rail max-h-[calc(100vh-9rem)] overflow-y-auto pr-2">
+			{% for item in toc_items %}<a href="#{{ item.anchor }}" data-toc-link class="toc-item toc-l{{ item.level }}">{{ item.title }}</a>{% endfor %}
+		</nav>
 	</div>
 </aside>
+
+<div class="lg:hidden mobile-toc-ui">
+	<button id="mobile-toc-toggle" type="button" class="fixed bottom-4 right-4 z-40 min-h-11 px-4 inline-flex items-center gap-2 rounded-full bg-ink-900 text-white dark:bg-white dark:text-ink-900 shadow-lg text-xs font-medium" aria-expanded="false" aria-controls="mobile-toc">
+		<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" d="M4 6h16M4 12h11M4 18h7"/></svg>Contents
+	</button>
+	<div id="mobile-toc" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="mobile-toc-title">
+		<button type="button" class="absolute inset-0 w-full h-full dialog-backdrop" data-toc-close aria-label="Close table of contents"></button>
+		<div class="absolute bottom-0 left-0 right-0 max-h-[72vh] overflow-y-auto rounded-t-xl border-t border-ink-200 dark:border-white/10 bg-white dark:bg-ink-950 p-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-2xl">
+			<div class="flex items-center justify-between gap-4 mb-3"><p id="mobile-toc-title" class="page-eyebrow">On this page</p><button type="button" class="tap-target -mr-2 rounded-md text-ink-500 dark:text-ink-300" data-toc-close aria-label="Close table of contents">✕</button></div>
+			<nav class="toc-rail">{% for item in toc_items %}<a href="#{{ item.anchor }}" data-toc-link data-toc-mobile-link class="toc-item toc-l{{ item.level }} !py-2">{{ item.title }}</a>{% endfor %}</nav>
+		</div>
+	</div>
+</div>
 {% endif %}

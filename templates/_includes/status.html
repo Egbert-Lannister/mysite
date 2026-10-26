@@ -1,1 +1,1 @@
-<span class="status status-{{ item.project_status }}">{% if item.project_status == "active" %}In progress{% elif item.project_status == "completed" %}Completed{% else %}Archived{% endif %}</span>
+<span class="status-pill status-{{ item.project_status }}">{% if item.project_status == "active" %}In progress{% elif item.project_status == "completed" %}Completed{% else %}Archived{% endif %}</span>

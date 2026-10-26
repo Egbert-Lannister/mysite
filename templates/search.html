@@ -1,23 +1,25 @@
 {% extends "base.html" %}
 {% block title %}{% if query %}“{{ query }}” · {% endif %}Search · TechBlog{% endblock %}
 {% block content %}
-<header class="page-head shell">
-	<p class="eyebrow">Search</p>
-	<h1>{% if query %}“{{ query }}”{% else %}Search the archive<em>.</em>{% endif %}</h1>
-	<form action="{% url 'posts:search' %}" method="get" role="search" class="search-hero-form">
-		<label for="page-search" class="sr-only">Search articles and projects</label>
-		<input id="page-search" type="search" name="q" value="{{ query }}" placeholder="Try “deployment” or “evaluation”" maxlength="200"{% if not query %} autofocus{% endif %}>
-		<button type="submit" class="btn btn-primary">Search</button>
-	</form>
-	{% if query %}<p class="page-count result-count">{{ posts.paginator.count }} result{{ posts.paginator.count|pluralize }}</p>{% endif %}
-</header>
-<div class="shell">
+<div class="category-page">
+	<header class="category-hero">
+		<div class="w-full">
+			<p class="page-eyebrow">Search</p>
+			<h1>{% if query %}“{{ query }}”{% else %}Search the archive{% endif %}</h1>
+			<form action="{% url 'posts:search' %}" method="get" role="search" class="flex gap-2 mt-5 max-w-xl">
+				<label for="page-search" class="sr-only">Search articles and projects</label>
+				<input id="page-search" type="search" name="q" value="{{ query }}" placeholder="Search articles and projects" maxlength="200" class="ui-input flex-1"{% if not query %} autofocus{% endif %}>
+				<button type="submit" class="ui-button ui-button-primary">Search</button>
+			</form>
+		</div>
+		{% if query %}<p class="category-count"><strong>{{ posts.paginator.count }}</strong><span>result{{ posts.paginator.count|pluralize }}</span></p>{% endif %}
+	</header>
 	{% if query %}
 		{% if posts %}
-			<div class="index-list flush">{% for post in posts %}{% include "_includes/post_card.html" %}{% endfor %}</div>
+			<div>{% for post in posts %}{% include "_includes/post_card.html" %}{% endfor %}</div>
 			{% include "_includes/pagination.html" %}
 		{% else %}
-			{% include "_includes/empty_state.html" with empty_title="No matches" empty_message="Try a shorter query, a different spelling, or browse a section instead." %}
+			<div class="mt-8">{% include "_includes/empty_state.html" with empty_title="No matches" empty_message="Try a shorter query, a different spelling, or browse a section instead." %}</div>
 		{% endif %}
 	{% endif %}
 </div>

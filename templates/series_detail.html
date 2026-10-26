@@ -1,34 +1,23 @@
 {% extends "base.html" %}
-{% load english_dates %}
 {% block title %}{{ series.title }} · Series{% endblock %}
 {% block meta_description %}{{ series.description|default:series.title|truncatechars:160 }}{% endblock %}
 {% block content %}
-<header class="page-head shell">
+<div class="category-page">
 	<a href="{% url 'posts:series_list' %}" class="back-link">← All series</a>
-	<div class="series-head">
+	<header class="category-hero">
 		<div>
-			<p class="eyebrow">Series · {{ post_count }} article{{ post_count|pluralize }}</p>
+			<p class="page-eyebrow">Series</p>
 			<h1>{{ series.title }}</h1>
-			{% if series.description %}<p class="lede">{{ series.description }}</p>{% endif %}
-			{% if posts %}<p class="series-start"><a href="{{ posts.0.get_absolute_url }}" class="btn btn-primary">Start reading →</a></p>{% endif %}
+			{% if series.description %}<p class="category-description">{{ series.description }}</p>{% endif %}
+			{% if posts %}<a href="{{ posts.0.get_absolute_url }}" class="ui-button ui-button-primary mt-5">Start reading →</a>{% endif %}
 		</div>
-		{% if series.cover_image %}<div class="series-head-cover"><img src="{{ series.cover_image.url }}" alt=""></div>{% endif %}
-	</div>
-</header>
-<div class="shell shell-narrow">
+		<p class="category-count"><strong>{{ post_count }}</strong><span>article{{ post_count|pluralize }}</span></p>
+	</header>
+	{% if series.cover_image %}<img src="{{ series.cover_image.url }}" alt="" class="mt-6 w-full max-h-80 object-cover rounded-lg border border-ink-200 dark:border-white/10">{% endif %}
 	{% if posts %}
-	<ol class="timeline">{% for post in posts %}
-		<li data-reveal>
-			<span class="timeline-num">{{ forloop.counter|stringformat:"02d" }}</span>
-			<div class="timeline-card">
-				<time datetime="{{ post.date|date:'c' }}">{{ post.date|english_date:"short" }} · {{ post.get_category_display }}</time>
-				<h2><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></h2>
-				{% if post.description %}<p>{{ post.description }}</p>{% endif %}
-			</div>
-		</li>
-	{% endfor %}</ol>
+		<div>{% for post in posts %}{% include "_includes/post_card.html" %}{% endfor %}</div>
 	{% else %}
-	{% include "_includes/empty_state.html" with empty_title="No articles in this series yet" empty_message="Published articles in this series will appear here." %}
+		<div class="mt-8">{% include "_includes/empty_state.html" with empty_title="No articles in this series yet" empty_message="Published articles in this series will appear here." %}</div>
 	{% endif %}
 </div>
 {% endblock %}

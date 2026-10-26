@@ -1,36 +1,50 @@
-{% load static %}<!DOCTYPE html>
+{% load static %}
+<!DOCTYPE html>
 <html lang="en">
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 	<title>{% block title %}TechBlog{% endblock %}</title>
 	<meta name="description" content="{% block meta_description %}Engineering notes, research, and selected projects.{% endblock %}">
-	<meta name="theme-color" content="#f3f2ee" id="theme-color-meta">
+	<meta name="theme-color" content="#f7f8f6" id="theme-color-meta">
 	<link rel="alternate" type="application/rss+xml" title="RSS" href="/rss.xml">
 	<link rel="icon" type="image/svg+xml" href="{% static 'images/favicon.svg' %}">
 	<link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/favicon-32.png' %}">
 	<link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/apple-touch-icon.png' %}">
 	<script>
 		(function () {
-			var theme = "light";
 			try {
-				var stored = localStorage.getItem("theme");
-				theme = stored || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-			} catch (_) { /* fall back to light */ }
-			document.documentElement.dataset.theme = theme;
-			document.documentElement.classList.add("js");
+				const stored = localStorage.getItem("theme");
+				const dark = stored === "dark" || (!stored && window.matchMedia("(prefers-color-scheme: dark)").matches);
+				document.documentElement.classList.toggle("dark", dark);
+				document.documentElement.style.colorScheme = dark ? "dark" : "light";
+			} catch (_) { /* System colors remain usable without storage. */ }
 		})();
 	</script>
-	<link rel="preconnect" href="https://fonts.googleapis.com">
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	{# Non-blocking: system fonts render first; web fonts swap in only if reachable. #}
-	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" media="print" onload="this.media='all'">
-	<link rel="stylesheet" href="{% static 'css/ui.css' %}">
-	<script defer src="{% static 'js/ui.js' %}"></script>
+	<link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin>
+	<script src="https://cdn.tailwindcss.com"></script>
+	<script>
+		tailwind.config = {
+			darkMode: "class",
+			theme: { extend: {
+				fontFamily: {
+					sans: ["Inter", "SF Pro Text", "Segoe UI", "PingFang SC", "Microsoft YaHei", "system-ui", "sans-serif"],
+					display: ["Iowan Old Style", "Palatino Linotype", "Noto Serif SC", "Source Han Serif SC", "Songti SC", "SimSun", "Georgia", "serif"],
+					mono: ["SFMono-Regular", "Consolas", "Liberation Mono", "Menlo", "monospace"]
+				},
+				colors: {
+					accent: {50:"#eff9f3",100:"#e0f2e8",200:"#bfe4cf",300:"#8ed0ae",400:"#48b884",500:"#209266",600:"#167a55",700:"#0f6041",800:"#104c36",900:"#103d2d"},
+					ink: {50:"#f7f8f6",100:"#eff2ef",200:"#e1e5e1",300:"#cbd2cc",400:"#96a199",500:"#646e67",600:"#525d56",700:"#3d4741",800:"#29312c",900:"#171a18",950:"#101312"}
+				}
+			} }
+		};
+	</script>
+	<link rel="stylesheet" href="{% static 'css/site.css' %}">
+	<script defer src="{% static 'js/site.js' %}"></script>
 	{% block extra_head %}{% endblock %}
 </head>
-<body class="{% block body_class %}{% endblock %}">
-	<a href="#main" class="skip-link">Skip to content</a>
+<body class="text-ink-900 dark:text-ink-100 antialiased">
+	<a href="#main-content" class="skip-link">Skip to content</a>
 	{% url 'posts:index' as index_url %}
 	{% url 'posts:engineering_list' as engineering_url %}
 	{% url 'posts:research_list' as research_url %}
@@ -38,95 +52,75 @@
 	{% url 'posts:projects_list' as projects_url %}
 	{% url 'posts:series_list' as series_url %}
 
-	<header class="topbar" data-topbar>
-		<div class="shell topbar-inner">
-			<a href="{{ index_url }}" class="site-brand" {% if request.path == index_url %}aria-current="page"{% endif %} aria-label="TechBlog home">
-				<img src="{% static 'images/avatar-96.webp' %}" srcset="{% static 'images/avatar-192.webp' %} 2x" width="34" height="34" class="site-brand-avatar" alt="">
-				<span class="brand-copy">
-					<span class="brand-name">TechBlog</span>
-					<span class="brand-byline">by Egbert Lannister</span>
-				</span>
-			</a>
+	<header class="site-header sticky top-0 z-40">
+		<div class="max-w-7xl mx-auto px-5 sm:px-8 lg:px-10">
+			<div class="flex items-center justify-between gap-4 h-20">
+				<a href="{{ index_url }}" class="site-brand" {% if request.path == index_url %}aria-current="page"{% endif %} aria-label="TechBlog home">
+					<img src="{% static 'images/avatar-96.webp' %}" srcset="{% static 'images/avatar-192.webp' %} 2x" width="40" height="40" class="site-brand-avatar" alt="">
+					<span class="site-brand-copy">
+						<span class="site-brand-title"><span class="site-brand-name">TechBlog</span><span class="site-brand-dot" aria-hidden="true"></span></span>
+						<span class="site-brand-byline">by Egbert Lannister</span>
+					</span>
+				</a>
 
-			<nav class="primary-nav" aria-label="Primary navigation">
-				<a href="{{ engineering_url }}" {% if request.path == engineering_url or post.category == 'engineering' %}aria-current="page"{% endif %}><i>01</i>Engineering</a>
-				<a href="{{ research_url }}" {% if request.path == research_url or post.category == 'research' %}aria-current="page"{% endif %}><i>02</i>Research</a>
-				<a href="{{ notes_url }}" {% if request.path == notes_url or post.category == 'notes' %}aria-current="page"{% endif %}><i>03</i>Notes</a>
-				<a href="{{ projects_url }}" {% if request.path == projects_url or category == 'projects' or project %}aria-current="page"{% endif %}><i>04</i>Projects</a>
-				<a href="{{ series_url }}" {% if request.path == series_url or series %}aria-current="page"{% endif %}><i>05</i>Series</a>
-			</nav>
+				<nav class="hidden lg:flex items-center gap-4 xl:gap-8" aria-label="Primary navigation">
+					<a href="{{ engineering_url }}" class="nav-link" {% if request.path == engineering_url %}aria-current="page"{% endif %}>Engineering</a>
+					<a href="{{ research_url }}" class="nav-link" {% if request.path == research_url %}aria-current="page"{% endif %}>Research</a>
+					<a href="{{ notes_url }}" class="nav-link" {% if request.path == notes_url %}aria-current="page"{% endif %}>Notes</a>
+					<a href="{{ projects_url }}" class="nav-link" {% if request.path == projects_url or category == 'projects' or project %}aria-current="page"{% endif %}>Projects</a>
+					<a href="{{ series_url }}" class="nav-link" {% if request.path == series_url or series or series_context %}aria-current="page"{% endif %}>Series</a>
+				</nav>
 
-			<div class="topbar-actions">
-				<button type="button" class="search-trigger" data-search-open aria-haspopup="dialog" aria-controls="search-dialog">
-					<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>
-					<span class="search-trigger-label">Search</span>
-					<kbd>/</kbd>
-				</button>
-				<button type="button" class="icon-btn" data-theme-toggle aria-label="Switch color theme">
-					<svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6 6 6M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/></svg>
-					<svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></svg>
-				</button>
-				<button type="button" class="icon-btn menu-btn" data-menu-toggle aria-label="Open navigation menu" aria-expanded="false" aria-controls="mobile-menu">
-					<svg viewBox="0 0 24 24" aria-hidden="true"><path class="menu-line-a" d="M4 8h16"/><path class="menu-line-b" d="M4 16h16"/></svg>
-				</button>
+				<div class="flex items-center gap-1.5">
+					<form action="{% url 'posts:search' %}" method="get" role="search" class="hidden md:block">
+						<label for="site-search" class="sr-only">Search articles and projects</label>
+						<div class="relative">
+							<input id="site-search" type="search" name="q" placeholder="Search" value="{{ request.GET.q }}" maxlength="200" class="ui-input site-search-input">
+							<svg class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-ink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+						</div>
+					</form>
+					<button id="theme-toggle" type="button" class="tap-target rounded-md text-ink-500 dark:text-ink-400 hover:bg-ink-100 dark:hover:bg-white/5 hover:text-ink-900 dark:hover:text-ink-100" aria-label="Switch color theme" aria-pressed="false">
+						<svg class="w-[18px] h-[18px] hidden dark:block" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+						<svg class="w-[18px] h-[18px] block dark:hidden" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+					</button>
+					<button id="mobile-menu-toggle" type="button" class="lg:hidden tap-target rounded-md text-ink-600 dark:text-ink-300 hover:bg-ink-100 dark:hover:bg-white/5" aria-label="Open navigation menu" aria-expanded="false" aria-controls="mobile-menu">
+						<svg id="icon-menu" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16"/></svg>
+						<svg id="icon-close" class="w-5 h-5 hidden" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" d="M6 6l12 12M18 6L6 18"/></svg>
+					</button>
+				</div>
+			</div>
+
+			<div id="mobile-menu" class="hidden lg:hidden py-4 border-t section-rule">
+				<nav class="grid grid-cols-2 gap-1" aria-label="Mobile navigation">
+					<a href="{{ engineering_url }}" class="mobile-nav-link" {% if request.path == engineering_url %}aria-current="page"{% endif %}>Engineering</a>
+					<a href="{{ research_url }}" class="mobile-nav-link" {% if request.path == research_url %}aria-current="page"{% endif %}>Research</a>
+					<a href="{{ notes_url }}" class="mobile-nav-link" {% if request.path == notes_url %}aria-current="page"{% endif %}>Notes</a>
+					<a href="{{ projects_url }}" class="mobile-nav-link" {% if request.path == projects_url or category == 'projects' or project %}aria-current="page"{% endif %}>Projects</a>
+					<a href="{{ series_url }}" class="mobile-nav-link" {% if request.path == series_url or series or series_context %}aria-current="page"{% endif %}>Series</a>
+				</nav>
+				<form action="{% url 'posts:search' %}" method="get" role="search" class="md:hidden flex gap-2 mt-3">
+					<label for="mobile-site-search" class="sr-only">Search articles and projects</label>
+					<input id="mobile-site-search" type="search" name="q" placeholder="Search articles and projects" value="{{ request.GET.q }}" maxlength="200" class="ui-input !min-h-11 flex-1">
+					<button type="submit" class="ui-button ui-button-primary !min-h-11">Search</button>
+				</form>
 			</div>
 		</div>
-
-		<div id="mobile-menu" class="mobile-menu" hidden>
-			<nav class="shell" aria-label="Mobile navigation">
-				<a href="{{ engineering_url }}"><i>01</i>Engineering</a>
-				<a href="{{ research_url }}"><i>02</i>Research</a>
-				<a href="{{ notes_url }}"><i>03</i>Notes</a>
-				<a href="{{ projects_url }}"><i>04</i>Projects</a>
-				<a href="{{ series_url }}"><i>05</i>Series</a>
-			</nav>
-		</div>
-		<div class="read-progress" data-read-progress hidden><span></span></div>
 	</header>
 
-	<main id="main" tabindex="-1">
+	<main id="main-content" tabindex="-1" class="site-main w-full max-w-7xl mx-auto px-5 sm:px-8 lg:px-10">
 		{% block content %}{% endblock %}
 	</main>
 
-	<footer class="site-footer">
-		<div class="shell">
-			<div class="footer-grid">
-				<div class="footer-mark">
-					<a href="{{ index_url }}">TechBlog<span>.</span></a>
-					<p>Notes on engineering, research, and building — written down so they can be found again.</p>
-				</div>
-				<nav class="footer-col" aria-label="Footer sections">
-					<p>Sections</p>
-					<a href="{{ engineering_url }}">Engineering</a>
-					<a href="{{ research_url }}">Research</a>
-					<a href="{{ notes_url }}">Notes</a>
-					<a href="{{ projects_url }}">Projects</a>
-					<a href="{{ series_url }}">Series</a>
-				</nav>
-				<div class="footer-col">
-					<p>Follow</p>
-					<a href="/rss.xml" aria-label="Subscribe to RSS feed">RSS feed ↗</a>
-					<a href="{% url 'posts:search' %}">Search the archive</a>
-				</div>
-			</div>
-			<div class="footer-base">
-				<span>© {% now "Y" %} Egbert Lannister</span>
-				<a href="#main" class="to-top">Back to top ↑</a>
+	<footer class="site-footer pb-[env(safe-area-inset-bottom)]">
+		<div class="max-w-7xl mx-auto px-5 sm:px-8 lg:px-10 py-9 flex flex-col sm:flex-row sm:items-end justify-between gap-6">
+			<div><a href="{{ index_url }}" class="footer-brand">TechBlog<span>.</span></a><p class="mt-2 text-sm text-ink-600 dark:text-ink-400">Notes on engineering, research, and building.</p></div>
+			<div class="flex sm:flex-col sm:items-end gap-3 text-xs text-ink-500 dark:text-ink-400">
+				<p>© {% now "Y" %} Egbert Lannister</p>
+				<a href="/rss.xml" class="inline-flex items-center gap-1.5 min-h-6 hover:text-accent-600 dark:hover:text-accent-400" aria-label="Subscribe to RSS feed"><svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19 7.38 20 6.18 20C5 20 4 19 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1Z"/></svg>Subscribe via RSS</a>
 			</div>
 		</div>
 	</footer>
-
-	<div id="search-dialog" class="search-dialog" role="dialog" aria-modal="true" aria-label="Search" hidden>
-		<button type="button" class="scrim" data-search-close tabindex="-1" aria-label="Close search"></button>
-		<form action="{% url 'posts:search' %}" method="get" role="search" class="search-panel">
-			<label for="site-search" class="sr-only">Search articles and projects</label>
-			<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>
-			<input id="site-search" type="search" name="q" placeholder="Search articles and projects…" value="{{ request.GET.q }}" maxlength="200" autocomplete="off">
-			<kbd data-search-close>Esc</kbd>
-		</form>
-	</div>
-
-	<div id="toast-container" class="toasts" role="status" aria-live="polite" aria-atomic="true"></div>
+	<div id="toast-container" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-[100] flex flex-col items-center gap-2" role="status" aria-live="polite" aria-atomic="true"></div>
 	{% block extra_js %}{% endblock %}
 </body>
 </html>

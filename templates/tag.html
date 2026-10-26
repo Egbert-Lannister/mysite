@@ -1,22 +1,19 @@
 {% extends "base.html" %}
 {% block title %}#{{ tag }} · TechBlog{% endblock %}
 {% block content %}
-<header class="page-head shell">
-	<div class="page-head-grid">
+<div class="category-page">
+	<header class="category-hero">
 		<div>
-			<p class="eyebrow">Tag</p>
-			<h1><em>#</em>{{ tag }}</h1>
+			<p class="page-eyebrow">Tag</p>
+			<h1>#{{ tag }}</h1>
 		</div>
-		<p class="page-count"><strong>{{ posts.paginator.count|stringformat:"02d" }}</strong>tagged entr{{ posts.paginator.count|pluralize:"y,ies" }}</p>
-	</div>
-</header>
-<div class="shell">
+		<p class="category-count"><strong>{{ posts.paginator.count }}</strong><span>tagged entr{{ posts.paginator.count|pluralize:"y,ies" }}</span></p>
+	</header>
 	{% if posts %}
-		<div class="index-list flush">{% for post in posts %}{% include "_includes/post_card.html" with highlight_tag=tag %}{% endfor %}</div>
+		<div>{% for post in posts %}{% include "_includes/post_card.html" with highlight_tag=tag %}{% endfor %}</div>
 		{% include "_includes/pagination.html" %}
 	{% else %}
-		{% url 'posts:search' as search_url %}
-		{% include "_includes/empty_state.html" with empty_title="No entries with this tag" empty_message="Try another tag or search the archive." empty_url=search_url empty_link_label="Search" %}
+		<div class="mt-8">{% url 'posts:search' as search_url %}{% include "_includes/empty_state.html" with empty_title="No entries with this tag" empty_message="Try another tag or search the archive." empty_url=search_url empty_link_label="Search the archive" %}</div>
 	{% endif %}
 </div>
 {% endblock %}

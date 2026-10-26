@@ -1,5 +1,5 @@
 <figure class="project-media-figure{% if item.width and item.width < 640 %} project-media-low-res{% endif %}">
-	<div class="project-media-frame">
+	<div class="project-media-frame{% if not item.is_video %} project-media-frame-image{% endif %}">
 		{% if item.is_video %}
 		<video controls playsinline preload="metadata" aria-label="{{ item.title }}">
 			<source src="{{ item.file.url }}">
