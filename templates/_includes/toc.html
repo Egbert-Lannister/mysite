@@ -1,6 +1,6 @@
 {% if toc_items %}
-<aside class="hidden lg:block w-56 flex-shrink-0" aria-label="Table of contents">
-	<div class="sticky top-24">
+<aside class="article-toc hidden lg:block w-56 flex-shrink-0" aria-label="Table of contents">
+	<div class="article-toc-panel sticky top-24">
 		<p class="page-eyebrow mb-3">On this page</p>
 		<nav class="toc-rail max-h-[calc(100vh-9rem)] overflow-y-auto pr-2">
 			{% for item in toc_items %}<a href="#{{ item.anchor }}" data-toc-link class="toc-item toc-l{{ item.level }}">{{ item.title }}</a>{% endfor %}

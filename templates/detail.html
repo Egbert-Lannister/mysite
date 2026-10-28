@@ -41,9 +41,9 @@
 
 		{% if series_context %}
 		{% if series_context.prev_post or series_context.next_post %}
-		<nav class="grid sm:grid-cols-2 gap-4 mt-12 pt-6 border-t section-rule" aria-label="Series navigation">
-			<div>{% if series_context.prev_post %}<a href="{{ series_context.prev_post.get_absolute_url }}" class="group block"><span class="text-xs text-ink-500 dark:text-ink-400">← Previous in series</span><span class="block mt-1.5 text-sm font-medium leading-6 text-ink-900 dark:text-ink-100 group-hover:text-accent-600 dark:group-hover:text-accent-400">{{ series_context.prev_post.title }}</span></a>{% endif %}</div>
-			<div class="sm:text-right">{% if series_context.next_post %}<a href="{{ series_context.next_post.get_absolute_url }}" class="group block"><span class="text-xs text-ink-500 dark:text-ink-400">Next in series →</span><span class="block mt-1.5 text-sm font-medium leading-6 text-ink-900 dark:text-ink-100 group-hover:text-accent-600 dark:group-hover:text-accent-400">{{ series_context.next_post.title }}</span></a>{% endif %}</div>
+		<nav class="series-pagination" aria-label="Series navigation">
+			{% if series_context.prev_post %}<a href="{{ series_context.prev_post.get_absolute_url }}" class="group"><span class="text-xs text-ink-500 dark:text-ink-400">← Previous in series</span><span class="block mt-1.5 text-sm font-medium leading-6 text-ink-900 dark:text-ink-100 group-hover:text-accent-600 dark:group-hover:text-accent-400">{{ series_context.prev_post.title }}</span></a>{% endif %}
+			{% if series_context.next_post %}<a href="{{ series_context.next_post.get_absolute_url }}" class="group series-pagination-next"><span class="text-xs text-ink-500 dark:text-ink-400">Next in series →</span><span class="block mt-1.5 text-sm font-medium leading-6 text-ink-900 dark:text-ink-100 group-hover:text-accent-600 dark:group-hover:text-accent-400">{{ series_context.next_post.title }}</span></a>{% endif %}
 		</nav>
 		{% endif %}
 		{% endif %}
