@@ -186,6 +186,7 @@ def post_detail(request, slug: str):
 
     return render(request, "detail.html", {
         "post": post,
+        "category_url_name": f"posts:{post.category}_list",
         "html": html,
         "toc_items": toc_items,
         "giscus": giscus_config,

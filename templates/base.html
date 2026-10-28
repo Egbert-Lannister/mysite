@@ -39,7 +39,7 @@
 			} }
 		};
 	</script>
-	<link rel="stylesheet" href="{% static 'css/site.css' %}?v=20261028-project-labels">
+	<link rel="stylesheet" href="{% static 'css/site.css' %}?v=20261028-read-article">
 	<script defer src="{% static 'js/site.js' %}"></script>
 	{% block extra_head %}{% endblock %}
 </head>
@@ -64,11 +64,11 @@
 				</a>
 
 				<nav class="hidden lg:flex items-center gap-4 xl:gap-8" aria-label="Primary navigation">
-					<a href="{{ engineering_url }}" class="nav-link" {% if request.path == engineering_url %}aria-current="page"{% endif %}>Engineering</a>
-					<a href="{{ research_url }}" class="nav-link" {% if request.path == research_url %}aria-current="page"{% endif %}>Research</a>
-					<a href="{{ notes_url }}" class="nav-link" {% if request.path == notes_url %}aria-current="page"{% endif %}>Notes</a>
+					<a href="{{ engineering_url }}" class="nav-link" {% if request.path == engineering_url or post.category == 'engineering' %}aria-current="page"{% endif %}>Engineering</a>
+					<a href="{{ research_url }}" class="nav-link" {% if request.path == research_url or post.category == 'research' %}aria-current="page"{% endif %}>Research</a>
+					<a href="{{ notes_url }}" class="nav-link" {% if request.path == notes_url or post.category == 'notes' %}aria-current="page"{% endif %}>Notes</a>
 					<a href="{{ projects_url }}" class="nav-link" {% if request.path == projects_url or category == 'projects' or project %}aria-current="page"{% endif %}>Projects</a>
-					<a href="{{ series_url }}" class="nav-link" {% if request.path == series_url or series or series_context %}aria-current="page"{% endif %}>Series</a>
+					<a href="{{ series_url }}" class="nav-link" {% if request.path == series_url or series %}aria-current="page"{% endif %}>Series</a>
 				</nav>
 
 				<div class="flex items-center gap-1.5">
@@ -92,11 +92,11 @@
 
 			<div id="mobile-menu" class="hidden lg:hidden py-4 border-t section-rule">
 				<nav class="grid grid-cols-2 gap-1" aria-label="Mobile navigation">
-					<a href="{{ engineering_url }}" class="mobile-nav-link" {% if request.path == engineering_url %}aria-current="page"{% endif %}>Engineering</a>
-					<a href="{{ research_url }}" class="mobile-nav-link" {% if request.path == research_url %}aria-current="page"{% endif %}>Research</a>
-					<a href="{{ notes_url }}" class="mobile-nav-link" {% if request.path == notes_url %}aria-current="page"{% endif %}>Notes</a>
+					<a href="{{ engineering_url }}" class="mobile-nav-link" {% if request.path == engineering_url or post.category == 'engineering' %}aria-current="page"{% endif %}>Engineering</a>
+					<a href="{{ research_url }}" class="mobile-nav-link" {% if request.path == research_url or post.category == 'research' %}aria-current="page"{% endif %}>Research</a>
+					<a href="{{ notes_url }}" class="mobile-nav-link" {% if request.path == notes_url or post.category == 'notes' %}aria-current="page"{% endif %}>Notes</a>
 					<a href="{{ projects_url }}" class="mobile-nav-link" {% if request.path == projects_url or category == 'projects' or project %}aria-current="page"{% endif %}>Projects</a>
-					<a href="{{ series_url }}" class="mobile-nav-link" {% if request.path == series_url or series or series_context %}aria-current="page"{% endif %}>Series</a>
+					<a href="{{ series_url }}" class="mobile-nav-link" {% if request.path == series_url or series %}aria-current="page"{% endif %}>Series</a>
 				</nav>
 				<form action="{% url 'posts:search' %}" method="get" role="search" class="md:hidden flex gap-2 mt-3">
 					<label for="mobile-site-search" class="sr-only">Search articles and projects</label>

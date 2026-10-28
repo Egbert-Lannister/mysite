@@ -6,12 +6,12 @@
 	{% if lead_post %}
 	<section class="home-intro" aria-labelledby="latest-story-heading">
 		<div class="home-intro-story">
-			<div class="home-story-meta"><span>Latest article</span><time datetime="{{ lead_post.date|date:'c' }}">{{ lead_post.date|english_date }}</time></div>
+			<div class="home-story-meta"><span>Latest Article</span><time datetime="{{ lead_post.date|date:'c' }}">{{ lead_post.date|english_date }}</time></div>
 			<h1 id="latest-story-heading"><a href="{{ lead_post.get_absolute_url }}">{{ lead_post.title }}</a></h1>
 			{% if lead_post.description %}<p class="home-story-description">{{ lead_post.description }}</p>{% endif %}
 			<div class="home-story-footer">
 				<div class="home-story-taxonomy"><span>{{ lead_post.get_category_display }}</span>{% if lead_post.series %}<span aria-hidden="true">/</span><a href="{% url 'posts:series_detail' lead_post.series.slug %}">{{ lead_post.series.title }}</a>{% endif %}</div>
-				<a href="{{ lead_post.get_absolute_url }}" class="text-link">Read article <span aria-hidden="true">→</span></a>
+				<a href="{{ lead_post.get_absolute_url }}" class="text-link">Read Article <span aria-hidden="true">→</span></a>
 			</div>
 		</div>
 		<nav class="home-browse" aria-label="Explore the notebook">
@@ -46,7 +46,7 @@
 	</section>
 	{% endif %}
 
-	{% if posts or featured_series %}<div class="home-lower{% if not posts %} home-lower-series-only{% endif %}">
+	{% if posts or featured_series %}<div class="home-lower{% if not posts %} home-lower-series-only{% elif not featured_series %} home-lower-writing-only{% endif %}">
 		{% if posts %}
 		<section class="home-writing" aria-labelledby="latest-writing-heading">
 			<header class="home-subsection-header"><h2 id="latest-writing-heading">Latest writing</h2><a href="{% url 'posts:engineering_list' %}" class="text-link">Browse articles <span aria-hidden="true">→</span></a></header>

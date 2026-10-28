@@ -1,5 +1,6 @@
 import re
 import hashlib
+from html import unescape
 
 
 def slugify_header(text: str, sep: str = '-') -> str:
@@ -180,7 +181,7 @@ def render_markdown_with_toc(content: str) -> tuple[str, list[dict]]:
         ),
         TocExtension(
             slugify=slugify_header,
-            toc_depth='2-4',
+            toc_depth='1-4',
         ),
     ]
     
@@ -233,15 +234,16 @@ def render_markdown_with_toc(content: str) -> tuple[str, list[dict]]:
     toc_items = []
     toc_tokens = getattr(md, 'toc_tokens', [])
     
-    def extract_toc_items(tokens, base_level=2):
+    def extract_toc_items(tokens, depth=0):
         for token in tokens:
             toc_items.append({
                 'anchor': token['id'],
-                'title': token['name'],
+                'title': unescape(token['name']),
                 'level': token['level'],
+                'depth': depth,
             })
             if token.get('children'):
-                extract_toc_items(token['children'], base_level + 1)
+                extract_toc_items(token['children'], depth + 1)
     
     extract_toc_items(toc_tokens)
     

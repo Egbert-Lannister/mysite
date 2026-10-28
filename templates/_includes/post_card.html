@@ -13,7 +13,7 @@
 		{% if post.category == 'projects' and post.project_tech_stack_list %}<p class="post-card-stack">{% for tech in post.project_tech_stack_list %}{{ tech }}{% if not forloop.last %} / {% endif %}{% endfor %}</p>{% endif %}
 		<div class="post-card-footer">
 			{% if post.tags.all %}<div class="post-card-tags" aria-label="Tags">{% for tag in post.tags.all %}<a href="{% url 'posts:tag_list' tag.name %}" class="{% if highlight_tag and tag.name == highlight_tag %}is-highlighted{% endif %}">#{{ tag.name }}</a>{% endfor %}</div>{% else %}<span></span>{% endif %}
-			<a href="{{ post.get_absolute_url }}" class="post-card-link">{% if post.category == 'projects' %}View project{% else %}Read article{% endif %} <span aria-hidden="true">→</span></a>
+			<a href="{{ post.get_absolute_url }}" class="post-card-link">{% if post.category == 'projects' %}View project{% else %}Read Article{% endif %} <span aria-hidden="true">→</span></a>
 		</div>
 	</div>
 	{% if post.category == 'projects' %}

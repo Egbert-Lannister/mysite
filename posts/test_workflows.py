@@ -45,6 +45,20 @@ class _AttributeParser(HTMLParser):
 
 
 class MarkdownSanitizationTests(SimpleTestCase):
+    def test_toc_includes_top_level_sections_and_decodes_titles_once(self):
+        html, toc = render_markdown_with_toc(
+            '# Methods & Results\n\n## **Costs** &amp; Limits\n\n'
+            '### Details\n\n#### Edge cases\n\n# Summary\n'
+        )
+        self.assertEqual([item['title'] for item in toc], [
+            'Methods & Results', 'Costs & Limits', 'Details', 'Edge cases', 'Summary',
+        ])
+        self.assertEqual([item['depth'] for item in toc], [0, 1, 2, 3, 0])
+        for item in toc:
+            self.assertIn(f'id="{item["anchor"]}"', html)
+        _, toc = render_markdown_with_toc('## First section\n\n### Child')
+        self.assertEqual([item['depth'] for item in toc], [0, 1])
+
     def test_scripts_embeds_events_and_dangerous_urls_are_removed(self):
         source = (
             '## Title\n\n<script>alert(1)</script><iframe src="https://evil.invalid"></iframe>'
@@ -441,6 +455,23 @@ class ProjectWorkflowTests(TemporaryMediaTestCase):
 
 
 class PublicProjectAndSeriesTests(TemporaryMediaTestCase):
+    def test_article_navigation_stays_in_its_category_even_with_a_series(self):
+        series = Series.objects.create(title='Reading path', slug='reading-path')
+        for category, label in [('engineering', 'Engineering'), ('research', 'Research'), ('notes', 'Notes')]:
+            with self.subTest(category=category):
+                post = Post.objects.create(
+                    title=label, slug=category + '-navigation', content='# Costs & Limits',
+                    category=category, series=series, published=True, date=timezone.now(),
+                )
+                page = self.client.get(post.get_absolute_url())
+                url = reverse('posts:' + category + '_list')
+                for nav_class in ['nav-link', 'mobile-nav-link']:
+                    self.assertContains(page, f'<a href="{url}" class="{nav_class}" aria-current="page">{label}</a>', html=True)
+                    self.assertNotContains(page, f'<a href="{reverse("posts:series_list")}" class="{nav_class}" aria-current="page">Series</a>', html=True)
+                self.assertContains(page, f'<a href="{url}" class="back-link">← Back to {label}</a>', html=True)
+                self.assertContains(page, 'Costs &amp; Limits')
+                self.assertNotContains(page, 'Costs &amp;amp; Limits')
+
     def test_featured_projects_precede_newer_regular_projects(self):
         old_featured = Project.objects.create(
             title="Featured", slug="featured", content="body", published=True,
@@ -477,7 +508,7 @@ class PublicProjectAndSeriesTests(TemporaryMediaTestCase):
         Post.objects.create(title="Latest", slug="latest-english-ui", content="body", published=True, date=timezone.now())
         page = self.client.get(reverse("posts:index"))
         self.assertContains(page, '<html lang="en">', html=False)
-        for label in ("Engineering", "Research", "Notes", "Projects", "Series", "Latest article"):
+        for label in ("Engineering", "Research", "Notes", "Projects", "Series", "Latest Article"):
             self.assertContains(page, label)
         self.assertNotContains(page, "构建代码")
         self.assertNotContains(page, "Build with care.")

@@ -152,7 +152,7 @@
     });
 
     const tocLinks = [...document.querySelectorAll("[data-toc-link]")];
-    const headings = document.querySelectorAll(".article-content h2[id], .article-content h3[id], .article-content h4[id]");
+    const headings = document.querySelectorAll(".article-content h1[id], .article-content h2[id], .article-content h3[id], .article-content h4[id]");
     if (tocLinks.length && headings.length && "IntersectionObserver" in window) {
       const observer = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
