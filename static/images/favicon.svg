@@ -1,6 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
-  <title id="title">TechBlog</title>
-  <rect x="1" y="1" width="62" height="62" rx="15" fill="#171A18"/>
-  <path d="M15 14H45V22H34V50H26V22H15Z" fill="#FFFFFF"/>
-  <circle cx="46" cy="45" r="5" fill="#63D69C"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">TechBlog — Open Folio</title>
+  <desc id="desc">Two open pages and a point of light: knowledge unfolding toward discovery.</desc>
+  <rect width="64" height="64" rx="15" fill="#172E28"/>
+  <polygon points="14,21 28,29 28,49 14,41" fill="#F5F0E5"/>
+  <polygon points="35,24 49,16 49,41 35,49" fill="#D5E8DD"/>
+  <circle cx="49" cy="9" r="3.5" fill="#70D5AF"/>
 </svg>

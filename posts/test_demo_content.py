@@ -240,20 +240,18 @@ class DemoContentCommandTests(TestCase):
 
 
 class FaviconAssetTests(SimpleTestCase):
-    def test_svg_is_simple_brand_geometry_and_png_sizes_are_correct(self):
+    def test_favicon_assets_are_self_contained_and_sizes_are_correct(self):
         image_dir = Path(settings.BASE_DIR) / "static" / "images"
         svg_path = image_dir / "favicon.svg"
         self.assertTrue(svg_path.is_file())
         root = ET.parse(svg_path).getroot()
         namespace = "{http://www.w3.org/2000/svg}"
         self.assertEqual(root.attrib["viewBox"], "0 0 64 64")
-        self.assertEqual(len(root.findall(f".//{namespace}rect")), 1)
-        self.assertEqual(len(root.findall(f".//{namespace}path")), 1)
-        circles = root.findall(f".//{namespace}circle")
-        self.assertEqual(len(circles), 1)
-        self.assertEqual(circles[0].attrib["fill"], "#63D69C")
-        for forbidden in ("text", "linearGradient", "radialGradient", "filter"):
+        self.assertTrue(any(root.findall(f".//{namespace}{shape}") for shape in ("path", "polygon", "rect", "circle")))
+        for forbidden in ("script", "image", "foreignObject", "text", "filter"):
             self.assertIsNone(root.find(f".//{namespace}{forbidden}"))
+        for element in root.iter():
+            self.assertFalse(any(attribute.endswith("href") for attribute in element.attrib))
 
         for filename, expected_size in (
             ("favicon-32.png", (32, 32)),
@@ -269,16 +267,10 @@ class FaviconAssetTests(SimpleTestCase):
                     self.assertEqual(image.format, "PNG")
                     self.assertEqual(image.size, expected_size)
                     self.assertEqual(image.mode, "RGBA")
-                    width, height = image.size
-                    center = image.getpixel((width // 2, height // 2))
-                    dot = image.getpixel((round(46 * width / 64), round(45 * height / 64)))
-                    self.assertTrue(all(channel >= 240 for channel in center[:3]))
-                    self.assertEqual(center[3], 255)
-                    self.assertLess(dot[0], 140)
-                    self.assertGreater(dot[1], 180)
-                    self.assertGreater(dot[1], dot[0] + 50)
-                    self.assertGreater(dot[1], dot[2] + 30)
-                    self.assertEqual(image.getpixel((0, 0))[3], 0)
+                    self.assertEqual(image.getchannel("A").getextrema(), (0, 255))
+
+        with Image.open(image_dir / "favicon.ico") as icon:
+            self.assertTrue({(16, 16), (32, 32), (48, 48)}.issubset(icon.ico.sizes()))
 
     def test_original_avatar_has_optimized_responsive_derivatives(self):
         image_dir = Path(settings.BASE_DIR) / "static" / "images"

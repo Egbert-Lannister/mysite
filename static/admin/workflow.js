@@ -16,7 +16,7 @@
     if (!element) return;
     element.textContent = message;
     element.dataset.error = isError ? "true" : "false";
-    element.style.color = isError ? "rgb(var(--color-red-600))" : "";
+    element.style.color = isError ? "var(--admin-danger)" : "";
   }
 
   // These custom forms intentionally have no Unfold file-path text input.

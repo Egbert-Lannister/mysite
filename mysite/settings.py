@@ -185,30 +185,35 @@ UNFOLD = {
     ],
     "SITE_LOGO": None,
     "SITE_FAVICONS": [
-        {"rel": "icon", "type": "image/svg+xml", "href": lambda request: static("images/favicon.svg")},
-        {"rel": "icon", "type": "image/png", "sizes": "32x32", "href": lambda request: static("images/favicon-32.png")},
-        {"rel": "apple-touch-icon", "type": "image/png", "sizes": "180x180", "href": lambda request: static("images/apple-touch-icon.png")},
+        {"rel": "icon", "type": "image/svg+xml", "href": lambda request: static("images/favicon.svg") + "?v=20261029-folio"},
+        {"rel": "icon", "type": "image/png", "sizes": "32x32", "href": lambda request: static("images/favicon-32.png") + "?v=20261029-folio"},
+        {"rel": "apple-touch-icon", "type": "image/png", "sizes": "180x180", "href": lambda request: static("images/apple-touch-icon.png") + "?v=20261029-folio"},
     ],
     "SITE_SYMBOL": "article",
-    "STYLES": [lambda request: static("admin/theme.css")],
+    "STYLES": [
+        # Refresh the local icon subset even when Unfold's default URL is cached.
+        lambda request: static("unfold/fonts/material-symbols/styles.css") + "?v=20261029-icons",
+        lambda request: static("css/chinese-font.css"),
+        lambda request: static("admin/theme.css") + "?v=20261029-workbench",
+    ],
     "DASHBOARD_CALLBACK": "mysite.admin_config.dashboard_callback",
-    "BORDER_RADIUS": "8px",
+    "BORDER_RADIUS": "10px",
     "SHOW_HISTORY": True,
     "SHOW_VIEW_ON_SITE": True,
     "ENVIRONMENT": "mysite.admin_config.environment_callback",
     "COLORS": {
-        # Django admin's classic blue-grey palette, adapted to Unfold shades.
+        # Quiet neutral surfaces with a teal accent shared by the content workbench.
         "base": {
-            "50": "248 248 248", "100": "242 242 242", "200": "232 232 232",
-            "300": "204 204 204", "400": "153 153 153", "500": "102 102 102",
-            "600": "85 85 85", "700": "51 51 51", "800": "38 38 38",
-            "900": "24 24 24", "950": "18 18 18",
+            "50": "246 248 247", "100": "239 243 241", "200": "223 231 227",
+            "300": "192 206 198", "400": "137 157 147", "500": "100 119 109",
+            "600": "76 94 85", "700": "53 69 61", "800": "36 48 42",
+            "900": "24 34 29", "950": "16 24 20",
         },
         "primary": {
-            "50": "245 250 252", "100": "230 242 247", "200": "196 220 232",
-            "300": "155 197 214", "400": "121 174 200", "500": "68 126 155",
-            "600": "65 118 144", "700": "32 80 103", "800": "38 75 93",
-            "900": "0 60 82", "950": "0 44 61",
+            "50": "240 253 250", "100": "204 251 241", "200": "153 246 228",
+            "300": "94 234 212", "400": "45 212 191", "500": "20 184 166",
+            "600": "15 118 110", "700": "17 94 89", "800": "19 78 74",
+            "900": "19 59 56", "950": "8 40 38",
         },
     },
     "SIDEBAR": {

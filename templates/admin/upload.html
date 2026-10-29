@@ -2,7 +2,7 @@
 {% load static %}
 {% block title %}上传文章{% endblock %}
 {% block content_title %}{% endblock %}
-{% block extrahead %}{{ block.super }}<link rel="stylesheet" href="{% static 'admin/workflow.css' %}"><script defer src="{% static 'admin/workflow.js' %}"></script>{% endblock %}
+{% block extrahead %}{{ block.super }}<link rel="stylesheet" href="{% static 'admin/workflow.css' %}?v=20261029-workbench"><script defer src="{% static 'admin/workflow.js' %}?v=20261029-workbench"></script>{% endblock %}
 {% block content %}
 <div class="workflow-shell !max-w-3xl">
 	<header class="workflow-header"><div><h1 class="workflow-title">上传文章</h1><p class="workflow-subtitle">导入 Markdown / Notion ZIP，或从空白文章开始。项目请使用独立的项目流程。</p></div><a href="{% url 'admin:posts_post_changelist' %}" class="workflow-button">返回文章管理</a></header>

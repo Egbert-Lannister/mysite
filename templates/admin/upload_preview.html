@@ -3,8 +3,8 @@
 {% block title %}{% if is_blank_mode %}新建文章{% else %}文章预览与编辑{% endif %}{% endblock %}
 {% block content_title %}{% endblock %}
 {% block extrahead %}{{ block.super }}
-<link rel="stylesheet" href="{% static 'vendor/katex/katex.min.css' %}"><link rel="stylesheet" href="{% static 'vendor/flatpickr/flatpickr.min.css' %}"><link rel="stylesheet" href="{% static 'admin/workflow.css' %}">
-<script defer src="{% static 'vendor/katex/katex.min.js' %}"></script><script defer src="{% static 'vendor/katex/contrib/auto-render.min.js' %}"></script><script defer src="{% static 'vendor/flatpickr/flatpickr.min.js' %}"></script><script defer src="{% static 'admin/workflow.js' %}"></script>
+<link rel="stylesheet" href="{% static 'vendor/katex/katex.min.css' %}"><link rel="stylesheet" href="{% static 'vendor/flatpickr/flatpickr.min.css' %}"><link rel="stylesheet" href="{% static 'admin/workflow.css' %}?v=20261029-workbench">
+<script defer src="{% static 'vendor/katex/katex.min.js' %}"></script><script defer src="{% static 'vendor/katex/contrib/auto-render.min.js' %}"></script><script defer src="{% static 'vendor/flatpickr/flatpickr.min.js' %}"></script><script defer src="{% static 'admin/workflow.js' %}?v=20261029-workbench"></script>
 {% endblock %}
 {% block content %}
 <div class="workflow-shell">

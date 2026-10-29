@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import re
 import sys
+import hashlib
 from pathlib import Path
 
 from fontTools.subset import Options, Subsetter, parse_unicodes
@@ -163,6 +164,7 @@ def subset_material_symbols() -> None:
     out_file = target / "Material-Symbols-Outlined.woff2"
     font.flavor = "woff2"
     font.save(out_file)
+    version = hashlib.sha256(out_file.read_bytes()).hexdigest()[:12]
 
     # font-display: block keeps the ligature text hidden instead of flashing it.
     (target / "styles.css").write_text(
@@ -171,7 +173,7 @@ def subset_material_symbols() -> None:
         "  font-style: normal;\n"
         "  font-weight: 400;\n"
         "  font-display: block;\n"
-        '  src: url(Material-Symbols-Outlined.woff2) format("woff2");\n'
+        f'  src: url(Material-Symbols-Outlined.woff2?v={version}) format("woff2");\n'
         "}\n",
         encoding="utf-8",
     )

@@ -22,7 +22,7 @@
 }
 
 .workflow-title {
-  color: var(--admin-heading, rgb(var(--color-base-900)));
+  color: var(--admin-heading, var(--color-base-900));
   font-size: 1.25rem;
   font-weight: 650;
   letter-spacing: -.018em;
@@ -31,19 +31,19 @@
 }
 
 .dark .workflow-title {
-  color: var(--admin-heading, rgb(var(--color-base-100)));
+  color: var(--admin-heading, var(--color-base-100));
 }
 
 .workflow-subtitle {
   max-width: 48rem;
   margin-top: .45rem;
-  color: var(--admin-text-secondary, rgb(var(--color-base-500)));
-  font-size: .84rem;
+  color: var(--admin-text-secondary, var(--color-base-500));
+  font-size: .9rem;
   line-height: 1.65;
 }
 
 .dark .workflow-subtitle {
-  color: var(--admin-text-secondary, rgb(var(--color-base-400)));
+  color: var(--admin-text-secondary, var(--color-base-400));
 }
 
 .workflow-steps {
@@ -51,8 +51,8 @@
   align-items: center;
   gap: .55rem;
   margin: 0 0 1.5rem;
-  color: var(--admin-text-muted, rgb(var(--color-base-500)));
-  font-size: .72rem;
+  color: var(--admin-text-muted, var(--color-base-500));
+  font-size: .82rem;
 }
 
 .workflow-step {
@@ -69,26 +69,26 @@
   justify-content: center;
   width: 1.5rem;
   height: 1.5rem;
-  border: 1px solid var(--admin-border-strong, rgb(var(--color-base-300)));
+  border: 1px solid var(--admin-border-strong, var(--color-base-300));
   border-radius: 999px;
   background: var(--admin-surface, white);
-  color: var(--admin-text-muted, rgb(var(--color-base-500)));
+  color: var(--admin-text-muted, var(--color-base-500));
   font-family: "SFMono-Regular", Consolas, monospace;
-  font-size: .66rem;
+  font-size: .75rem;
 }
 
 .workflow-step-active {
-  color: var(--admin-accent, rgb(var(--color-primary-600)));
+  color: var(--admin-accent, var(--color-primary-600));
   font-weight: 650;
 }
 
 .dark .workflow-step-active {
-  color: var(--admin-accent, rgb(var(--color-primary-400)));
+  color: var(--admin-accent, var(--color-primary-400));
 }
 
 .workflow-step-active .workflow-step-number {
-  border-color: rgb(var(--color-primary-600));
-  background: rgb(var(--color-primary-600));
+  border-color: var(--color-primary-600);
+  background: var(--color-primary-600);
   color: white;
 }
 
@@ -96,70 +96,70 @@
   flex: 1;
   min-width: .5rem;
   height: 1px;
-  background: var(--admin-border, rgb(var(--color-base-200)));
+  background: var(--admin-border, var(--color-base-200));
 }
 
 .dark .workflow-step-line {
-  background: var(--admin-border, rgb(var(--color-base-700)));
+  background: var(--admin-border, var(--color-base-700));
 }
 
 .workflow-panel {
   min-width: 0;
   max-width: 100%;
   margin-bottom: 1rem;
-  border: 1px solid var(--admin-border, rgb(var(--color-base-200)));
-  border-radius: 8px;
+  border: 1px solid var(--admin-border, var(--color-base-200));
+  border-radius: 12px;
   background: var(--admin-surface, white);
   box-shadow: none;
 }
 
 .dark .workflow-panel {
-  border-color: var(--admin-border, rgb(var(--color-base-700)));
-  background: var(--admin-surface, rgb(var(--color-base-900)));
+  border-color: var(--admin-border, var(--color-base-700));
+  background: var(--admin-surface, var(--color-base-900));
 }
 
 a.workflow-panel:hover {
-  border-color: var(--admin-accent, rgb(var(--color-primary-500)));
+  border-color: var(--admin-accent, var(--color-primary-500));
 }
 
 .workflow-panel-header {
-  padding: .9rem 1.05rem;
-  border-bottom: 1px solid var(--admin-border, rgb(var(--color-base-200)));
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--admin-border, var(--color-base-200));
   border-radius: .5rem .5rem 0 0;
-  background: var(--admin-bg, rgb(var(--color-base-50)));
+  background: var(--admin-bg, var(--color-base-50));
 }
 
 .dark .workflow-panel-header {
-  border-color: var(--admin-border, rgb(var(--color-base-700)));
-  background: var(--admin-bg, rgb(var(--color-base-950)));
+  border-color: var(--admin-border, var(--color-base-700));
+  background: var(--admin-bg, var(--color-base-950));
 }
 
 .workflow-panel-title {
-  color: var(--admin-heading, rgb(var(--color-base-900)));
-  font-size: .85rem;
+  color: var(--admin-heading, var(--color-base-900));
+  font-size: .95rem;
   font-weight: 650;
   letter-spacing: -.005em;
 }
 
 .dark .workflow-panel-title {
-  color: var(--admin-heading, rgb(var(--color-base-100)));
+  color: var(--admin-heading, var(--color-base-100));
 }
 
 .workflow-panel-description {
   margin-top: .3rem;
-  color: var(--admin-text-muted, rgb(var(--color-base-500)));
-  font-size: .74rem;
+  color: var(--admin-text-muted, var(--color-base-500));
+  font-size: .82rem;
   line-height: 1.55;
 }
 
 .dark .workflow-panel-description {
-  color: var(--admin-text-muted, rgb(var(--color-base-400)));
+  color: var(--admin-text-muted, var(--color-base-400));
 }
 
 .workflow-panel-body {
   min-width: 0;
   max-width: 100%;
-  padding: 1.05rem;
+  padding: 1.25rem;
   box-sizing: border-box;
 }
 
@@ -176,77 +176,77 @@ a.workflow-panel:hover {
 .workflow-label {
   display: block;
   margin-bottom: .4rem;
-  color: var(--admin-heading, rgb(var(--color-base-800)));
-  font-size: .76rem;
+  color: var(--admin-heading, var(--color-base-800));
+  font-size: .875rem;
   font-weight: 600;
 }
 
 .dark .workflow-label {
-  color: var(--admin-heading, rgb(var(--color-base-200)));
+  color: var(--admin-heading, var(--color-base-200));
 }
 
 .workflow-required {
-  color: rgb(var(--color-red-600));
+  color: var(--color-red-600);
 }
 
 .dark .workflow-required {
-  color: rgb(var(--color-red-400));
+  color: var(--color-red-400);
 }
 
 .workflow-help {
   margin-top: .35rem;
-  color: var(--admin-text-muted, rgb(var(--color-base-500)));
-  font-size: .69rem;
+  color: var(--admin-text-muted, var(--color-base-500));
+  font-size: .8rem;
   line-height: 1.55;
 }
 
 .dark .workflow-help {
-  color: var(--admin-text-muted, rgb(var(--color-base-400)));
+  color: var(--admin-text-muted, var(--color-base-400));
 }
 
 .workflow-error {
   margin-top: .35rem;
-  color: rgb(var(--color-red-700));
-  font-size: .73rem;
+  color: var(--color-red-700);
+  font-size: .82rem;
   line-height: 1.5;
 }
 
 .dark .workflow-error {
-  color: rgb(var(--color-red-300));
+  color: var(--color-red-300);
 }
 
 .workflow-alert {
   margin-bottom: 1rem;
   padding: .8rem 1rem;
-  border: 1px solid rgb(var(--color-red-300));
+  border: 1px solid var(--color-red-300);
   border-radius: .45rem;
-  background: rgb(var(--color-red-50));
-  color: rgb(var(--color-red-800));
-  font-size: .78rem;
+  background: var(--color-red-50);
+  color: var(--color-red-800);
+  font-size: .875rem;
   line-height: 1.55;
 }
 
 .dark .workflow-alert {
-  border-color: rgb(var(--color-red-700) / .5);
-  background: rgb(var(--color-red-900) / .25);
-  color: rgb(var(--color-red-200));
+  border-color: color-mix(in srgb, var(--color-red-700) 50%, transparent);
+  background: color-mix(in srgb, var(--color-red-900) 25%, transparent);
+  color: var(--color-red-200);
 }
 
 .workflow-warning {
   margin-bottom: .5rem;
   padding: .65rem .8rem;
-  border: 1px solid rgb(var(--color-yellow-300));
+  border: 1px solid var(--color-yellow-300);
   border-radius: .4rem;
-  background: rgb(var(--color-yellow-50));
-  color: rgb(var(--color-yellow-800));
-  font-size: .72rem;
+  background: var(--color-yellow-50);
+  color: var(--color-yellow-800);
+  font-size: .82rem;
   line-height: 1.55;
 }
 
 .dark .workflow-warning {
-  border-color: rgb(var(--color-yellow-700) / .5);
-  background: rgb(var(--color-yellow-900) / .2);
-  color: rgb(var(--color-yellow-200));
+  border-color: color-mix(in srgb, var(--color-yellow-700) 50%, transparent);
+  background: color-mix(in srgb, var(--color-yellow-900) 20%, transparent);
+  color: var(--color-yellow-200);
 }
 
 .admin-input {
@@ -255,46 +255,46 @@ a.workflow-panel:hover {
   max-width: 100%;
   min-height: 2.4rem;
   padding: .5rem .65rem;
-  border: 1px solid var(--admin-border-strong, rgb(var(--color-base-300)));
+  border: 1px solid var(--admin-border-strong, var(--color-base-300));
   border-radius: .4rem;
   background: var(--admin-surface, white);
   box-shadow: none;
-  color: var(--admin-text, rgb(var(--color-base-900)));
+  color: var(--admin-text, var(--color-base-900));
   font: inherit;
-  font-size: .78rem;
+  font-size: .875rem;
   line-height: 1.5;
 }
 
 .dark .admin-input {
-  border-color: var(--admin-border-strong, rgb(var(--color-base-600)));
-  background: var(--admin-surface, rgb(var(--color-base-900)));
-  color: var(--admin-text, rgb(var(--color-base-100)));
+  border-color: var(--admin-border-strong, var(--color-base-600));
+  background: var(--admin-surface, var(--color-base-900));
+  color: var(--admin-text, var(--color-base-100));
 }
 
 .admin-input:hover {
-  border-color: var(--admin-text-muted, rgb(var(--color-base-400)));
+  border-color: var(--admin-text-muted, var(--color-base-400));
 }
 
 .admin-input:focus {
-  border-color: var(--admin-accent, rgb(var(--color-primary-500)));
-  outline: 2px solid rgb(var(--color-primary-500) / .22);
+  border-color: var(--admin-accent, var(--color-primary-500));
+  outline: 2px solid color-mix(in srgb, var(--color-primary-500) 22%, transparent);
   outline-offset: 1px;
 }
 
 .admin-input::placeholder {
-  color: var(--admin-text-muted, rgb(var(--color-base-400)));
+  color: var(--admin-text-muted, var(--color-base-400));
 }
 
 .dark .admin-input::placeholder {
-  color: var(--admin-text-muted, rgb(var(--color-base-500)));
+  color: var(--admin-text-muted, var(--color-base-500));
 }
 
 .field-has-error .admin-input {
-  border-color: rgb(var(--color-red-600));
+  border-color: var(--color-red-600);
 }
 
 .dark .field-has-error .admin-input {
-  border-color: rgb(var(--color-red-400));
+  border-color: var(--color-red-400);
 }
 
 .workflow-button {
@@ -302,38 +302,38 @@ a.workflow-panel:hover {
   align-items: center;
   justify-content: center;
   gap: .35rem;
-  min-height: 2.5rem;
+  min-height: 2.75rem;
   padding: .55rem .9rem;
-  border: 1px solid var(--admin-border-strong, rgb(var(--color-base-300)));
+  border: 1px solid var(--admin-border-strong, var(--color-base-300));
   border-radius: .4rem;
   background: var(--admin-surface, white);
   box-shadow: none;
-  color: var(--admin-text-secondary, rgb(var(--color-base-800)));
-  font-size: .76rem;
+  color: var(--admin-text-secondary, var(--color-base-800));
+  font-size: .875rem;
   font-weight: 600;
   line-height: 1.3;
   cursor: pointer;
 }
 
 .dark .workflow-button {
-  border-color: var(--admin-border-strong, rgb(var(--color-base-600)));
-  background: var(--admin-surface, rgb(var(--color-base-900)));
-  color: var(--admin-text, rgb(var(--color-base-100)));
+  border-color: var(--admin-border-strong, var(--color-base-600));
+  background: var(--admin-surface, var(--color-base-900));
+  color: var(--admin-text, var(--color-base-100));
 }
 
 .workflow-button:hover {
-  border-color: var(--admin-accent, rgb(var(--color-primary-500)));
-  background: var(--admin-surface-subtle, rgb(var(--color-base-50)));
-  color: var(--admin-accent, rgb(var(--color-primary-600)));
+  border-color: var(--admin-accent, var(--color-primary-500));
+  background: var(--admin-surface-subtle, var(--color-base-50));
+  color: var(--admin-accent, var(--color-primary-600));
 }
 
 .dark .workflow-button:hover {
-  background: var(--admin-surface, rgb(var(--color-base-800)));
-  color: var(--admin-accent, rgb(var(--color-primary-400)));
+  background: var(--admin-surface, var(--color-base-800));
+  color: var(--admin-accent, var(--color-primary-400));
 }
 
 .workflow-button:focus-visible {
-  outline: 2px solid var(--admin-accent, rgb(var(--color-primary-500)));
+  outline: 2px solid var(--admin-accent, var(--color-primary-500));
   outline-offset: 2px;
 }
 
@@ -343,13 +343,13 @@ a.workflow-panel:hover {
 }
 
 .workflow-button-primary {
-  border-color: rgb(var(--color-primary-600));
-  background: rgb(var(--color-primary-600));
+  border-color: var(--color-primary-600);
+  background: var(--color-primary-600);
 }
 
 .workflow-button-primary:hover {
-  border-color: rgb(var(--color-primary-700));
-  background: rgb(var(--color-primary-700));
+  border-color: var(--color-primary-700);
+  background: var(--color-primary-700);
 }
 
 .dark .workflow-button-primary,
@@ -358,11 +358,11 @@ a.workflow-panel:hover {
 }
 
 .workflow-button-danger {
-  color: rgb(var(--color-red-700));
+  color: var(--color-red-700);
 }
 
 .dark .workflow-button-danger {
-  color: rgb(var(--color-red-300));
+  color: var(--color-red-300);
 }
 
 .workflow-actions {
@@ -375,17 +375,17 @@ a.workflow-panel:hover {
   gap: .75rem;
   margin-top: 1.25rem;
   padding: .75rem;
-  border: 1px solid var(--admin-border-strong, rgb(var(--color-base-200)));
-  border-radius: 8px;
-  background: var(--admin-bg, rgb(var(--color-base-50)));
+  border: 1px solid var(--admin-border-strong, var(--color-base-200));
+  border-radius: 12px;
+  background: var(--admin-bg, var(--color-base-50));
   box-shadow: none;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
 
 .dark .workflow-actions {
-  border-color: var(--admin-border-strong, rgb(var(--color-base-700)));
-  background: var(--admin-bg, rgb(var(--color-base-900)));
+  border-color: var(--admin-border-strong, var(--color-base-700));
+  background: var(--admin-bg, var(--color-base-900));
   box-shadow: none;
 }
 
@@ -395,20 +395,20 @@ a.workflow-panel:hover {
 
 .workflow-dropzone {
   padding: 2rem 1rem;
-  border: 1px dashed var(--admin-border-strong, rgb(var(--color-base-400)));
+  border: 1px dashed var(--admin-border-strong, var(--color-base-400));
   border-radius: .5rem;
-  background: var(--admin-bg, rgb(var(--color-base-50)));
+  background: var(--admin-bg, var(--color-base-50));
   text-align: center;
   transition: border-color .15s, background-color .15s;
 }
 
 .workflow-dropzone.dragging {
-  border-color: var(--admin-accent, rgb(var(--color-primary-500)));
-  background: var(--admin-accent-soft, rgb(var(--color-primary-50)));
+  border-color: var(--admin-accent, var(--color-primary-500));
+  background: var(--admin-accent-soft, var(--color-primary-50));
 }
 
 .dark .workflow-dropzone.dragging {
-  background: var(--admin-accent-soft, rgb(var(--color-primary-900) / .2));
+  background: var(--admin-accent-soft, color-mix(in srgb, var(--color-primary-900) 20%, transparent));
 }
 
 .markdown-preview {
@@ -417,10 +417,10 @@ a.workflow-panel:hover {
   max-height: 42rem;
   overflow: auto;
   padding: 1.15rem;
-  border: 1px solid var(--admin-border, rgb(var(--color-base-200)));
+  border: 1px solid var(--admin-border, var(--color-base-200));
   border-radius: .45rem;
-  background: var(--admin-bg, rgb(var(--color-base-50)));
-  color: var(--admin-text, rgb(var(--color-base-800)));
+  background: var(--admin-bg, var(--color-base-50));
+  color: var(--admin-text, var(--color-base-800));
   font-size: .82rem;
   line-height: 1.8;
   overflow-wrap: anywhere;
@@ -428,9 +428,9 @@ a.workflow-panel:hover {
 }
 
 .dark .markdown-preview {
-  border-color: var(--admin-border, rgb(var(--color-base-700)));
-  background: var(--admin-bg, rgb(var(--color-base-950)));
-  color: var(--admin-text, rgb(var(--color-base-200)));
+  border-color: var(--admin-border, var(--color-base-700));
+  background: var(--admin-bg, var(--color-base-950));
+  color: var(--admin-text, var(--color-base-200));
 }
 
 .markdown-preview > :first-child {
@@ -446,7 +446,7 @@ a.workflow-panel:hover {
 .markdown-preview h3,
 .markdown-preview h4 {
   margin: 1.5rem 0 .65rem;
-  color: var(--admin-heading, rgb(var(--color-base-900)));
+  color: var(--admin-heading, var(--color-base-900));
   font-weight: 650;
   letter-spacing: -.015em;
   line-height: 1.4;
@@ -456,7 +456,7 @@ a.workflow-panel:hover {
 .dark .markdown-preview h2,
 .dark .markdown-preview h3,
 .dark .markdown-preview h4 {
-  color: var(--admin-heading, rgb(var(--color-base-100)));
+  color: var(--admin-heading, var(--color-base-100));
 }
 
 .markdown-preview h1 { font-size: 1.4rem; }
@@ -464,13 +464,13 @@ a.workflow-panel:hover {
 .markdown-preview h3 { font-size: 1rem; }
 
 .markdown-preview a {
-  color: var(--admin-accent, rgb(var(--color-primary-600)));
+  color: var(--admin-accent, var(--color-primary-600));
   text-decoration: underline;
   text-underline-offset: .16em;
 }
 
 .dark .markdown-preview a {
-  color: var(--admin-accent, rgb(var(--color-primary-400)));
+  color: var(--admin-accent, var(--color-primary-400));
 }
 
 .markdown-preview ul,
@@ -485,20 +485,20 @@ a.workflow-panel:hover {
   margin: 1rem 0;
   padding: .8rem;
   overflow-x: auto;
-  border: 1px solid var(--admin-border, rgb(var(--color-base-200)));
+  border: 1px solid var(--admin-border, var(--color-base-200));
   border-radius: .4rem;
-  background: var(--admin-surface-subtle, rgb(var(--color-base-100)));
+  background: var(--admin-surface-subtle, var(--color-base-100));
 }
 
 .dark .markdown-preview pre {
-  border-color: var(--admin-border, rgb(var(--color-base-700)));
-  background: var(--admin-surface-subtle, rgb(var(--color-base-900)));
+  border-color: var(--admin-border, var(--color-base-700));
+  background: var(--admin-surface-subtle, var(--color-base-900));
 }
 
 .markdown-preview code {
   padding: .1rem .25rem;
   border-radius: .25rem;
-  background: var(--admin-surface-subtle, rgb(var(--color-base-100)));
+  background: var(--admin-surface-subtle, var(--color-base-100));
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   font-size: .75rem;
 }
@@ -516,17 +516,17 @@ a.workflow-panel:hover {
 .markdown-preview th,
 .markdown-preview td {
   padding: .45rem .6rem;
-  border: 1px solid var(--admin-border-strong, rgb(var(--color-base-300)));
+  border: 1px solid var(--admin-border-strong, var(--color-base-300));
   text-align: left;
 }
 
 .markdown-preview th {
-  background: var(--admin-surface-subtle, rgb(var(--color-base-100)));
-  color: var(--admin-heading, rgb(var(--color-base-900)));
+  background: var(--admin-surface-subtle, var(--color-base-100));
+  color: var(--admin-heading, var(--color-base-900));
 }
 
 .dark .markdown-preview th {
-  color: var(--admin-heading, rgb(var(--color-base-100)));
+  color: var(--admin-heading, var(--color-base-100));
 }
 
 .markdown-preview img {
@@ -537,13 +537,13 @@ a.workflow-panel:hover {
 .markdown-preview blockquote {
   margin: 1rem 0;
   padding-left: .85rem;
-  border-left: 3px solid rgb(var(--color-primary-200));
-  color: var(--admin-text-secondary, rgb(var(--color-base-500)));
+  border-left: 3px solid var(--color-primary-200);
+  color: var(--admin-text-secondary, var(--color-base-500));
 }
 
 .dark .markdown-preview blockquote {
-  border-left-color: rgb(var(--color-primary-800));
-  color: var(--admin-text-secondary, rgb(var(--color-base-400)));
+  border-left-color: var(--color-primary-800);
+  color: var(--admin-text-secondary, var(--color-base-400));
 }
 
 .markdown-preview .table-scroll,
@@ -557,25 +557,25 @@ a.workflow-panel:hover {
   max-width: 100%;
   margin-bottom: .8rem;
   padding: .85rem;
-  border: 1px solid var(--admin-border, rgb(var(--color-base-200)));
+  border: 1px solid var(--admin-border, var(--color-base-200));
   border-radius: .45rem;
-  background: var(--admin-bg, rgb(var(--color-base-50)));
+  background: var(--admin-bg, var(--color-base-50));
   box-sizing: border-box;
 }
 
 .dark .media-row {
-  border-color: var(--admin-border, rgb(var(--color-base-700)));
-  background: var(--admin-bg, rgb(var(--color-base-950)));
+  border-color: var(--admin-border, var(--color-base-700));
+  background: var(--admin-bg, var(--color-base-950));
 }
 
 .media-row .cat-pill {
   display: inline-flex;
   align-items: center;
   padding: .16rem .42rem;
-  border: 1px solid var(--admin-border, rgb(var(--color-base-200)));
+  border: 1px solid var(--admin-border, var(--color-base-200));
   border-radius: .3rem;
   background: var(--admin-surface, white);
-  color: var(--admin-text-secondary, rgb(var(--color-base-600)));
+  color: var(--admin-text-secondary, var(--color-base-600));
   font-size: .64rem;
   font-weight: 650;
   letter-spacing: .06em;
@@ -584,17 +584,17 @@ a.workflow-panel:hover {
 }
 
 .dark .media-row .cat-pill {
-  background: var(--admin-surface, rgb(var(--color-base-900)));
-  color: var(--admin-text-secondary, rgb(var(--color-base-300)));
+  background: var(--admin-surface, var(--color-base-900));
+  color: var(--admin-text-secondary, var(--color-base-300));
 }
 
 .media-error {
-  color: rgb(var(--color-red-700));
+  color: var(--color-red-700);
   font-size: .7rem;
 }
 
 .dark .media-error {
-  color: rgb(var(--color-red-300));
+  color: var(--color-red-300);
 }
 
 @media (max-width: 640px) {
@@ -645,9 +645,9 @@ a.workflow-panel:hover {
 .workflow-title { font-size: 1.5rem; }
 .workflow-subtitle { font-size: .93rem; }
 .workflow-steps { font-size: .8rem; }
-.workflow-step-number { font-size: .72rem; }
+.workflow-step-number { font-size: .82rem; }
 .workflow-panel-title { font-size: 1rem; }
-.workflow-panel-description { font-size: .85rem; }
+.workflow-panel-description { font-size: .95rem; }
 .workflow-label { font-size: .88rem; }
 .workflow-help { font-size: .8rem; }
 .workflow-error, .workflow-alert, .workflow-warning { font-size: .83rem; }
@@ -661,8 +661,18 @@ a.workflow-panel:hover {
 .workflow-editor-grid .workflow-field { margin-bottom: 0; }
 .workflow-editor-grid .markdown-preview { min-height: 18rem; max-height: 42rem; overflow: auto; }
 .workflow-ai-actions { display: flex; align-items: center; flex-wrap: wrap; gap: .65rem; margin: -.25rem 0 1rem; }
-.media-metadata { display: block; margin-top: .35rem; color: var(--admin-text-muted, rgb(var(--color-base-500))); font-size: .78rem; }
-.dark .media-metadata { color: var(--admin-text-muted, rgb(var(--color-base-400))); }
+.media-metadata { display: block; margin-top: .35rem; color: var(--admin-text-muted, var(--color-base-500)); font-size: .875rem; }
+.dark .media-metadata { color: var(--admin-text-muted, var(--color-base-400)); }
 @media (min-width: 1280px) {
   .workflow-editor-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+.workflow-title { font-size: 1.5rem; line-height: 1.4; }
+.workflow-panel-header { border-radius: 12px 12px 0 0; }
+.workflow-actions { box-shadow: 0 6px 24px rgb(20 45 34 / .08); background: var(--admin-surface); }
+.dark .workflow-actions { background: var(--admin-surface); }
+@media (max-width: 639px) {
+  .workflow-header { flex-wrap: wrap; }
+  .workflow-panel-body { padding: 1rem; }
+  .workflow-shell .admin-input { font-size: 1rem; }
 }

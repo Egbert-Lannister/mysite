@@ -1,0 +1,36 @@
+{% load unfold %}
+
+<div class="border-b border-base-200 flex gap-3 items-center h-[65px] mb-6 dark:border-base-800 px-3 {% element_classes 'navigation_header' %}" {% if site_dropdown %}x-data="{ openDropdown: false }"{% endif %}>
+    <div class="bg-transparent flex font-semibold gap-3 grow min-w-0 h-[64px] items-center px-3 {% if site_dropdown %}cursor-pointer transition-all -mx-3 px-6 hover:bg-base-100 dark:hover:bg-white/[.06]{% endif %}"
+         {% if site_dropdown %}
+             role="button"
+             tabindex="0"
+             aria-label="网站菜单；双击返回后台首页"
+             x-bind:aria-expanded="openDropdown"
+             x-on:click="openDropdown = !openDropdown"
+             x-on:keydown.enter.prevent="openDropdown = !openDropdown"
+             x-on:keydown.space.prevent="openDropdown = !openDropdown"
+             x-on:dblclick.stop.prevent="openDropdown = false; window.location.assign('{% url 'admin:index' %}')"
+             x-bind:class="{'bg-base-100 dark:bg-white/[.06]': openDropdown, 'bg-transparent': !openDropdown}"
+             title="单击展开网站菜单，双击返回后台首页"
+         {% endif %}
+    >
+        {% if site_logo %}
+            {% include "unfold/helpers/site_logo.html" %}
+        {% elif branding %}
+            {% include "unfold/helpers/site_icon.html" %}
+        {% endif %}
+
+        {% if site_dropdown %}
+            <span class="material-symbols-outlined ml-auto select-none text-font-default-light dark:text-font-default-dark">
+                unfold_more
+            </span>
+        {% endif %}
+    </div>
+
+    <span class="material-symbols-outlined block cursor-pointer h-[18px] xl:hidden! hover:text-base-700 dark:hover:text-base-200" x-on:click="sidebarMobileOpen = !sidebarMobileOpen">
+        close
+    </span>
+
+    {% include "unfold/helpers/site_dropdown.html" %}
+</div>

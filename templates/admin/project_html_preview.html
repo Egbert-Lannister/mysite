@@ -2,7 +2,7 @@
 {% load static %}
 {% block title %}HTML 项目预览{% endblock %}
 {% block content_title %}{% endblock %}
-{% block extrahead %}{{ block.super }}<link rel="stylesheet" href="{% static 'vendor/flatpickr/flatpickr.min.css' %}"><link rel="stylesheet" href="{% static 'admin/workflow.css' %}"><script defer src="{% static 'vendor/flatpickr/flatpickr.min.js' %}"></script><script defer src="{% static 'admin/workflow.js' %}"></script>{% endblock %}
+{% block extrahead %}{{ block.super }}<link rel="stylesheet" href="{% static 'vendor/flatpickr/flatpickr.min.css' %}"><link rel="stylesheet" href="{% static 'admin/workflow.css' %}?v=20261029-workbench"><script defer src="{% static 'vendor/flatpickr/flatpickr.min.js' %}"></script><script defer src="{% static 'admin/workflow.js' %}?v=20261029-workbench"></script>{% endblock %}
 {% block content %}
 <div class="workflow-shell !max-w-6xl">
 	<header class="workflow-header"><div><p class="page-eyebrow">Safe HTML project</p><h1 class="workflow-title">HTML 项目预览</h1><p class="workflow-subtitle">以下为清理后的页面，不会执行包内脚本或加载外部媒体。资源链接与发布信息可在保存前调整。</p></div><a href="{% url 'admin_project_upload' %}" class="workflow-button">返回创建方式</a></header>

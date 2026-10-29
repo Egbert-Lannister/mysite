@@ -320,13 +320,6 @@ class AdminPermissionAndCsrfTests(TestCase):
         self.assertContains(response, static("images/favicon-32.png"))
         self.assertContains(response, static("images/apple-touch-icon.png"))
 
-    def test_admin_uses_django_classic_blue_grey_palette(self):
-        colors = settings.UNFOLD["COLORS"]
-        self.assertEqual(colors["primary"]["600"], "65 118 144")  # #417690
-        self.assertEqual(colors["primary"]["400"], "121 174 200")  # #79aec8
-        self.assertEqual(colors["primary"]["200"], "196 220 232")  # #c4dce8
-        self.assertEqual(colors["base"]["50"], "248 248 248")
-
     def test_standard_article_and_project_change_pages_render(self):
         self.client.force_login(self.superuser)
         article = Post.objects.create(title="Article", slug="standard-article", content="body", category="engineering", date=timezone.now())
