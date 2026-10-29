@@ -4,6 +4,7 @@ import shutil
 import tempfile
 import uuid
 from pathlib import Path
+from urllib.parse import urlencode
 
 from django.contrib import admin as django_admin
 from django.contrib import messages
@@ -12,6 +13,8 @@ from django.core.files import File
 from django.core.files.storage import default_storage
 from django.db import transaction
 from django.shortcuts import redirect, render
+from django.http import HttpResponse
+from django.urls import reverse
 from django.utils import timezone
 from PIL import Image
 from taggit.utils import parse_tags
@@ -57,14 +60,63 @@ def _staging_dir(data, *, create=False, project=False):
     return path
 
 
+def _drafts(request, key):
+    drafts = request.session.setdefault(key + "_drafts", {})
+    current = request.session.get(key)
+    if current:
+        current.setdefault("editor_token", uuid.uuid4().hex)
+        drafts[current["editor_token"]] = current
+    return drafts
+
+
+def _new_draft(request, key, data):
+    drafts = _drafts(request, key)
+    drafts[data["editor_token"]] = data
+    request.session[key] = data
+    request.session.modified = True
+
+
+def _load_draft(request, key):
+    drafts = _drafts(request, key)
+    token = request.POST.get("editor_token") if request.method == "POST" else request.GET.get("draft")
+    if request.method == "POST" and not token:
+        return None
+    if token:
+        data = drafts.get(token)
+        # The form and URL must identify the same draft.
+        if request.GET.get("draft") and request.GET["draft"] != token:
+            return None
+    else:
+        data = request.session.get(key)
+    if data:
+        request.session[key] = data
+        request.session.modified = True
+    return data
+
+
+def _draft_redirect(route, data):
+    return redirect(reverse(route) + "?" + urlencode({"draft": data["editor_token"]}))
+
+
+def _expired_draft():
+    return HttpResponse("此编辑页面已失效，未保存任何更改。请返回上传页面继续当前草稿；旧页面中的文字可先复制保留。", status=409)
+
+
 def _cleanup_session(request, key):
-    data = request.session.get(key) or {}
+    # Only the draft selected by this request may be removed.
+    drafts = _drafts(request, key)
+    token = request.POST.get("editor_token")
+    data = drafts.pop(token, {})
     value = data.get("staging_dir", "")
     if value:
         path = Path(value).resolve()
         if path.parent == Path(tempfile.gettempdir()).resolve() and path.name.startswith(("upload_", "project_")):
             shutil.rmtree(path, ignore_errors=True)
-    request.session.pop(key, None)
+    if (request.session.get(key) or {}).get("editor_token") == token:
+        request.session.pop(key, None)
+        if drafts:
+            request.session[key] = next(reversed(drafts.values()))
+    request.session.modified = True
 
 
 def _asset_path(data, relative_path):
@@ -188,7 +240,9 @@ def _stage_cover(data, upload):
     relative, filename = _write_upload(data, upload, "project_cover")
     previous = data.get("project_cover")
     data["project_cover"] = {"path": relative, "filename": filename}
-    if previous and previous.get("path") != relative:
+    referenced = {item.get("path") for item in data.get("project_media", [])}
+    referenced.update(item.get("path") for item in data.get("assets", []))
+    if previous and previous.get("path") != relative and previous.get("path") not in referenced:
         try:
             _asset_path(data, previous["path"]).unlink(missing_ok=True)
         except (KeyError, ValueError, OSError):
@@ -266,9 +320,8 @@ def admin_upload(request):
             try:
                 parsed = parse_upload_file(uploaded)
                 parsed.update({"series": None, "series_order": "", "mode": "upload", "editor_token": uuid.uuid4().hex})
-                _cleanup_session(request, ARTICLE_SESSION_KEY)
-                request.session[ARTICLE_SESSION_KEY] = parsed
-                return redirect("admin_upload_preview")
+                _new_draft(request, ARTICLE_SESSION_KEY, parsed)
+                return _draft_redirect("admin_upload_preview", parsed)
             except (ValueError, OSError, UnicodeError) as exc:
                 error = f"处理文件失败：{exc}"
     context = _base_context(request, "上传文章")
@@ -278,20 +331,22 @@ def admin_upload(request):
 
 def admin_upload_blank(request):
     _require(request, "posts.add_post")
-    _cleanup_session(request, ARTICLE_SESSION_KEY)
-    request.session[ARTICLE_SESSION_KEY] = {
+    data = {
         "title": "", "slug": "", "description": "", "category": "engineering",
         "tags": "", "date": "", "content": "", "image_count": 0, "assets": [],
         "staging_dir": "", "md_filename": "", "has_frontmatter": False,
         "warnings": [], "series": None, "series_order": "", "mode": "blank",
         "editor_token": uuid.uuid4().hex,
     }
-    return redirect("admin_upload_preview")
+    _new_draft(request, ARTICLE_SESSION_KEY, data)
+    return _draft_redirect("admin_upload_preview", data)
 
 
 def admin_upload_preview(request):
     _require(request, "posts.add_post")
-    data = request.session.get(ARTICLE_SESSION_KEY)
+    data = _load_draft(request, ARTICLE_SESSION_KEY)
+    if not data and (request.method == "POST" or request.GET.get("draft")):
+        return _expired_draft()
     if not data:
         messages.error(request, "没有待预览的文章，请先上传文件或新建空白文章。")
         return redirect("admin_upload")
@@ -358,9 +413,8 @@ def admin_project_upload(request):
                     parsed.update({"category": "projects", "mode": "project_upload", "project_media": _package_media(parsed), "project_cover": None, "editor_token": uuid.uuid4().hex})
                 else:
                     raise ValueError("未知的项目导入方式。")
-                _cleanup_session(request, PROJECT_SESSION_KEY)
-                request.session[PROJECT_SESSION_KEY] = parsed
-                return redirect("admin_project_upload_preview")
+                _new_draft(request, PROJECT_SESSION_KEY, parsed)
+                return _draft_redirect("admin_project_upload_preview", parsed)
             except (ValueError, OSError, UnicodeError) as exc:
                 error = f"处理项目文件失败：{exc}"
     context = _base_context(request, "上传项目")
@@ -370,8 +424,7 @@ def admin_project_upload(request):
 
 def admin_project_upload_blank(request):
     _require(request, "posts.add_project")
-    _cleanup_session(request, PROJECT_SESSION_KEY)
-    request.session[PROJECT_SESSION_KEY] = {
+    data = {
         "title": "", "slug": "", "description": "", "category": "projects",
         "tags": "", "date": "", "content": "", "project_method": "", "project_experiments": "", "project_conclusion": "", "image_count": 0, "assets": [],
         "staging_dir": "", "md_filename": "", "has_frontmatter": False,
@@ -380,7 +433,8 @@ def admin_project_upload_blank(request):
         "project_featured": False, "project_media": [], "project_cover": None,
         "editor_token": uuid.uuid4().hex,
     }
-    return redirect("admin_project_upload_preview")
+    _new_draft(request, PROJECT_SESSION_KEY, data)
+    return _draft_redirect("admin_project_upload_preview", data)
 
 
 def _admin_html_project_preview(request, data):
@@ -439,7 +493,9 @@ def _admin_html_project_preview(request, data):
 
 def admin_project_upload_preview(request):
     _require(request, "posts.add_project")
-    data = request.session.get(PROJECT_SESSION_KEY)
+    data = _load_draft(request, PROJECT_SESSION_KEY)
+    if not data and (request.method == "POST" or request.GET.get("draft")):
+        return _expired_draft()
     if not data:
         messages.error(request, "没有待预览的项目，请先上传项目文件或新建空白项目。")
         return redirect("admin_project_upload")
@@ -472,7 +528,7 @@ def admin_project_upload_preview(request):
             media_id = action.split(":", 1)[1]
             data["project_media"] = [item for item in data["project_media"] if item["id"] != media_id]
             request.session.modified = True
-            return redirect("admin_project_upload_preview")
+            return _draft_redirect("admin_project_upload_preview", data)
         if action.startswith("cover_media:"):
             media_id = action.split(":", 1)[1]
             item = next((item for item in data["project_media"] if item["id"] == media_id), None)
@@ -484,13 +540,13 @@ def admin_project_upload_preview(request):
                     with Image.open(path) as image:
                         image.verify()
                     data["project_cover"] = {"path": item["path"], "filename": item["filename"]}
-                    return redirect("admin_project_upload_preview")
+                    return _draft_redirect("admin_project_upload_preview", data)
                 except (ValueError, OSError) as exc:
                     form.add_error(None, f"无法使用该封面图片：{exc}")
         if action == "clear_cover":
             data["project_cover"] = None
             request.session.modified = True
-            return redirect("admin_project_upload_preview")
+            return _draft_redirect("admin_project_upload_preview", data)
 
         new_files = form.cleaned_data.get("new_media_files") or []
         if action in {"add_media", "draft", "publish"} and new_files:
@@ -504,7 +560,7 @@ def admin_project_upload_preview(request):
             if not new_files and not cover and "new_media_files" not in form.errors:
                 form.add_error("new_media_files", "请选择要添加的图片或视频。")
             elif "new_media_files" not in form.errors:
-                return redirect("admin_project_upload_preview")
+                return _draft_redirect("admin_project_upload_preview", data)
 
         if action in {"draft", "publish"} and form_valid and not form.errors:
             if not _validate_media(data):

@@ -1,5 +1,7 @@
 """Locale-independent English dates for the public English interface."""
+from datetime import datetime
 from django import template
+from django.utils import timezone
 
 register = template.Library()
 
@@ -13,10 +15,17 @@ MONTHS_SHORT = (
 )
 
 
+def local_date_value(value):
+    if isinstance(value, datetime) and timezone.is_aware(value):
+        return timezone.localtime(value)
+    return value
+
+
 @register.filter
 def english_date(value, style="long"):
     if not value:
         return ""
+    value = local_date_value(value)
     month = MONTHS[value.month - 1]
     short_month = MONTHS_SHORT[value.month - 1]
     if style == "short":

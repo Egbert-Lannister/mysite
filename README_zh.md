@@ -168,3 +168,20 @@ MIT License
 ## 作者
 
 Egbert Lannister
+
+
+### 在线备份与重复导入
+
+SQLite 备份使用标准库的在线备份接口，包含 WAL 中已经提交的数据。备份通过完整性检查后才执行保留策略；失败时不清理旧备份。Linux 可继续使用 `scripts/backup_db.sh`（支持 `DB`、`BACKUP_DIR`、`PYTHON` 环境变量），也可跨平台运行：
+
+```bash
+python scripts/backup_db.py --database db.sqlite3 --output backups --keep 14
+```
+
+`loadmd` 对没有显式 slug 的文件按导入目录和相对文件路径生成稳定标识，重复运行会更新同一篇文章。迁移导入目录或跨设备导入时，从首次导入起使用固定命名空间：
+
+```bash
+python manage.py loadmd content --namespace personal-archive
+```
+
+已有显式 slug 的导入方式保持不变；历史重复文章不会自动合并。系列阅读顺序优先使用后台设置的系列内排序，未设置序号的文章排在其后，按发布日期及主键稳定排序。

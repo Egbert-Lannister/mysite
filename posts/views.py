@@ -166,10 +166,8 @@ def post_detail(request, slug: str):
 
     series_context = None
     if post.series:
-        series_posts = Post.objects.filter(
-            series=post.series, published=True,
-        ).order_by("date")
-        total_posts = series_posts.count()
+        series_posts = list(post.series.get_posts())
+        total_posts = len(series_posts)
         current_index = None
         for idx, p in enumerate(series_posts, 1):
             if p.pk == post.pk:
@@ -181,8 +179,8 @@ def post_detail(request, slug: str):
             "posts": series_posts,
             "total": total_posts,
             "current_index": current_index,
-            "prev_post": post.get_series_prev(),
-            "next_post": post.get_series_next(),
+            "prev_post": series_posts[current_index - 2] if current_index and current_index > 1 else None,
+            "next_post": series_posts[current_index] if current_index and current_index < total_posts else None,
         }
 
     return render(request, "detail.html", {

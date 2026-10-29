@@ -88,6 +88,7 @@ class ResearchWorkflowTests(TestCase):
 
     def payload(self, slug="structured-project", title="Structured project"):
         return {
+            "editor_token": self.client.session[PROJECT_SESSION_KEY]["editor_token"],
             "title": title, "slug": slug, "description": "A concise summary", "tags": "robotics, evaluation", "date": "",
             "content": "The overview states the problem.", "project_method": "The method uses a controlled pipeline.",
             "project_experiments": "Experiments compare two settings.", "project_conclusion": "The conclusion states the verified scope.",

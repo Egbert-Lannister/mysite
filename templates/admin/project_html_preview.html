@@ -10,6 +10,7 @@
 	{% for warning in data.warnings %}<div class="workflow-warning">{{ warning }}</div>{% endfor %}
 	<form method="post" data-workflow-form>
 		{% csrf_token %}
+		<input type="hidden" name="editor_token" value="{{ data.editor_token }}">
 		{% if form.non_field_errors %}<div class="workflow-alert" role="alert">{% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
 		<div class="grid xl:grid-cols-2 gap-4 items-start">
 			<section class="workflow-panel"><header class="workflow-panel-header"><h2 class="workflow-panel-title">01 · 基本信息</h2><p class="workflow-panel-description">标题与摘要来自 HTML 元数据，可在这里修正。</p></header><div class="workflow-panel-body">{% include "admin/_includes/field.html" with field=form.title %}{% include "admin/_includes/field.html" with field=form.slug %}{% include "admin/_includes/field.html" with field=form.description %}<div class="grid sm:grid-cols-2 gap-3">{% include "admin/_includes/field.html" with field=form.project_status %}{% include "admin/_includes/field.html" with field=form.date %}</div></div></section>

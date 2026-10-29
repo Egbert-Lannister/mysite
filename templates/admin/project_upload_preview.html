@@ -13,6 +13,7 @@
 	{% for warning in data.warnings %}<div class="workflow-warning">{{ warning }}</div>{% endfor %}
 	<form method="post" enctype="multipart/form-data" data-workflow-form>
 		{% csrf_token %}
+		<input type="hidden" name="editor_token" value="{{ data.editor_token }}">
 		{% if form.non_field_errors %}<div class="workflow-alert" role="alert">{% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
 		<div class="grid xl:grid-cols-2 gap-4 items-start">
 			<section class="workflow-panel"><header class="workflow-panel-header"><h2 class="workflow-panel-title">01 · 基本信息</h2><p class="workflow-panel-description">标题、摘要与状态构成项目卡片和 Overview 的入口。</p></header><div class="workflow-panel-body">

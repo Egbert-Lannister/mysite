@@ -14,6 +14,7 @@
 	{% if data.image_count %}<p class="workflow-help mb-3">已在内容包中发现 {{ data.image_count }} 张正文图片。</p>{% endif %}
 	<form method="post" data-workflow-form>
 		{% csrf_token %}
+		<input type="hidden" name="editor_token" value="{{ data.editor_token }}">
 		{% if form.non_field_errors %}<div class="workflow-alert" role="alert">{% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
 		<div class="grid xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-4 items-start">
 			<div>

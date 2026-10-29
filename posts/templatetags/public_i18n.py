@@ -1,7 +1,7 @@
 from django import template
 from django.utils import translation
 
-from .english_dates import english_date
+from .english_dates import english_date, local_date_value
 
 register = template.Library()
 
@@ -10,7 +10,8 @@ register = template.Library()
 def display_date(value, style='long'):
     if not value:
         return ''
-    if translation.get_language().startswith('zh'):
+    value = local_date_value(value)
+    if (translation.get_language() or '').startswith('zh'):
         return f'{value.year}年{value.month}月{value.day}日'
     return english_date(value, style)
 

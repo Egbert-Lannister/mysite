@@ -8,8 +8,8 @@
   }
 
   ready(() => {
-    const content = document.querySelector(".article-content");
-    if (content && window.renderMathInElement) {
+    document.querySelectorAll(".article-content").forEach((content) => {
+      if (!window.renderMathInElement) return;
       try {
         window.renderMathInElement(content, {
           delimiters: [{ left: "$$", right: "$$", display: true }, { left: "\\(", right: "\\)", display: false }, { left: "$", right: "$", display: false }],
@@ -17,7 +17,7 @@
           ignoredTags: ["script", "noscript", "style", "textarea", "pre", "code"]
         });
       } catch (_) { /* Raw, escaped math remains readable. */ }
-    }
+    });
 
     async function copyText(text) {
       if (navigator.clipboard?.writeText) return navigator.clipboard.writeText(text);

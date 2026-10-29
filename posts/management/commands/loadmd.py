@@ -1,4 +1,5 @@
 import re
+import hashlib
 from datetime import datetime
 from pathlib import Path
 
@@ -18,6 +19,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument("base", nargs="?", default="content", help="Base content directory")
+        parser.add_argument("--namespace", help="Stable import namespace across directory moves; defaults to the absolute base directory")
 
     def handle(self, *args, **options):
         base_dir = Path(options["base"]).resolve()
@@ -61,7 +63,12 @@ class Command(BaseCommand):
                 if not slug:
                     slug = generate_unique_slug(title)
             else:
-                slug = generate_unique_slug(title)
+                relative = file_path.relative_to(base_dir).as_posix()
+                namespace = options.get("namespace") or base_dir.as_posix()
+                identity = f"{namespace}/{relative}"
+                digest = hashlib.sha256(identity.encode("utf-8")).hexdigest()[:12]
+                stem = slugify(file_path.stem)[:25] or "article"
+                slug = f"import-{stem}-{digest}"
 
             post, is_created = Post.objects.update_or_create(
                 slug=slug,

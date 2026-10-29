@@ -341,20 +341,23 @@ class AdminPermissionAndCsrfTests(TestCase):
 
 
 class ArticleWorkflowTests(TestCase):
+    def payload(self, **overrides):
+        return article_payload(editor_token=self.client.session[ARTICLE_SESSION_KEY]["editor_token"], **overrides)
+
     def setUp(self):
         self.user = get_user_model().objects.create_superuser("article-admin", "article@example.com", "password")
         self.client.force_login(self.user)
 
     def test_draft_then_public_publish_boundaries(self):
         self.client.get(reverse("admin_upload_blank"))
-        response = self.client.post(reverse("admin_upload_preview"), article_payload())
+        response = self.client.post(reverse("admin_upload_preview"), self.payload())
         self.assertEqual(response.status_code, 302)
         post = Post.objects.get(slug="workflow-article")
         self.assertFalse(post.published)
         self.assertEqual(self.client.get(post.get_absolute_url()).status_code, 404)
 
         self.client.get(reverse("admin_upload_blank"))
-        response = self.client.post(reverse("admin_upload_preview"), article_payload(
+        response = self.client.post(reverse("admin_upload_preview"), self.payload(
             title="Published article", slug="published-article", action="publish",
             content="Body <script>alert(1)</script>",
         ))
@@ -366,7 +369,7 @@ class ArticleWorkflowTests(TestCase):
     def test_duplicate_slug_rerenders_typed_content_and_keeps_session(self):
         Post.objects.create(title="Existing", slug="workflow-article", content="keep", category="engineering", date=timezone.now())
         self.client.get(reverse("admin_upload_blank"))
-        response = self.client.post(reverse("admin_upload_preview"), article_payload(content="Do not lose this text"))
+        response = self.client.post(reverse("admin_upload_preview"), self.payload(content="Do not lose this text"))
         self.assertEqual(response.status_code, 400)
         self.assertContains(response, "Do not lose this text", status_code=400)
         self.assertContains(response, "已存在", status_code=400)
@@ -376,7 +379,7 @@ class ArticleWorkflowTests(TestCase):
     def test_unexpected_content_error_keeps_draft_session(self):
         self.client.get(reverse("admin_upload_blank"))
         with patch("posts.admin_uploads.process_markdown_content", side_effect=ContentProcessError("simulated failure", "content")):
-            response = self.client.post(reverse("admin_upload_preview"), article_payload(action="publish"))
+            response = self.client.post(reverse("admin_upload_preview"), self.payload(action="publish"))
         self.assertEqual(response.status_code, 400)
         self.assertContains(response, "simulated failure", status_code=400)
         self.assertIn(ARTICLE_SESSION_KEY, self.client.session)
@@ -384,6 +387,9 @@ class ArticleWorkflowTests(TestCase):
 
 
 class ProjectWorkflowTests(TemporaryMediaTestCase):
+    def payload(self, **overrides):
+        return project_payload(editor_token=self.client.session[PROJECT_SESSION_KEY]["editor_token"], **overrides)
+
     def setUp(self):
         super().setUp()
         self.user = get_user_model().objects.create_superuser("project-admin", "project@example.com", "password")
@@ -391,7 +397,7 @@ class ProjectWorkflowTests(TemporaryMediaTestCase):
 
     def test_blank_project_publishes_through_proxy_not_article_admin(self):
         self.client.get(reverse("admin_project_upload_blank"))
-        response = self.client.post(reverse("admin_project_upload_preview"), project_payload(action="publish"))
+        response = self.client.post(reverse("admin_project_upload_preview"), self.payload(action="publish"))
         self.assertEqual(response.status_code, 302)
         project = Project.objects.get(slug="workflow-project")
         self.assertTrue(project.published)
@@ -404,14 +410,14 @@ class ProjectWorkflowTests(TemporaryMediaTestCase):
 
     def test_staged_media_is_owned_by_project_and_isolated_from_other_projects(self):
         self.client.get(reverse("admin_project_upload_blank"))
-        response = self.client.post(reverse("admin_project_upload_preview"), project_payload(
+        response = self.client.post(reverse("admin_project_upload_preview"), self.payload(
             action="add_media", new_media_files=self.image(), new_media_section="method", new_media_group="Vision",
         ))
         self.assertEqual(response.status_code, 302)
         session = self.client.session[PROJECT_SESSION_KEY]
         self.assertEqual(len(session["project_media"]), 1)
         item = session["project_media"][0]
-        response = self.client.post(reverse("admin_project_upload_preview"), project_payload(
+        response = self.client.post(reverse("admin_project_upload_preview"), self.payload(
             action="publish", **{
                 f"media_{item['id']}_include": "1", f"media_{item['id']}_title": "Only this project",
                 f"media_{item['id']}_section": "method", f"media_{item['id']}_group_name": "Vision",
@@ -434,11 +440,11 @@ class ProjectWorkflowTests(TemporaryMediaTestCase):
 
     def test_media_database_failure_rolls_back_post_and_deletes_new_file(self):
         self.client.get(reverse("admin_project_upload_blank"))
-        self.client.post(reverse("admin_project_upload_preview"), project_payload(
+        self.client.post(reverse("admin_project_upload_preview"), self.payload(
             action="add_media", new_media_files=self.image(), new_media_section="results",
         ))
         item = self.client.session[PROJECT_SESSION_KEY]["project_media"][0]
-        payload = project_payload(action="publish", **{
+        payload = self.payload(action="publish", **{
             f"media_{item['id']}_include": "1", f"media_{item['id']}_title": "Rollback media",
             f"media_{item['id']}_section": "results", f"media_{item['id']}_group_name": "",
             f"media_{item['id']}_order": "0", f"media_{item['id']}_description": "",

@@ -111,12 +111,12 @@ class Series(models.Model):
         return reverse("posts:series_detail", args=[self.slug])
 
     def get_posts(self):
-        """Return published posts in this series, oldest first."""
+        """Return published articles by explicit sequence, then date and primary key."""
         return (
             self.posts
             .filter(published=True)
             .exclude(category="projects")
-            .order_by("date")
+            .order_by(models.F("series_order").asc(nulls_last=True), "date", "pk")
         )
 
     @property
@@ -283,31 +283,20 @@ class Post(models.Model):
             if cover_size > max_size:
                 raise ValidationError({"project_cover": "封面图片不能超过 10MB。"})
 
-    def get_series_prev(self) -> "Post | None":
-        if not self.series:
+    def _series_neighbor(self, offset):
+        if not self.series_id:
             return None
-        return (
-            Post.objects.filter(
-                series=self.series,
-                date__lt=self.date,
-                published=True,
-            )
-            .order_by("-date")
-            .first()
-        )
+        posts = list(self.series.get_posts())
+        index = next((i for i, post in enumerate(posts) if post.pk == self.pk), None)
+        if index is not None and 0 <= index + offset < len(posts):
+            return posts[index + offset]
+        return None
+
+    def get_series_prev(self) -> "Post | None":
+        return self._series_neighbor(-1)
 
     def get_series_next(self) -> "Post | None":
-        if not self.series:
-            return None
-        return (
-            Post.objects.filter(
-                series=self.series,
-                date__gt=self.date,
-                published=True,
-            )
-            .order_by("date")
-            .first()
-        )
+        return self._series_neighbor(1)
 
 
 class ProjectManager(models.Manager):

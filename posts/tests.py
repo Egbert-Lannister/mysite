@@ -76,9 +76,9 @@ class SeriesModelTests(TestCase):
 
         posts = list(self.series.get_posts())
         self.assertEqual(len(posts), 2)
-        # Oldest first (ascending date order)
-        self.assertEqual(posts[0].pk, p1.pk)
-        self.assertEqual(posts[1].pk, p2.pk)
+        # Explicit reading sequence takes precedence over publication date.
+        self.assertEqual(posts[0].pk, p2.pk)
+        self.assertEqual(posts[1].pk, p1.pk)
 
     def test_post_count(self):
         now = timezone.now()
