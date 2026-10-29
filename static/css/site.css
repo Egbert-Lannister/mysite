@@ -18,8 +18,8 @@
   --radius-md: 6px;
   --radius-lg: 10px;
   --content-measure: 46rem;
-  --font-sans: Inter, "SF Pro Text", "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
-  --font-serif: "Iowan Old Style", "Palatino Linotype", "Noto Serif SC", "Source Han Serif SC", "Songti SC", "SimSun", Georgia, serif;
+  --font-sans: "TechBlog Chinese", Inter, "SF Pro Text", "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
+  --font-serif: "Iowan Old Style", "Palatino Linotype", "TechBlog Chinese", "PingFang SC", "Microsoft YaHei UI", "Microsoft YaHei", Georgia, serif;
   --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   --shadow-sm: 0 1px 2px rgb(23 26 24 / .035), 0 8px 24px rgb(23 26 24 / .045);
   --shadow-md: 0 3px 6px rgb(23 26 24 / .04), 0 16px 36px rgb(23 26 24 / .08);
@@ -617,16 +617,26 @@ img, video { height: auto; }
 .home-page .page-eyebrow,
 .home-page .home-browse > p,
 .home-page .post-card-meta { font-size: .875rem; }
-.post-card-standard { padding-block: 1.75rem; }
-.post-card-date strong { font-family: var(--font-serif); font-size: 1.65rem; }
-.post-card-date span { font-size: .875rem; }
+/* Article previews: metadata, headline, summary, then actions. */
+.post-card-standard { margin-top: 1rem; padding: 1.5rem; border: 1px solid var(--color-border); border-radius: 12px; background: var(--color-surface); }
+.post-card-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .55rem 1rem; }
+.post-card-date { flex: 0 1 auto; padding: 0; color: var(--color-text-muted); font-family: var(--font-sans); font-size: .875rem; line-height: 1.5; }
 .post-card-meta { font-size: .875rem; color: var(--color-text-secondary); }
-.post-card-main h2 { font-size: clamp(1.25rem, 2vw, 1.5rem); letter-spacing: -.02em; line-height: 1.35; }
-.post-card-description { font-size: 1rem; line-height: 1.75; }
+.post-card-category { display: inline-flex; padding: .25rem .65rem; border-radius: 6px; background: var(--color-accent-soft); color: var(--color-accent); font-family: var(--font-sans); font-weight: 600; line-height: 1.5; }
+.post-card-series { display: inline-block; max-width: 100%; margin-top: .7rem; color: var(--color-text-secondary); font-size: .875rem; line-height: 1.5; overflow-wrap: anywhere; }
+.post-card-series:hover { color: var(--color-accent); text-decoration: underline; }
+.post-card-main h2 { margin-top: .75rem; font-size: clamp(1.4rem, 2.2vw, 1.65rem); letter-spacing: -.02em; line-height: 1.35; }
+.post-card-series + h2 { margin-top: .35rem; }
+.post-card-description { max-width: 72ch; margin-top: .65rem; font-size: 1rem; line-height: 1.75; -webkit-line-clamp: 3; }
+.post-card-footer { flex-wrap: wrap; align-items: center; margin-top: 1.1rem; padding-top: .85rem; border-top: 1px solid var(--color-border); gap: .75rem 1rem; }
 .post-card-stack, .post-card-tags a { font-size: .875rem; }
-.post-card-link { font-size: .9375rem; }
-.post-card-tags a { color: var(--color-text-secondary); }
-.post-card-meta a { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+.post-card-tags { min-width: 0; flex: 1 1 15rem; gap: .4rem; }
+.post-card-tags a { display: inline-flex; align-items: center; min-height: 32px; max-width: 100%; padding: .2rem .55rem; border-radius: 5px; background: var(--color-surface-subtle); color: var(--color-text-secondary); line-height: 1.45; overflow-wrap: anywhere; }
+.post-card-tags a:hover, .post-card-tags a.is-highlighted { background: var(--color-accent-soft); color: var(--color-accent); }
+.post-card-link { min-height: 40px; margin-left: auto; font-size: .9375rem; color: var(--color-accent); }
+.post-card a:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }
+.home-writing .post-card { margin-top: 0; border: 0; border-bottom: 1px solid var(--color-border); border-radius: 0; background: transparent; }
+.home-writing .post-card-footer { padding-top: 0; border-top: 0; margin-top: .65rem; }
 .category-description, .page-desc { font-size: 1.0625rem; }
 .category-count strong { font-family: var(--font-serif); font-size: 1.85rem; }
 .category-count span { font-size: .875rem; }
@@ -711,6 +721,7 @@ img, video { height: auto; }
   .home-browse { padding: 1rem; gap: 0 1rem; }
   .home-lower { gap: 2rem; }
   .home-series-panel { max-width: none; }
+  .article-layout.flex { gap: 0; }
 }
 @media (max-width: 767px) {
   .site-brand { gap: .55rem; }
@@ -725,16 +736,26 @@ img, video { height: auto; }
   .home-project-card-featured .home-project-media { border-right: 0; border-bottom: 1px solid var(--color-border); }
   .home-project-card-featured .home-project-copy, .home-project-copy { padding: 1.25rem; }
   .home-writing { padding: 1.15rem; }
-  .home-writing .post-card-standard { gap: .75rem; }
-
-  .home-writing .post-card-main h2 { font-size: 1.2rem; }
-  .post-card-standard { flex-direction: column; gap: .55rem; padding-block: 1.35rem; }
-  .post-card-date { flex-basis: auto; padding-top: 0; }
-  .post-card-date time { flex-direction: row; align-items: baseline; gap: .4rem; }
-  .post-card-date strong { font-family: var(--font-mono); font-size: .875rem; font-weight: 500; color: var(--color-text-muted); }
+  .home-writing .post-card-main h2 { font-size: 1.3rem; }
+  .post-card-standard { flex-direction: column; gap: .75rem; padding: 1.05rem; }
+  .post-card-heading { gap: .5rem; }
+  .post-card-date { flex-basis: auto; }
   .post-card-main { width: 100%; }
-  .post-card-footer { gap: .5rem; }
-  .post-card-link { min-height: 44px; }
+  .post-card-main h2 { font-size: 1.4rem; line-height: 1.4; }
+  .post-card-footer { align-items: stretch; gap: .65rem; }
+  .post-card-tags { flex: 0 1 auto; }
+  .post-card-link { align-self: flex-end; min-height: 44px; }
+  .home-intro { gap: 1.25rem; }
+  .home-story-description { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; overflow: hidden; font-size: 1rem; line-height: 1.7; margin-top: .85rem; }
+  .home-story-footer { flex-direction: row; flex-wrap: wrap; align-items: center; gap: .5rem 1rem; margin-top: 1rem; padding-top: .75rem; }
+  .home-story-footer > .text-link { margin-left: auto; min-height: 44px; }
+  .home-browse > a { min-height: 44px; padding-block: .55rem; }
+  .home-lower { margin-top: 1.75rem; }
+  .article-header { margin-bottom: 1.5rem; padding-bottom: 1.25rem; }
+  .article-header h1 { font-size: clamp(1.75rem, 7.5vw, 2.1rem); line-height: 1.25; text-wrap: pretty; }
+  .article-header .back-link { margin-bottom: .7rem; }
+  .article-dek { line-height: 1.75; }
+  .category-hero .ui-button { grid-column: 1 / -1; justify-self: start; }
   .category-hero { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: .5rem 1rem; padding-bottom: 1.1rem; }
   .category-hero > div { display: contents; }
   .category-hero .page-eyebrow { grid-column: 1 / -1; }
@@ -759,3 +780,34 @@ img, video { height: auto; }
 @media (prefers-reduced-motion: reduce) {
   .home-project-card:hover, .home-browse > a:hover { transform: none; }
 }
+
+/* Language control and Chinese typography. */
+.language-switch { flex: 0 0 auto; }
+.language-toggle { display: inline-flex; align-items: center; min-height: 44px; padding: 0; border: 0; border-radius: 999px; background: transparent; cursor: pointer; }
+.language-track { display: grid; grid-template-columns: 1fr 1fr; width: 76px; gap: 2px; padding: 3px; border: 1px solid var(--color-border); border-radius: 999px; background: var(--color-surface-subtle); }
+.language-option { display: flex; align-items: center; justify-content: center; min-height: 26px; border-radius: 999px; color: var(--color-text-muted); font: 500 .75rem/1 "TechBlog Chinese", "PingFang SC", "Microsoft YaHei UI", "Microsoft YaHei", system-ui, sans-serif; }
+.language-option.is-current { color: var(--color-accent); background: var(--color-surface); font-weight: 600; box-shadow: 0 1px 3px rgb(0 0 0 / .08); }
+.language-toggle:hover .language-track { border-color: var(--color-accent); }
+.language-toggle:hover .language-option:not(.is-current) { color: var(--color-text); }
+.language-toggle:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }
+html[lang="zh-hans"] { --font-sans: "TechBlog Chinese", Inter, "Segoe UI", "PingFang SC", "Microsoft YaHei UI", "Microsoft YaHei", "Noto Sans CJK SC", system-ui, sans-serif; --font-serif: var(--font-sans); }
+html[lang="zh-hans"] :is(.site-brand-name, .footer-brand) { font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif; }
+html[lang="zh-hans"] :is(.page-eyebrow, .home-story-meta, .home-browse > p, .home-project-kicker, .post-card-meta, .article-kicker, .project-hero-facts > p, .project-media-group-label, .experiment-group-header p) { font-family: var(--font-sans); letter-spacing: .025em; }
+html[lang="zh-hans"] :is(.section-heading, .page-title, .category-hero h1, .home-intro h1, .home-section-header h2, .home-subsection-header h2, .home-series-panel h2, .home-project-card h3, .post-card-main h2, .article-header h1, .article-content h1, .article-content h2, .article-content h3, .article-content h4, .project-hero h1, .project-section-heading h2, .project-evidence-subheading h3, .experiment-group-header h3) { font-weight: 600; letter-spacing: 0; line-height: 1.4; }
+html[lang="zh-hans"] :is(.home-series-list strong, .font-display) { font-family: var(--font-sans); font-weight: 600; letter-spacing: 0; }
+@media (max-width: 767px) {
+  .site-header .site-header-row { gap: .5rem; }
+  .site-header .site-header-actions { flex-shrink: 0; gap: .25rem; }
+  .category-hero form { grid-column: 1 / -1; min-width: 0; }
+}
+@media (max-width: 399px) {
+  .site-header-row .site-brand-avatar { display: none; }
+}
+@media (max-width: 359px) {
+  .site-header .site-header-row { gap: .25rem; }
+  .site-header .site-header-actions { gap: 0; }
+  .language-track { width: 68px; }
+  .site-header-row .site-brand-byline { font-size: .625rem; letter-spacing: 0; }
+}
+
+.site-main .font-display { font-family: var(--font-serif); }

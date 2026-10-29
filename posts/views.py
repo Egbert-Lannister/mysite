@@ -10,6 +10,7 @@ from django.core.paginator import Paginator
 from django.db.models import Prefetch, Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.translation import gettext
 from django.views.decorators.http import require_POST
 
 from .models import Post, ProjectMedia, Series
@@ -69,7 +70,7 @@ def index(request):
 
 
 CATEGORY_META = {
-    "engineering": {"label": "Engineering", "desc": "Software engineering insights and best practices"},
+    "engineering": {"label": "Engineering", "desc": "Explorations in Hands-on Engineering."},
     "research":    {"label": "Research",    "desc": "Academic papers and research explorations"},
     "notes":       {"label": "Notes",       "desc": "Learning notes, reading summaries, and quick references"},
     "projects":    {"label": "Projects",    "desc": "Project showcases, demos, and build logs"},
@@ -210,7 +211,7 @@ def project_detail(request, slug: str):
         html = sanitize_project_html(project.content)
         hero_media = None
         if project.project_cover:
-            hero_media = {"url": project.project_cover.url, "title": f"{project.title} cover", "description": project.description}
+            hero_media = {"url": project.project_cover.url, "title": gettext("Cover: %(title)s") % {"title": project.title}, "description": project.description}
     else:
         html, toc_items = render_markdown_with_toc(project.content)
         method_html = render_markdown_with_toc(project.project_method)[0] if project.project_method.strip() else ""
@@ -221,7 +222,7 @@ def project_detail(request, slug: str):
         sections = build_media_sections(media)
         hero_media = None
         if project.project_cover:
-            hero_media = {"url": project.project_cover.url, "title": f"{project.title} cover", "description": project.description}
+            hero_media = {"url": project.project_cover.url, "title": gettext("Cover: %(title)s") % {"title": project.title}, "description": project.description}
         else:
             candidates = framework_media or method_media
             if candidates:

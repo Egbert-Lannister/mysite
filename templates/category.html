@@ -1,15 +1,16 @@
 {% extends "base.html" %}
-{% block title %}{{ category_label }} · TechBlog{% endblock %}
-{% block meta_description %}{{ category_desc }}{% endblock %}
+{% load i18n public_i18n %}
+{% block title %}{% translate category_label %} · TechBlog{% endblock %}
+{% block meta_description %}{% translate category_desc %}{% endblock %}
 {% block content %}
 <div class="category-page">
 	<header class="category-hero">
 		<div>
-			<p class="page-eyebrow">Section</p>
-			<h1>{{ category_label }}</h1>
-			{% if category_desc %}<p class="category-description">{{ category_desc }}</p>{% endif %}
+			<p class="page-eyebrow">{% translate "Section" %}</p>
+			<h1>{% translate category_label %}</h1>
+			{% if category_desc %}<p class="category-description">{% translate category_desc %}</p>{% endif %}
 		</div>
-		<p class="category-count"><strong>{{ posts.paginator.count }}</strong><span>{% if category == 'projects' %}project{{ posts.paginator.count|pluralize }}{% else %}entr{{ posts.paginator.count|pluralize:"y,ies" }}{% endif %}</span></p>
+		<p class="category-count"><strong>{{ posts.paginator.count }}</strong><span>{% if category == 'projects' %}{% count_label posts.paginator.count "project" %}{% else %}{% count_label posts.paginator.count "entry" %}{% endif %}</span></p>
 	</header>
 	{% if posts %}
 		<div>{% for post in posts %}{% include "_includes/post_card.html" %}{% endfor %}</div>

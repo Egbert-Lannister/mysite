@@ -1,17 +1,18 @@
 {% extends "base.html" %}
-{% block title %}{{ series.title }} · Series{% endblock %}
+{% load i18n public_i18n %}
+{% block title %}{{ series.title }} · {% translate "Series" %}{% endblock %}
 {% block meta_description %}{{ series.description|default:series.title|truncatechars:160 }}{% endblock %}
 {% block content %}
 <div class="category-page">
-	<a href="{% url 'posts:series_list' %}" class="back-link">← All series</a>
+	<a href="{% url 'posts:series_list' %}" class="back-link">{% translate "← All series" %}</a>
 	<header class="category-hero">
 		<div>
-			<p class="page-eyebrow">Series</p>
+			<p class="page-eyebrow">{% translate "Series" %}</p>
 			<h1>{{ series.title }}</h1>
 			{% if series.description %}<p class="category-description">{{ series.description }}</p>{% endif %}
-			{% if posts %}<a href="{{ posts.0.get_absolute_url }}" class="ui-button ui-button-primary mt-5">Start reading →</a>{% endif %}
+			{% if posts %}<a href="{{ posts.0.get_absolute_url }}" class="ui-button ui-button-primary mt-5">{% translate "Start reading →" %}</a>{% endif %}
 		</div>
-		<p class="category-count"><strong>{{ post_count }}</strong><span>article{{ post_count|pluralize }}</span></p>
+		<p class="category-count"><strong>{{ post_count }}</strong><span>{% count_label post_count "article" %}</span></p>
 	</header>
 	{% if series.cover_image %}<img src="{{ series.cover_image.url }}" alt="" class="mt-6 w-full max-h-80 object-cover rounded-lg border border-ink-200 dark:border-white/10">{% endif %}
 	{% if posts %}

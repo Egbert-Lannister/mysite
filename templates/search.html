@@ -1,18 +1,19 @@
 {% extends "base.html" %}
-{% block title %}{% if query %}“{{ query }}” · {% endif %}Search · TechBlog{% endblock %}
+{% load i18n public_i18n %}
+{% block title %}{% if query %}“{{ query }}” · {% endif %}{% translate "Search" %} · TechBlog{% endblock %}
 {% block content %}
 <div class="category-page">
 	<header class="category-hero">
 		<div class="w-full">
-			<p class="page-eyebrow">Search</p>
-			<h1>{% if query %}“{{ query }}”{% else %}Search the archive{% endif %}</h1>
+			<p class="page-eyebrow">{% translate "Search" %}</p>
+			<h1>{% if query %}“{{ query }}”{% else %}{% translate "Search the archive" %}{% endif %}</h1>
 			<form action="{% url 'posts:search' %}" method="get" role="search" class="flex gap-2 mt-5 max-w-xl">
-				<label for="page-search" class="sr-only">Search articles and projects</label>
-				<input id="page-search" type="search" name="q" value="{{ query }}" placeholder="Search articles and projects" maxlength="200" class="ui-input flex-1"{% if not query %} autofocus{% endif %}>
-				<button type="submit" class="ui-button ui-button-primary">Search</button>
+				<label for="page-search" class="sr-only">{% translate "Search articles and projects" %}</label>
+				<input id="page-search" type="search" name="q" value="{{ query }}" placeholder="{% translate "Search articles and projects" %}" maxlength="200" class="ui-input flex-1"{% if not query %} autofocus{% endif %}>
+				<button type="submit" class="ui-button ui-button-primary">{% translate "Search" %}</button>
 			</form>
 		</div>
-		{% if query %}<p class="category-count"><strong>{{ posts.paginator.count }}</strong><span>result{{ posts.paginator.count|pluralize }}</span></p>{% endif %}
+		{% if query %}<p class="category-count"><strong>{{ posts.paginator.count }}</strong><span>{% count_label posts.paginator.count "result" %}</span></p>{% endif %}
 	</header>
 	{% if query %}
 		{% if posts %}

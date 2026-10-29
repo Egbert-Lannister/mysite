@@ -6,6 +6,8 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import RedirectView
+from django.views.i18n import set_language
+from django.views.decorators.http import require_POST
 from posts.feeds import LatestPostsFeed
 from posts import views as posts_views
 from posts import admin_uploads
@@ -41,6 +43,7 @@ urlpatterns = [
     # Django admin
     path('admin/', admin.site.urls),
     # Public site
+    path('techblog/language/', require_POST(set_language), name='set_language'),
     path('rss.xml', LatestPostsFeed(), name='rss'),
     path('techblog/', include('posts.urls')),
     path('', RedirectView.as_view(url='/techblog/', permanent=True)),

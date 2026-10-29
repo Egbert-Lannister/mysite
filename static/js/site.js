@@ -1,6 +1,9 @@
 (() => {
   "use strict";
 
+  const labels = JSON.parse(document.getElementById("public-ui-labels")?.textContent || "{}");
+  const t = (message) => labels[message] || message;
+  window.publicTranslate = t;
   const root = document.documentElement;
   const themeToggle = document.getElementById("theme-toggle");
   const mobileMenu = document.getElementById("mobile-menu");
@@ -19,8 +22,8 @@
     }
     if (themeToggle) {
       themeToggle.setAttribute("aria-pressed", String(isDark));
-      themeToggle.setAttribute("aria-label", isDark ? "Switch to light theme" : "Switch to dark theme");
-      themeToggle.title = isDark ? "Switch to light theme" : "Switch to dark theme";
+      themeToggle.setAttribute("aria-label", isDark ? t("Switch to light theme") : t("Switch to dark theme"));
+      themeToggle.title = isDark ? t("Switch to light theme") : t("Switch to dark theme");
     }
     window.dispatchEvent(new CustomEvent("themechange", { detail: { isDark } }));
   }
@@ -44,7 +47,7 @@
     iconMenu?.classList.toggle("hidden", open);
     iconClose?.classList.toggle("hidden", !open);
     mobileToggle.setAttribute("aria-expanded", String(open));
-    mobileToggle.setAttribute("aria-label", open ? "Close navigation menu" : "Open navigation menu");
+    mobileToggle.setAttribute("aria-label", open ? t("Close navigation menu") : t("Open navigation menu"));
     if (open) {
       menuWasOpened = true;
       if (focus) menuFocusable()[0]?.focus();

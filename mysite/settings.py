@@ -59,6 +59,7 @@ if DEBUG:
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'posts.public_language.PublicLanguageMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -79,6 +80,8 @@ TEMPLATES = [
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.request',
+                'django.template.context_processors.i18n',
+                'posts.public_language.public_language',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
@@ -106,6 +109,12 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 LANGUAGE_CODE = 'zh-hans'
+LANGUAGES = [('en', 'English'), ('zh-hans', '简体中文')]
+LOCALE_PATHS = [BASE_DIR / 'locale']
+LANGUAGE_COOKIE_PATH = '/techblog/'
+LANGUAGE_COOKIE_AGE = 60 * 60 * 24 * 365
+LANGUAGE_COOKIE_SAMESITE = 'Lax'
+LANGUAGE_COOKIE_SECURE = not DEBUG
 TIME_ZONE = 'Asia/Shanghai'
 USE_I18N = True
 USE_TZ = True

@@ -1,13 +1,14 @@
 {% extends "base.html" %}
+{% load i18n public_i18n %}
 {% block title %}#{{ tag }} · TechBlog{% endblock %}
 {% block content %}
 <div class="category-page">
 	<header class="category-hero">
 		<div>
-			<p class="page-eyebrow">Tag</p>
+			<p class="page-eyebrow">{% translate "Tag" %}</p>
 			<h1>#{{ tag }}</h1>
 		</div>
-		<p class="category-count"><strong>{{ posts.paginator.count }}</strong><span>tagged entr{{ posts.paginator.count|pluralize:"y,ies" }}</span></p>
+		<p class="category-count"><strong>{{ posts.paginator.count }}</strong><span>{% count_label posts.paginator.count "tagged_entry" %}</span></p>
 	</header>
 	{% if posts %}
 		<div>{% for post in posts %}{% include "_includes/post_card.html" with highlight_tag=tag %}{% endfor %}</div>

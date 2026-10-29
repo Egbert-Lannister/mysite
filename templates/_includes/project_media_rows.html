@@ -1,3 +1,4 @@
+{% load i18n public_i18n %}
 {% for row in rows %}<div class="project-media-row project-media-row-{{ row.count }} project-media-frame-{{ row.frame }}">
 	{% for item in row.items %}{% include "_includes/project_media.html" %}{% endfor %}
 </div>{% endfor %}

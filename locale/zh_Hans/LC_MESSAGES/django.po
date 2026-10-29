@@ -1,0 +1,502 @@
+# Chinese (Simplified) translations for TechBlog.
+# Copyright (C) 2026 ORGANIZATION
+# This file is distributed under the same license as the TechBlog project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: TechBlog 1.0\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2026-10-29 03:54-0400\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: zh_Hans\n"
+"Language-Team: zh_Hans <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.11.0\n"
+
+msgid "Engineering"
+msgstr "工程"
+
+msgid "Research"
+msgstr "研究"
+
+msgid "Notes"
+msgstr "笔记"
+
+msgid "Projects"
+msgstr "项目"
+
+msgid "Series"
+msgstr "系列"
+
+msgid "Search"
+msgstr "搜索"
+
+msgid "Engineering notes, research, and selected projects."
+msgstr "工程笔记、研究记录与精选项目。"
+
+msgid "TechBlog · Engineering, research & notes"
+msgstr "TechBlog · 工程、研究与笔记"
+
+msgid "Skip to content"
+msgstr "跳转到正文"
+
+msgid "TechBlog home"
+msgstr "TechBlog 首页"
+
+msgid "Primary navigation"
+msgstr "主导航"
+
+msgid "Mobile navigation"
+msgstr "移动端导航"
+
+msgid "by Egbert Lannister"
+msgstr "作者 Egbert Lannister"
+
+msgid "Search articles and projects"
+msgstr "搜索文章和项目"
+
+msgid "Switch color theme"
+msgstr "切换颜色主题"
+
+msgid "Open navigation menu"
+msgstr "展开导航菜单"
+
+msgid "Close navigation menu"
+msgstr "收起导航菜单"
+
+msgid "Switch to light theme"
+msgstr "切换到浅色模式"
+
+msgid "Switch to dark theme"
+msgstr "切换到深色模式"
+
+msgid "Notes on engineering, research, and building."
+msgstr "记录工程实践、研究与创作。"
+
+msgid "Subscribe to RSS feed"
+msgstr "订阅 RSS 更新"
+
+msgid "Subscribe via RSS"
+msgstr "通过 RSS 订阅"
+
+msgid "Latest Article"
+msgstr "最新文章"
+
+msgid "Read Article"
+msgstr "阅读全文"
+
+msgid "Explore the notebook"
+msgstr "探索内容"
+
+msgid "Build better software"
+msgstr "构建更好的软件"
+
+msgid "Papers and experiments"
+msgstr "论文与实验"
+
+msgid "Ideas worth keeping"
+msgstr "值得记录的想法"
+
+msgid "Methods and results"
+msgstr "方法与成果"
+
+msgid "Guided reading paths"
+msgstr "循序渐进的阅读路径"
+
+msgid "No articles yet"
+msgstr "暂无文章"
+
+msgid "Published engineering, research, and notes will appear here."
+msgstr "已发布的工程文章、研究与笔记将显示在这里。"
+
+msgid "Engineering, research, and notes."
+msgstr "工程、研究与笔记。"
+
+msgid "Selected work"
+msgstr "精选作品"
+
+msgid "Projects & experiments"
+msgstr "项目与实验"
+
+msgid "View all projects"
+msgstr "查看全部项目"
+
+msgid "Project /"
+msgstr "项目 /"
+
+msgid "Project"
+msgstr "项目"
+
+msgid "In progress"
+msgstr "进行中"
+
+msgid "Completed"
+msgstr "已完成"
+
+msgid "Archived"
+msgstr "已归档"
+
+msgid "Latest writing"
+msgstr "最新发布"
+
+msgid "Browse articles"
+msgstr "浏览文章"
+
+msgid "Reading paths"
+msgstr "阅读路径"
+
+msgid "Featured series"
+msgstr "精选系列"
+
+msgid "View all series"
+msgstr "查看全部系列"
+
+msgid "Section"
+msgstr "分类"
+
+msgid "Academic papers and research explorations"
+msgstr "学术论文与研究探索"
+
+msgid "Learning notes, reading summaries, and quick references"
+msgstr "学习笔记、阅读摘要与速查资料"
+
+msgid "Project showcases, demos, and build logs"
+msgstr "项目展示、演示与开发记录"
+
+msgid "Nothing published here yet"
+msgstr "此分类暂无内容"
+
+msgid "New entries in this section will appear here."
+msgstr "此分类的新内容将显示在这里。"
+
+msgid "Back to home"
+msgstr "返回首页"
+
+msgid "Featured"
+msgstr "精选"
+
+msgid "Tags"
+msgstr "标签"
+
+msgid "View project"
+msgstr "查看项目"
+
+msgid "Article tags"
+msgstr "文章标签"
+
+msgid "Article series"
+msgstr "文章系列"
+
+msgid "← Back to"
+msgstr "← 返回"
+
+msgid "Part of the series ·"
+msgstr "所属系列 ·"
+
+msgid "Series contents"
+msgstr "系列目录"
+
+msgid "Series navigation"
+msgstr "系列导航"
+
+msgid "← Previous in series"
+msgstr "← 系列上一篇"
+
+msgid "Next in series →"
+msgstr "系列下一篇 →"
+
+msgid "Share this article"
+msgstr "分享文章"
+
+msgid "Copy link"
+msgstr "复制链接"
+
+msgid "WeChat QR"
+msgstr "微信二维码"
+
+msgid "Share…"
+msgstr "分享…"
+
+msgid "Post on X ↗"
+msgstr "分享到 X ↗"
+
+msgid "Comments"
+msgstr "评论"
+
+msgid "Share on WeChat"
+msgstr "分享到微信"
+
+msgid "Scan the QR code with WeChat."
+msgstr "使用微信扫描二维码。"
+
+msgid "Close"
+msgstr "关闭"
+
+msgid "Table of contents"
+msgstr "文章目录"
+
+msgid "On this page"
+msgstr "本页目录"
+
+msgid "Contents"
+msgstr "目录"
+
+msgid "Close table of contents"
+msgstr "关闭目录"
+
+msgid "Pagination"
+msgstr "分页"
+
+msgid "Previous"
+msgstr "上一页"
+
+msgid "Next"
+msgstr "下一页"
+
+msgid "← Previous"
+msgstr "← 上一页"
+
+msgid "Next →"
+msgstr "下一页 →"
+
+msgid "Nothing here yet"
+msgstr "暂无内容"
+
+msgid "Published content will appear here."
+msgstr "已发布的内容将显示在这里。"
+
+msgid "Updated"
+msgstr "更新于"
+
+msgid "No series yet"
+msgstr "暂无系列"
+
+msgid "Collections of related articles will appear here."
+msgstr "关联文章组成的系列将显示在这里。"
+
+msgid "← All series"
+msgstr "← 返回系列列表"
+
+msgid "Start reading →"
+msgstr "开始阅读 →"
+
+msgid "No articles in this series yet"
+msgstr "此系列暂无文章"
+
+msgid "Published articles in this series will appear here."
+msgstr "此系列已发布的文章将显示在这里。"
+
+msgid "Tag"
+msgstr "标签"
+
+msgid "No entries with this tag"
+msgstr "此标签下暂无内容"
+
+msgid "Try another tag or search the archive."
+msgstr "请尝试其他标签或搜索内容。"
+
+msgid "Search the archive"
+msgstr "搜索全部内容"
+
+msgid "No matches"
+msgstr "未找到匹配内容"
+
+msgid "Try a shorter query, a different spelling, or browse a section instead."
+msgstr "请尝试更短的关键词、更换拼写，或直接浏览分类。"
+
+msgid "← All projects"
+msgstr "← 返回项目列表"
+
+msgid "Project report"
+msgstr "项目报告"
+
+msgid "/ Featured"
+msgstr "/ 精选"
+
+msgid "Technology stack"
+msgstr "技术栈"
+
+msgid "Project resources"
+msgstr "项目资源"
+
+msgid "Paper ↗"
+msgstr "论文 ↗"
+
+msgid "Live demo ↗"
+msgstr "在线演示 ↗"
+
+msgid "Project facts"
+msgstr "项目信息"
+
+msgid "Project file"
+msgstr "项目档案"
+
+msgid "Status"
+msgstr "状态"
+
+msgid "Format"
+msgstr "形式"
+
+msgid "HTML package"
+msgstr "HTML 页面"
+
+msgid "Research report"
+msgstr "研究报告"
+
+msgid "Project report sections"
+msgstr "项目报告章节"
+
+msgid "Overview"
+msgstr "概述"
+
+msgid "Method"
+msgstr "方法"
+
+msgid "Experiments"
+msgstr "实验"
+
+msgid "Comparisons"
+msgstr "对比实验"
+
+msgid "Conclusion"
+msgstr "结论"
+
+msgid "Resources"
+msgstr "资源"
+
+msgid "01 / Overview"
+msgstr "01 / 概述"
+
+msgid "02 / Approach"
+msgstr "02 / 方法"
+
+msgid "03 / Evidence"
+msgstr "03 / 实验"
+
+msgid "04 / Conclusion"
+msgstr "04 / 结论"
+
+msgid "Model framework"
+msgstr "模型框架"
+
+msgid "Working principle"
+msgstr "工作原理"
+
+msgid "Additional evidence"
+msgstr "补充材料"
+
+msgid "Experiment"
+msgstr "实验"
+
+msgid "Comparison"
+msgstr "对比"
+
+msgid "Supplement"
+msgstr "补充"
+
+msgid "Resources & citation"
+msgstr "资源与引用"
+
+msgid ""
+"Generated from the project title, year, and verified resource URL. No "
+"author or venue information is inferred."
+msgstr "根据项目标题、年份和已验证的资源链接生成，不推断作者或发表信息。"
+
+msgid "Your browser cannot play this video."
+msgstr "当前浏览器无法播放此视频。"
+
+msgid "Download"
+msgstr "下载"
+
+msgid "Open full image:"
+msgstr "查看原图："
+
+msgid "Copy"
+msgstr "复制"
+
+msgid "Copy code block"
+msgstr "复制代码块"
+
+msgid "Copied"
+msgstr "已复制"
+
+msgid "Failed"
+msgstr "复制失败"
+
+msgid "Scrollable table"
+msgstr "可横向滚动的表格"
+
+msgid "Link copied"
+msgstr "链接已复制"
+
+msgid "Unable to copy the link"
+msgstr "无法复制链接"
+
+msgid "Sharing is unavailable"
+msgstr "暂时无法分享"
+
+msgid "QR component did not load; use Copy link instead"
+msgstr "二维码组件加载失败，请使用复制链接"
+
+msgid "Unable to create QR code; use Copy link instead"
+msgstr "无法生成二维码，请使用复制链接"
+
+#, python-format
+msgid "View %(title)s"
+msgstr "查看 %(title)s"
+
+#, python-format
+msgid "Page %(current)s of %(total)s"
+msgstr "第 %(current)s 页，共 %(total)s 页"
+
+msgid "Interface language"
+msgstr "界面语言"
+
+msgid "Switch to Chinese"
+msgstr "切换为中文"
+
+msgid "Switch to English"
+msgstr "Switch to English"
+
+msgid "article"
+msgid_plural "articles"
+msgstr[0] "篇文章"
+
+msgid "entry"
+msgid_plural "entries"
+msgstr[0] "篇内容"
+
+msgid "project"
+msgid_plural "projects"
+msgstr[0] "个项目"
+
+msgid "result"
+msgid_plural "results"
+msgstr[0] "条结果"
+
+msgid "collection"
+msgid_plural "collections"
+msgstr[0] "个系列"
+
+msgid "asset"
+msgid_plural "assets"
+msgstr[0] "项素材"
+
+msgid "tagged entry"
+msgid_plural "tagged entries"
+msgstr[0] "篇相关内容"
+
+#, python-format
+msgid "Cover: %(title)s"
+msgstr "封面：%(title)s"
+
+msgid "Unfolding Knowledge, Step by Step."
+msgstr "循序展开，渐入新知。"
+
+msgid "Explorations in Hands-on Engineering."
+msgstr "循实践之径，探工程之理。"

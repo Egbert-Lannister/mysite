@@ -1,5 +1,6 @@
 (() => {
   "use strict";
+  const t = (message) => window.publicTranslate?.(message) || message;
 
   function ready(callback) {
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", callback, { once: true });
@@ -42,15 +43,15 @@
       const button = document.createElement("button");
       button.type = "button";
       button.className = "copy-btn";
-      button.textContent = "Copy";
-      button.setAttribute("aria-label", "Copy code block");
+      button.textContent = t("Copy");
+      button.setAttribute("aria-label", t("Copy code block"));
       button.addEventListener("click", async () => {
         try {
           await copyText(code.innerText);
-          button.textContent = "Copied";
+          button.textContent = t("Copied");
           button.classList.add("copied");
-        } catch (_) { button.textContent = "Failed"; }
-        window.setTimeout(() => { button.textContent = "Copy"; button.classList.remove("copied"); }, 1800);
+        } catch (_) { button.textContent = t("Failed"); }
+        window.setTimeout(() => { button.textContent = t("Copy"); button.classList.remove("copied"); }, 1800);
       });
       wrapper.appendChild(button);
     });
@@ -60,7 +61,7 @@
       const wrapper = document.createElement("div");
       wrapper.className = "table-scroll";
       wrapper.setAttribute("tabindex", "0");
-      wrapper.setAttribute("aria-label", "Scrollable table");
+      wrapper.setAttribute("aria-label", t("Scrollable table"));
       table.parentNode.insertBefore(wrapper, table);
       wrapper.appendChild(table);
     });
@@ -90,12 +91,12 @@
     });
 
     document.getElementById("copy-link-btn")?.addEventListener("click", async () => {
-      try { await copyText(window.location.href); window.showToast?.("Link copied"); }
-      catch (_) { window.showToast?.("Unable to copy the link", "error"); }
+      try { await copyText(window.location.href); window.showToast?.(t("Link copied")); }
+      catch (_) { window.showToast?.(t("Unable to copy the link"), "error"); }
     });
     document.querySelector("[data-native-share]")?.addEventListener("click", async (event) => {
       try { await navigator.share({ title: event.currentTarget.dataset.shareTitle || document.title, url: window.location.href }); }
-      catch (error) { if (error.name !== "AbortError") window.showToast?.("Sharing is unavailable", "error"); }
+      catch (error) { if (error.name !== "AbortError") window.showToast?.(t("Sharing is unavailable"), "error"); }
     });
 
     const qrModal = document.getElementById("qr-modal");
@@ -113,7 +114,7 @@
       const container = document.getElementById("qr-code");
       if (!container || typeof QRCode !== "function") {
         setQrOpen(false);
-        window.showToast?.("QR component did not load; use Copy link instead", "error");
+        window.showToast?.(t("QR component did not load; use Copy link instead"), "error");
         return;
       }
       container.replaceChildren();
@@ -130,7 +131,7 @@
       } catch (_) {
         container.replaceChildren();
         setQrOpen(false);
-        window.showToast?.("Unable to create QR code; use Copy link instead", "error");
+        window.showToast?.(t("Unable to create QR code; use Copy link instead"), "error");
       }
     });
     qrClose?.addEventListener("click", () => setQrOpen(false));

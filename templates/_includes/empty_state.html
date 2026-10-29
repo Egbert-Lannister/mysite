@@ -1,6 +1,7 @@
+{% load i18n public_i18n %}
 {% comment %}Context: empty_title, empty_message, optional empty_url / empty_link_label.{% endcomment %}
 <div class="empty-state" role="status">
-	<h2>{{ empty_title|default:"Nothing here yet" }}</h2>
-	<p>{{ empty_message|default:"Published content will appear here." }}</p>
-	{% if empty_url and empty_link_label %}<a href="{{ empty_url }}" class="inline-flex mt-4 text-sm text-accent-600 dark:text-accent-400 hover:underline">{{ empty_link_label }}</a>{% endif %}
+	<h2>{% translate empty_title|default:"Nothing here yet" %}</h2>
+	<p>{% translate empty_message|default:"Published content will appear here." %}</p>
+	{% if empty_url and empty_link_label %}<a href="{{ empty_url }}" class="inline-flex mt-4 text-sm text-accent-600 dark:text-accent-400 hover:underline">{% translate empty_link_label %}</a>{% endif %}
 </div>

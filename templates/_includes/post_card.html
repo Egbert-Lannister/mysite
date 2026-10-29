@@ -1,19 +1,21 @@
+{% load i18n public_i18n %}
 {% comment %}Shared article/project row. Context: post, optional highlight_tag.{% endcomment %}
-{% load english_dates %}<article class="post-card post-card-standard">
-	<div class="post-card-date">
-		<time datetime="{{ post.date|date:'c' }}"><strong>{{ post.date|date:"d" }}</strong><span>{{ post.date|english_date:"month_year" }}</span></time>
-	</div>
+<article class="post-card post-card-standard">
 	<div class="post-card-main">
-		<div class="post-card-meta">
-			<span>{{ post.get_category_display }}</span>
-			{% if post.category == 'projects' %}{% include "_includes/status.html" with item=post %}{% if post.project_featured %}<span class="post-card-featured">Featured</span>{% endif %}{% elif post.series %}<span aria-hidden="true">/</span><a href="{% url 'posts:series_detail' post.series.slug %}" title="{{ post.series.title }}">{{ post.series.title }}</a>{% endif %}
+		<div class="post-card-heading">
+			<div class="post-card-meta">
+				<span class="post-card-category">{% translate post.get_category_display %}</span>
+				{% if post.category == 'projects' %}{% include "_includes/status.html" with item=post %}{% if post.project_featured %}<span class="post-card-featured">{% translate "Featured" %}</span>{% endif %}{% endif %}
+			</div>
+			<time class="post-card-date" datetime="{{ post.date|date:'c' }}">{{ post.date|display_date }}</time>
 		</div>
+		{% if post.category != 'projects' and post.series %}<a class="post-card-series" href="{% url 'posts:series_detail' post.series.slug %}">{{ post.series.title }}</a>{% endif %}
 		<h2><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></h2>
 		{% if post.description %}<p class="post-card-description">{{ post.description }}</p>{% endif %}
 		{% if post.category == 'projects' and post.project_tech_stack_list %}<p class="post-card-stack">{% for tech in post.project_tech_stack_list %}{{ tech }}{% if not forloop.last %} / {% endif %}{% endfor %}</p>{% endif %}
 		<div class="post-card-footer">
-			{% if post.tags.all %}<div class="post-card-tags" aria-label="Tags">{% for tag in post.tags.all %}<a href="{% url 'posts:tag_list' tag.name %}" class="{% if highlight_tag and tag.name == highlight_tag %}is-highlighted{% endif %}">#{{ tag.name }}</a>{% endfor %}</div>{% else %}<span></span>{% endif %}
-			<a href="{{ post.get_absolute_url }}" class="post-card-link">{% if post.category == 'projects' %}View project{% else %}Read Article{% endif %} <span aria-hidden="true">→</span></a>
+			{% if post.tags.all %}<div class="post-card-tags" aria-label="{% translate "Tags" %}">{% for tag in post.tags.all %}<a href="{% url 'posts:tag_list' tag.name %}" class="{% if highlight_tag and tag.name == highlight_tag %}is-highlighted{% endif %}">#{{ tag.name }}</a>{% endfor %}</div>{% else %}<span></span>{% endif %}
+			<a href="{{ post.get_absolute_url }}" class="post-card-link">{% if post.category == 'projects' %}{% translate "View project" %}{% else %}{% translate "Read Article" %}{% endif %} <span aria-hidden="true">→</span></a>
 		</div>
 	</div>
 	{% if post.category == 'projects' %}
